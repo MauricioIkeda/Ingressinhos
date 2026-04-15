@@ -1,4 +1,5 @@
 using Generic.Domain.Entities;
+using Generic.Domain.ValueObjects;
 
 namespace Ingressinhos.Domain.Sales.Entities;
 
@@ -8,8 +9,8 @@ public class OrderItem : BaseEntity
     public Guid TicketId { get; private set; }
     public string TicketName { get; private set; }
     public int Quantity { get; private set; }
-    public decimal UnitPrice { get; private set; }
-    public decimal TotalPrice => Quantity * UnitPrice;
+    public Price UnitPrice { get; private set; }
+    public decimal TotalPrice => Quantity * UnitPrice.Value;
 
     public OrderItem(Guid orderId, Guid ticketId, string ticketName, int quantity, decimal unitPrice)
     {
@@ -33,16 +34,11 @@ public class OrderItem : BaseEntity
             throw new Exception("A quantidade deve ser maior que zero");
         }
 
-        if (unitPrice < 0)
-        {
-            throw new Exception("O valor unitario nao pode ser negativo");
-        }
-
         Id = Guid.NewGuid();
         OrderId = orderId;
         TicketId = ticketId;
         TicketName = ticketName.Trim();
         Quantity = quantity;
-        UnitPrice = unitPrice;
+        UnitPrice = new Price(unitPrice);
     }
 }

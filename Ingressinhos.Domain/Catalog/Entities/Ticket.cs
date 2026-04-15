@@ -1,4 +1,5 @@
 using Generic.Domain.Entities;
+using Generic.Domain.ValueObjects;
 using Ingressinhos.Domain.Catalog.Enums;
 
 namespace Ingressinhos.Domain.Catalog.Entities;
@@ -7,16 +8,16 @@ public class Ticket : BaseEntity
 {
     public Guid EventId { get; private set; }
     public string Name { get; private set; }
-    public decimal? BasePrice { get; private set; }
-    public decimal? PremiumPrice { get; private set; }
-    public decimal? VIPPrice { get; private set; }
+    public Price BasePrice { get; private set; }
+    public Price? PremiumPrice { get; private set; }
+    public Price? VIPPrice { get; private set; }
     public int TotalQuantity { get; private set; }
     public int AvailableQuantity { get; private set; }
     public DateTime SalesStartsAt { get; private set; }
     public DateTime SalesEndsAt { get; private set; }
     public CatalogTicketStatus Status { get; private set; }
 
-    public Ticket(Guid eventId, string name, decimal? basePrice, decimal? premiumPrice, decimal? vipPrice, int totalQuantity, DateTime salesStartsAt, DateTime salesEndsAt)
+    public Ticket(Guid eventId, string name, decimal basePrice, decimal? premiumPrice, decimal? vipPrice, int totalQuantity, DateTime salesStartsAt, DateTime salesEndsAt)
     {
         if (eventId == Guid.Empty)
         {
@@ -26,21 +27,6 @@ public class Ticket : BaseEntity
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new Exception("Deve ser informado o nome do ingresso");
-        }
-
-        if (basePrice != null && basePrice < 0)
-        {
-            throw new Exception("O preco do ingresso nao pode ser negativo");
-        }
-
-        if (premiumPrice != null && premiumPrice < 0)
-        {
-            throw new Exception("O preco premium do ingresso nao pode ser negativo");
-        }
-
-        if (vipPrice != null && vipPrice < 0)
-        {
-            throw new Exception("O preco VIP do ingresso nao pode ser negativo");
         }
 
         if (totalQuantity <= 0)
@@ -53,13 +39,12 @@ public class Ticket : BaseEntity
             throw new Exception("O fim das vendas deve ser posterior ao inicio");
         }
 
-
         Id = Guid.NewGuid();
         EventId = eventId;
         Name = name.Trim();
-        BasePrice = basePrice;
-        PremiumPrice = premiumPrice;
-        VIPPrice = vipPrice;
+        BasePrice = new Price(basePrice);
+        PremiumPrice = premiumPrice.HasValue ? new Price(premiumPrice.Value) : null;
+        VIPPrice = vipPrice.HasValue ? new Price(vipPrice.Value) : null;
         TotalQuantity = totalQuantity;
         AvailableQuantity = totalQuantity;
         SalesStartsAt = salesStartsAt;
@@ -67,14 +52,11 @@ public class Ticket : BaseEntity
         Status = CatalogTicketStatus.Active;
     }
 
-    public void ChangePrice(decimal newPrice)
+    public void ChangePrices(decimal? newBasePrice, decimal? newPremiumPrice,  decimal? newVIPPrice)
     {
-        if (newPrice < 0)
-        {
-            throw new Exception("O preco do ingresso nao pode ser negativo");
-        }
-
-        BasePrice = newPrice;
+        BasePrice = newBasePrice.HasValue ? new Price(newBasePrice.Value) : BasePrice;
+        PremiumPrice = newPremiumPrice.HasValue ? new Price(newPremiumPrice.Value) : PremiumPrice;
+        VIPPrice = newVIPPrice.HasValue ? new Price(newVIPPrice.Value) : VIPPrice;
     }
 
     public void Reserve(int quantity, DateTime referenceDate)

@@ -32,7 +32,7 @@ public class Event : BaseEntity
         HasSeats = hasSeats;
     }
 
-    public void RemarcarEvento(DateTime novaDataHora)
+    public void RescheduleEvent(DateTime novaDataHora)
     {
         if (novaDataHora <= DateTime.Now)
         {

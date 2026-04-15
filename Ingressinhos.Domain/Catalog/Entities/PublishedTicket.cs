@@ -1,5 +1,6 @@
 using Ingressinhos.Domain.Catalog.Enums;
 using Generic.Domain.Entities;
+using Generic.Domain.ValueObjects;
 
 namespace Ingressinhos.Domain.Catalog.Entities;
 
@@ -9,7 +10,7 @@ public class PublishedTicket : BaseEntity
     public Guid? SeatId { get; private set; }
     public SeatCategory Category { get; private set; }
     public SeatStatus SeatAvailabilityStatus { get; private set; }
-    public decimal UnitPrice { get; private set; }
+    public Price UnitPrice { get; private set; }
     public DateTime PublishedAt { get; private set; }
     public DateTime? ReservedAt { get; private set; }
     public DateTime? OccupiedAt { get; private set; }
@@ -23,16 +24,11 @@ public class PublishedTicket : BaseEntity
             throw new Exception("Deve ser informado o ingresso publicado");
         }
 
-        if (unitPrice < 0)
-        {
-            throw new Exception("O preco nao pode ser negativo");
-        }
-
         Id = Guid.NewGuid();
         TicketId = ticketId;
         SeatId = seatId;
         Category = category;
-        UnitPrice = unitPrice;
+        UnitPrice = new Price(unitPrice);
         SeatAvailabilityStatus = SeatStatus.Available;
         PublishedAt = DateTime.UtcNow;
     }
@@ -87,11 +83,6 @@ public class PublishedTicket : BaseEntity
 
     public void ChangePrice(decimal unitPrice)
     {
-        if (unitPrice < 0)
-        {
-            throw new Exception("O preco nao pode ser negativo");
-        }
-
-        UnitPrice = unitPrice;
+        UnitPrice = new Price(unitPrice);
     }
 }

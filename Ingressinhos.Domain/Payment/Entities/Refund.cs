@@ -1,4 +1,5 @@
 using Generic.Domain.Entities;
+using Generic.Domain.ValueObjects;
 using Ingressinhos.Domain.Payment.Enums;
 
 namespace Ingressinhos.Domain.Payment.Entities;
@@ -6,7 +7,7 @@ namespace Ingressinhos.Domain.Payment.Entities;
 public class Refund : BaseEntity
 {
     public Guid PaymentTransactionId { get; private set; }
-    public decimal Amount { get; private set; }
+    public Price Amount { get; private set; }
     public string Reason { get; private set; }
     public RefundStatus Status { get; private set; }
     public DateTime RequestedAt { get; private set; }
@@ -20,11 +21,6 @@ public class Refund : BaseEntity
             throw new Exception("Deve ser informado o pagamento do reembolso");
         }
 
-        if (amount <= 0)
-        {
-            throw new Exception("O valor do reembolso deve ser maior que zero");
-        }
-
         if (string.IsNullOrWhiteSpace(reason))
         {
             throw new Exception("Deve ser informada a justificativa do reembolso");
@@ -32,7 +28,7 @@ public class Refund : BaseEntity
 
         Id = Guid.NewGuid();
         PaymentTransactionId = paymentTransactionId;
-        Amount = amount;
+        Amount = new Price(amount);
         Reason = reason.Trim();
         Status = RefundStatus.Requested;
         RequestedAt = DateTime.UtcNow;
