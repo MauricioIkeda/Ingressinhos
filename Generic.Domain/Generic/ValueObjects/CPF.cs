@@ -1,4 +1,4 @@
-namespace Ingressinhos.Domain.ValueObjects;
+namespace Generic.Domain.ValueObjects;
 
 public record CPF
 {

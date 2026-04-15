@@ -6,5 +6,9 @@
 		<Nullable>disable</Nullable>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Generic.Domain\Generic.Domain.csproj" />
+	</ItemGroup>
+
 
 </Project>

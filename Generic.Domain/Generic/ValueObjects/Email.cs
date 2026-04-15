@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Ingressinhos.Domain.ValueObjects;
+namespace Generic.Domain.ValueObjects;
 
 public record Email
 {

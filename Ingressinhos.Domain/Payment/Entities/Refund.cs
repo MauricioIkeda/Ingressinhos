@@ -1,0 +1,62 @@
+using Generic.Domain.Entities;
+using Ingressinhos.Domain.Payment.Enums;
+
+namespace Ingressinhos.Domain.Payment.Entities;
+
+public class Refund : BaseEntity
+{
+    public Guid PaymentTransactionId { get; private set; }
+    public decimal Amount { get; private set; }
+    public string Reason { get; private set; }
+    public RefundStatus Status { get; private set; }
+    public DateTime RequestedAt { get; private set; }
+    public DateTime? CompletedAt { get; private set; }
+    public DateTime? RejectedAt { get; private set; }
+
+    public Refund(Guid paymentTransactionId, decimal amount, string reason)
+    {
+        if (paymentTransactionId == Guid.Empty)
+        {
+            throw new Exception("Deve ser informado o pagamento do reembolso");
+        }
+
+        if (amount <= 0)
+        {
+            throw new Exception("O valor do reembolso deve ser maior que zero");
+        }
+
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            throw new Exception("Deve ser informada a justificativa do reembolso");
+        }
+
+        Id = Guid.NewGuid();
+        PaymentTransactionId = paymentTransactionId;
+        Amount = amount;
+        Reason = reason.Trim();
+        Status = RefundStatus.Requested;
+        RequestedAt = DateTime.UtcNow;
+    }
+
+    public void Complete()
+    {
+        if (Status != RefundStatus.Requested)
+        {
+            throw new Exception("Somente reembolsos solicitados podem ser finalizados");
+        }
+
+        Status = RefundStatus.Completed;
+        CompletedAt = DateTime.UtcNow;
+    }
+
+    public void Reject()
+    {
+        if (Status != RefundStatus.Requested)
+        {
+            throw new Exception("Somente reembolsos solicitados podem ser rejeitados");
+        }
+
+        Status = RefundStatus.Rejected;
+        RejectedAt = DateTime.UtcNow;
+    }
+}
