@@ -8,12 +8,17 @@ public class PublishedTicket : BaseEntity
 {
     public Guid TicketId { get; private set; }
     public Guid? SeatId { get; private set; }
+    public Seat Seat { get; private set; }
     public SeatCategory Category { get; private set; }
     public SeatStatus SeatAvailabilityStatus { get; private set; }
     public Price UnitPrice { get; private set; }
     public DateTime PublishedAt { get; private set; }
     public DateTime? ReservedAt { get; private set; }
     public DateTime? OccupiedAt { get; private set; }
+
+    protected PublishedTicket()
+    {
+    }
 
     public Guid PublishedTicketId => Id;
 

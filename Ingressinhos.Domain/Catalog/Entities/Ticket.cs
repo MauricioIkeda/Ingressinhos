@@ -7,6 +7,7 @@ namespace Ingressinhos.Domain.Catalog.Entities;
 public class Ticket : BaseEntity
 {
     public Guid EventId { get; private set; }
+    public Event Event { get; private set; }
     public string Name { get; private set; }
     public Price BasePrice { get; private set; }
     public Price? PremiumPrice { get; private set; }
@@ -17,6 +18,11 @@ public class Ticket : BaseEntity
     public DateTime SalesEndsAt { get; private set; }
     public CatalogTicketStatus Status { get; private set; }
 
+    protected Ticket()
+    {
+        
+    }
+    
     public Ticket(Guid eventId, string name, decimal basePrice, decimal? premiumPrice, decimal? vipPrice, int totalQuantity, DateTime salesStartsAt, DateTime salesEndsAt)
     {
         if (eventId == Guid.Empty)
