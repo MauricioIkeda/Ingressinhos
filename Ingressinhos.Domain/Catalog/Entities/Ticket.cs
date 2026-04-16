@@ -7,7 +7,6 @@ namespace Ingressinhos.Domain.Catalog.Entities;
 public class Ticket : BaseEntity
 {
     public Guid EventId { get; private set; }
-    public Event Event { get; private set; }
     public string Name { get; private set; }
     public Price BasePrice { get; private set; }
     public Price? PremiumPrice { get; private set; }

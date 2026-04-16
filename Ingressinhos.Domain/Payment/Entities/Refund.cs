@@ -7,7 +7,6 @@ namespace Ingressinhos.Domain.Payment.Entities;
 public class Refund : BaseEntity
 {
     public Guid PaymentTransactionId { get; private set; }
-    public PaymentTransaction PaymentTransaction { get; private set; }
     public Price Amount { get; private set; }
     public string Reason { get; private set; }
     public RefundStatus Status { get; private set; }

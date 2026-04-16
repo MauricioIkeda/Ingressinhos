@@ -6,7 +6,6 @@ namespace Ingressinhos.Domain.Sales.Entities;
 public class Order : BaseEntity
 {
     public Guid ClientId { get; private set; }
-    public Client Client { get; private set; }
     public decimal TotalAmount { get; private set; }
     public OrderStatus Status { get; private set; }
     public DateTime OrderedAt { get; private set; }

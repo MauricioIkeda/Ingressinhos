@@ -6,7 +6,6 @@ namespace Ingressinhos.Domain.Catalog.Entities;
 public class Seat : BaseEntity
 {
     public Guid LocationId { get; private set; }
-    public Location Location { get; private set; }
     public string Code { get; private set; }
     public SeatCategory Category { get; private set; }
     public SeatStatus Status { get; private set; }
