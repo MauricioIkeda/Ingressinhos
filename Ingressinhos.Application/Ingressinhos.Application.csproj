@@ -7,9 +7,20 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="DTOs\" />
-      <Folder Include="Interfaces\" />
-      <Folder Include="UseCases\" />
+      <Compile Remove="DTOs\**" />
+      <Compile Remove="Interfaces\**" />
+      <Compile Remove="UseCases\**" />
+      <EmbeddedResource Remove="DTOs\**" />
+      <EmbeddedResource Remove="Interfaces\**" />
+      <EmbeddedResource Remove="UseCases\**" />
+      <None Remove="DTOs\**" />
+      <None Remove="Interfaces\**" />
+      <None Remove="UseCases\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />
+      <ProjectReference Include="..\Ingressinhos.Domain\Ingressinhos.Domain.csproj" />
     </ItemGroup>
 
 </Project>

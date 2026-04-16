@@ -10,4 +10,8 @@
       <Folder Include="Repository\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />
+    </ItemGroup>
+
 </Project>

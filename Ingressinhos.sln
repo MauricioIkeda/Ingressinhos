@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.37012.4 d17.14
+VisualStudioVersion = 17.14.37012.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ingressinhos.Domain", "Ingressinhos.Domain\Ingressinhos.Domain.csproj", "{6759A26B-4B1E-445B-809E-4F1DBBF3C1A9}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Auth.Domain", "Auth.Domain\Auth.Domain.csproj", "{56324F26-9477-4F8E-B6C5-4669DAEE7A09}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generic.Domain", "Generic.Domain\Generic.Domain.csproj", "{17B172EF-C181-4C3B-B941-E08F07421FCC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generic.Infrastructure", "Generic.Infrastructure\Generic.Infrastructure.csproj", "{3EB9B5D3-8CC6-4402-84BD-33F5D232A16C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{17B172EF-C181-4C3B-B941-E08F07421FCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{17B172EF-C181-4C3B-B941-E08F07421FCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{17B172EF-C181-4C3B-B941-E08F07421FCC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EB9B5D3-8CC6-4402-84BD-33F5D232A16C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EB9B5D3-8CC6-4402-84BD-33F5D232A16C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EB9B5D3-8CC6-4402-84BD-33F5D232A16C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EB9B5D3-8CC6-4402-84BD-33F5D232A16C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
