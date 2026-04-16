@@ -7,7 +7,6 @@ public class Event : BaseEntity
     public string Name { get; private set; }
     public DateTime StarTime { get; private set; }
     public Guid LocationId { get; private set; }
-    public Location Location { get; private set; }
     public bool HasSeats { get; private set; }
 
     protected Event()
