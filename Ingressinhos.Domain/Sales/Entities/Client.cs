@@ -7,6 +7,11 @@ public class Client : User
 {
     public CPF Cpf { get; private set; }
 
+    protected Client()
+    {
+        
+    }
+
     public Client(string name, string email, string cpf) : base(name, email)
     {
         Cpf = new CPF(cpf);

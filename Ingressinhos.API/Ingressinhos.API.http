@@ -1,0 +1,6 @@
+@Ingressinhos.API_HostAddress = http://localhost:5202
+
+GET {{Ingressinhos.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

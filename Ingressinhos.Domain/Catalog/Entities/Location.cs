@@ -8,6 +8,10 @@ public class Location : BaseEntity
     public int TotalCapacity { get; private set; }
     public bool HasSeats { get; private set; }
 
+    protected Location()
+    {
+    }
+
     public Location(string name, int totalCapacity, bool hasSeats = true)
     {
         if (string.IsNullOrEmpty(name))

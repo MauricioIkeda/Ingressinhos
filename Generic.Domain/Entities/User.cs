@@ -6,6 +6,8 @@ public abstract class User : BaseEntity
 {
     public string Name { get; private set; }
     public Email Email { get; private set; }
+    
+    protected User() { }
 
     protected User(string name, string email)
     {

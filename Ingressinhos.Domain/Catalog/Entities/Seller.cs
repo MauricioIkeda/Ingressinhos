@@ -8,6 +8,11 @@ public class Seller : User
     public CNPJ Cnpj { get; private set; }
     public string TradingName { get; private set; }
 
+    protected Seller()
+    {
+        
+    }
+
     public Seller(string name, string email, string cnpj, string tradingName) : base(name, email)
     {
         Cnpj = new CNPJ(cnpj);

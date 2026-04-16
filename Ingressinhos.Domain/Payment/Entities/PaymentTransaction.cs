@@ -1,12 +1,14 @@
 using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
 using Ingressinhos.Domain.Payment.Enums;
+using Ingressinhos.Domain.Sales.Entities;
 
 namespace Ingressinhos.Domain.Payment.Entities;
 
 public class PaymentTransaction : BaseEntity
 {
     public Guid OrderId { get; private set; }
+    public Order Order { get; private set; }
     public Price Amount { get; private set; }
     public string Method { get; private set; }
     public PaymentStatus Status { get; private set; }
@@ -14,6 +16,11 @@ public class PaymentTransaction : BaseEntity
     public DateTime RequestedAt { get; private set; }
     public DateTime? ApprovedAt { get; private set; }
     public DateTime? RefusedAt { get; private set; }
+
+    protected PaymentTransaction()
+    {
+        
+    }
 
     public PaymentTransaction(Guid orderId, decimal amount, string method)
     {
