@@ -5,7 +5,7 @@ namespace Ingressinhos.Domain.Sales.Entities;
 
 public class Order : BaseEntity
 {
-    public Guid ClientId { get; private set; }
+    public long ClientId { get; private set; }
     public decimal TotalAmount { get; private set; }
     public OrderStatus Status { get; private set; }
     public DateTime OrderedAt { get; private set; }
@@ -17,14 +17,13 @@ public class Order : BaseEntity
         
     }
     
-    public Order(Guid clientId)
+    public Order(long clientId)
     {
-        if (clientId == Guid.Empty)
+        if (clientId <= 0)
         {
             throw new Exception("Deve ser informado o cliente do pedido");
         }
 
-        Id = Guid.NewGuid();
         ClientId = clientId;
         Status = OrderStatus.PendingPayment;
         OrderedAt = DateTime.UtcNow;

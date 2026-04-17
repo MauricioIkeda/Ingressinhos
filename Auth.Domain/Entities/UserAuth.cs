@@ -5,16 +5,16 @@ namespace Ingressinhos.Domain.Auth.Entities;
 
 public class UserAuth : BaseEntity
 {
-    public Guid UserId { get; private set; }
+    public long UserId { get; private set; }
     public string PasswordHash { get; private set; }
     public AuthUserStatus Status { get; private set; }
     public bool IsActive => Status == AuthUserStatus.Active;
     public DateTime CreatedAtAuth { get; private set; }
     public DateTime? LastPasswordChangedAt { get; private set; }
 
-    public UserAuth(Guid userId, string passwordHash)
+    public UserAuth(long userId, string passwordHash)
     {
-        if (userId == Guid.Empty)
+        if (userId <= 0)
         {
             throw new Exception("Deve ser informado o usuario para autenticacao");
         }
@@ -24,7 +24,6 @@ public class UserAuth : BaseEntity
             throw new Exception("Deve ser informado o hash da senha");
         }
 
-        Id = Guid.NewGuid();
         UserId = userId;
         PasswordHash = passwordHash.Trim();
         Status = AuthUserStatus.Active;

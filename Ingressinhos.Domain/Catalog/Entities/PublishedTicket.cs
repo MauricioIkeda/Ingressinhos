@@ -6,8 +6,8 @@ namespace Ingressinhos.Domain.Catalog.Entities;
 
 public class PublishedTicket : BaseEntity
 {
-    public Guid TicketId { get; private set; }
-    public Guid? SeatId { get; private set; }
+    public long TicketId { get; private set; }
+    public long? SeatId { get; private set; }
     public SeatCategory Category { get; private set; }
     public SeatStatus SeatAvailabilityStatus { get; private set; }
     public Price UnitPrice { get; private set; }
@@ -19,16 +19,15 @@ public class PublishedTicket : BaseEntity
     {
     }
 
-    public Guid PublishedTicketId => Id;
+    public long PublishedTicketId => Id;
 
-    public PublishedTicket(Guid ticketId, Guid? seatId, SeatCategory category, decimal unitPrice)
+    public PublishedTicket(long ticketId, long? seatId, SeatCategory category, decimal unitPrice)
     {
-        if (ticketId == Guid.Empty)
+        if (ticketId <= 0)
         {
             throw new Exception("Deve ser informado o ingresso publicado");
         }
 
-        Id = Guid.NewGuid();
         TicketId = ticketId;
         SeatId = seatId;
         Category = category;

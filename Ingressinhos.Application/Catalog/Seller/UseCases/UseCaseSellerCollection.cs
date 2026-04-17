@@ -1,18 +1,15 @@
-﻿using Generic.Domain.Entities;
+﻿using Generic.Application.UseCases;
 using Generic.Infrastructure.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Ingressinhos.Application.Catalog.Dtos;
+using Ingressinhos.Application.Catalog.Interfaces;
+using Ingressinhos.Domain.Catalog.Entities;
 
-namespace Ingressinhos.Application.Catalog.UseCases
+namespace Ingressinhos.Application.Catalog.UseCases;
+
+public class UseCaseSellerCollection : UseCaseCrudCollection<Seller, SellerDto>, IUseCaseSellerCollection
 {
-    public class UseCaseSellerCollection //colocar interface depois
+    public UseCaseSellerCollection(IRepositorySession repositorySession, SellerUpdate update, SellerInclude sellerInclude)
+        : base( sellerInclude.Execute, update.Execute, new UseCaseGetOdata<Seller>(), new UseCaseGet<Seller>(), new UseCaseDelete<Seller>(), repositorySession)
     {
-        public ListMessages Messages { get; set; } = new ListMessages();
-        
-        public UseCaseSellerCollection(IRepositorySession repository, SellerUpdate update, SellerInclude sellerInclude, SellerGet sellerGet, SellerDelete sellerDelete)
-        {
-            Messages = new ListMessages();
-        }//colocar metodos depois
     }
 }

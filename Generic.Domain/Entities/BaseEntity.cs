@@ -1,8 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Generic.Domain.Entities;
 
 public class BaseEntity
 {
-    public Guid Id { get; init; }
-    public DateTime CreatedAt { get; init; }
-    public DateTime UpdatedAt { get; set; }
+    [Key]
+    public long Id { get; protected set; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

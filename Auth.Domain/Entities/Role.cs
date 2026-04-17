@@ -18,8 +18,6 @@ public class Role : BaseEntity
         {
             throw new Exception("Deve ser informada a descricao do perfil");
         }
-
-        Id = Guid.NewGuid();
         Name = name.Trim();
         Description = description.Trim();
     }

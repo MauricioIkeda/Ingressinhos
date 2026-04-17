@@ -5,7 +5,7 @@ namespace Ingressinhos.Domain.Catalog.Entities;
 
 public class Seat : BaseEntity
 {
-    public Guid LocationId { get; private set; }
+    public long LocationId { get; private set; }
     public string Code { get; private set; }
     public SeatCategory Category { get; private set; }
     public SeatStatus Status { get; private set; }
@@ -15,9 +15,9 @@ public class Seat : BaseEntity
         
     }
 
-    public Seat(Guid locationId, string code, SeatCategory category)
+    public Seat(long locationId, string code, SeatCategory category)
     {
-        if (locationId == Guid.Empty)
+        if (locationId <= 0)
         {
             throw new Exception("Deve ser informado o local do assento");
         }
@@ -27,7 +27,6 @@ public class Seat : BaseEntity
             throw new Exception("Deve ser informado o codigo do assento");
         }
 
-        Id = Guid.NewGuid();
         LocationId = locationId;
         Code = code.Trim().ToUpperInvariant();
         Category = category;

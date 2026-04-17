@@ -16,7 +16,6 @@ public abstract class User : BaseEntity
             throw new Exception("Deve ser informado o nome do usuario");
         }
 
-        Id = Guid.NewGuid();
         Name = name.Trim();
         Email = new Email(email);
     }

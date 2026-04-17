@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Generic.Application\Generic.Application.csproj" />
       <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />
       <ProjectReference Include="..\Ingressinhos.Domain\Ingressinhos.Domain.csproj" />
     </ItemGroup>

@@ -7,7 +7,7 @@ namespace Ingressinhos.Domain.Payment.Entities;
 
 public class PaymentTransaction : BaseEntity
 {
-    public Guid OrderId { get; private set; }
+    public long OrderId { get; private set; }
     public Price Amount { get; private set; }
     public string Method { get; private set; }
     public PaymentStatus Status { get; private set; }
@@ -21,9 +21,9 @@ public class PaymentTransaction : BaseEntity
         
     }
 
-    public PaymentTransaction(Guid orderId, decimal amount, string method)
+    public PaymentTransaction(long orderId, decimal amount, string method)
     {
-        if (orderId == Guid.Empty)
+        if (orderId <= 0)
         {
             throw new Exception("Deve ser informado o pedido do pagamento");
         }
@@ -33,7 +33,6 @@ public class PaymentTransaction : BaseEntity
             throw new Exception("Deve ser informado o metodo de pagamento");
         }
 
-        Id = Guid.NewGuid();
         OrderId = orderId;
         Amount = new Price(amount);
         Method = method.Trim();

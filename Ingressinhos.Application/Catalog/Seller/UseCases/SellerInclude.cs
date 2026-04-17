@@ -13,20 +13,24 @@ public class SellerInclude
         _repositorySession = repositorySession;
     }
 
-    public async Task ExecuteAsync(SellerDto seller)
+    public bool Execute(SellerDto seller)
     {
         if (seller is null)
         {
             throw new Exception("Deve ser informado o vendedor");
         }
 
+        var utcNow = DateTime.UtcNow;
+
         var sellerEntity = new Seller(seller.Name, seller.Email, seller.Cnpj, seller.TradingName)
         {
-            CreatedAt = DateTime.Now
+            CreatedAt = utcNow,
+            UpdatedAt = utcNow
         };
 
         var repository = _repositorySession.GetRepository();
-        await repository.IncludeAsync(sellerEntity);
-        await repository.FlushAsync();
+        repository.Include(sellerEntity);
+        repository.Flush().GetAwaiter().GetResult();
+        return true;
     }
 }
