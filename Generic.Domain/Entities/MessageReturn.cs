@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Generic.Domain.Entities
 {
@@ -8,6 +9,7 @@ namespace Generic.Domain.Entities
     {
         public string Message { get; set; }
         public bool Error { get; set; }
+        [JsonIgnore]
         public Exception Exception { get; set; }
 
         public MessageReturn() { }

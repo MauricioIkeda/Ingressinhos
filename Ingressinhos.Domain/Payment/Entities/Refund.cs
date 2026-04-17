@@ -6,7 +6,7 @@ namespace Ingressinhos.Domain.Payment.Entities;
 
 public class Refund : BaseEntity
 {
-    public Guid PaymentTransactionId { get; private set; }
+    public long PaymentTransactionId { get; private set; }
     public Price Amount { get; private set; }
     public string Reason { get; private set; }
     public RefundStatus Status { get; private set; }
@@ -19,9 +19,9 @@ public class Refund : BaseEntity
         
     }
 
-    public Refund(Guid paymentTransactionId, decimal amount, string reason)
+    public Refund(long paymentTransactionId, decimal amount, string reason)
     {
-        if (paymentTransactionId == Guid.Empty)
+        if (paymentTransactionId <= 0)
         {
             throw new Exception("Deve ser informado o pagamento do reembolso");
         }
@@ -31,7 +31,6 @@ public class Refund : BaseEntity
             throw new Exception("Deve ser informada a justificativa do reembolso");
         }
 
-        Id = Guid.NewGuid();
         PaymentTransactionId = paymentTransactionId;
         Amount = new Price(amount);
         Reason = reason.Trim();

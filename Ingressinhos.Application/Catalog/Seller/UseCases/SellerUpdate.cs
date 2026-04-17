@@ -13,7 +13,7 @@ public class SellerUpdate
         _repositorySession = repositorySession;
     }
 
-    public async Task ExecuteAsync(SellerDto seller)
+    public bool Execute(SellerDto seller)
     {
         if (seller is null)
         {
@@ -36,9 +36,11 @@ public class SellerUpdate
         sellerEntity.ChangeName(seller.Name);
         sellerEntity.ChangeEmail(seller.Email);
         sellerEntity.ChangeTradingName(seller.TradingName);
+        sellerEntity.UpdatedAt = DateTime.UtcNow;
 
         var repository = _repositorySession.GetRepository();
-        await repository.UpsertAsync(sellerEntity);
-        await repository.FlushAsync();
+        repository.Upsert(sellerEntity);
+        repository.Flush().GetAwaiter().GetResult();
+        return true;
     }
 }

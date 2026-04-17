@@ -6,7 +6,7 @@ namespace Ingressinhos.Domain.Catalog.Entities;
 
 public class Ticket : BaseEntity
 {
-    public Guid EventId { get; private set; }
+    public long EventId { get; private set; }
     public string Name { get; private set; }
     public Price BasePrice { get; private set; }
     public Price? PremiumPrice { get; private set; }
@@ -22,9 +22,9 @@ public class Ticket : BaseEntity
         
     }
     
-    public Ticket(Guid eventId, string name, decimal basePrice, decimal? premiumPrice, decimal? vipPrice, int totalQuantity, DateTime salesStartsAt, DateTime salesEndsAt)
+    public Ticket(long eventId, string name, decimal basePrice, decimal? premiumPrice, decimal? vipPrice, int totalQuantity, DateTime salesStartsAt, DateTime salesEndsAt)
     {
-        if (eventId == Guid.Empty)
+        if (eventId <= 0)
         {
             throw new Exception("Deve ser informado o evento do ingresso");
         }
@@ -44,7 +44,6 @@ public class Ticket : BaseEntity
             throw new Exception("O fim das vendas deve ser posterior ao inicio");
         }
 
-        Id = Guid.NewGuid();
         EventId = eventId;
         Name = name.Trim();
         BasePrice = new Price(basePrice);

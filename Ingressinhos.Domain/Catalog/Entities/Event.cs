@@ -6,7 +6,7 @@ public class Event : BaseEntity
 {
     public string Name { get; private set; }
     public DateTime StarTime { get; private set; }
-    public Guid LocationId { get; private set; }
+    public long LocationId { get; private set; }
     public bool HasSeats { get; private set; }
 
     protected Event()
@@ -14,7 +14,7 @@ public class Event : BaseEntity
         
     }
 
-    public Event(string name, DateTime startTime, Guid locationId, bool hasSeats = true)
+    public Event(string name, DateTime startTime, long locationId, bool hasSeats = true)
     {
         if (string.IsNullOrEmpty(name))
         {
@@ -26,7 +26,7 @@ public class Event : BaseEntity
             throw new Exception("Deve ser informado uma data valida para o evento");
         }
 
-        if (locationId == Guid.Empty)
+        if (locationId <= 0)
         {
             throw  new Exception("Deve ser informado uma localidade");
         }

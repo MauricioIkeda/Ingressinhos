@@ -6,8 +6,8 @@ namespace Ingressinhos.Domain.Sales.Entities;
 
 public class OrderItem : BaseEntity
 {
-    public Guid OrderId { get; private set; }
-    public Guid TicketId { get; private set; }
+    public long OrderId { get; private set; }
+    public long TicketId { get; private set; }
     public string TicketName { get; private set; }
     public int Quantity { get; private set; }
     public Price UnitPrice { get; private set; }
@@ -18,14 +18,14 @@ public class OrderItem : BaseEntity
         
     }
     
-    public OrderItem(Guid orderId, Guid ticketId, string ticketName, int quantity, decimal unitPrice)
+    public OrderItem(long orderId, long ticketId, string ticketName, int quantity, decimal unitPrice)
     {
-        if (orderId == Guid.Empty)
+        if (orderId <= 0)
         {
             throw new Exception("Deve ser informado o pedido do item");
         }
 
-        if (ticketId == Guid.Empty)
+        if (ticketId <= 0)
         {
             throw new Exception("Deve ser informado o ingresso do item");
         }
@@ -40,7 +40,6 @@ public class OrderItem : BaseEntity
             throw new Exception("A quantidade deve ser maior que zero");
         }
 
-        Id = Guid.NewGuid();
         OrderId = orderId;
         TicketId = ticketId;
         TicketName = ticketName.Trim();

@@ -6,9 +6,9 @@ namespace Ingressinhos.Domain.Sales.Entities;
 
 public class IssuedTicket : BaseEntity
 {
-    public Guid OrderItemId { get; private set; }
-    public Guid ClientId { get; private set; }
-    public Guid EventId { get; private set; }
+    public long OrderItemId { get; private set; }
+    public long ClientId { get; private set; }
+    public long EventId { get; private set; }
     public string AccessCode { get; private set; }
     public IssuedTicketStatus Status { get; private set; }
     public bool IsCheckedIn => Status == IssuedTicketStatus.CheckedIn;
@@ -21,19 +21,19 @@ public class IssuedTicket : BaseEntity
         
     }
 
-    public IssuedTicket(Guid orderItemId, Guid clientId, Guid eventId, string accessCode)
+    public IssuedTicket(long orderItemId, long clientId, long eventId, string accessCode)
     {
-        if (orderItemId == Guid.Empty)
+        if (orderItemId <= 0)
         {
             throw new Exception("Deve ser informado o item do pedido");
         }
 
-        if (clientId == Guid.Empty)
+        if (clientId <= 0)
         {
             throw new Exception("Deve ser informado o cliente");
         }
 
-        if (eventId == Guid.Empty)
+        if (eventId <= 0)
         {
             throw new Exception("Deve ser informado o evento");
         }
@@ -43,7 +43,6 @@ public class IssuedTicket : BaseEntity
             throw new Exception("Deve ser informado o codigo de acesso do ingresso");
         }
 
-        Id = Guid.NewGuid();
         OrderItemId = orderItemId;
         ClientId = clientId;
         EventId = eventId;

@@ -23,11 +23,16 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.HasSequence("UserSequence");
+
             modelBuilder.Entity("Generic.Domain.Entities.User", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint")
+                        .HasDefaultValueSql("nextval('\"UserSequence\"')");
+
+                    NpgsqlPropertyBuilderExtensions.UseSequence(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -55,9 +60,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Event", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -65,8 +72,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<bool>("HasSeats")
                         .HasColumnType("boolean");
 
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("LocationId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -84,9 +91,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Location", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -110,9 +119,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.PublishedTicket", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Category")
                         .HasColumnType("integer");
@@ -132,11 +143,11 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<int>("SeatAvailabilityStatus")
                         .HasColumnType("integer");
 
-                    b.Property<Guid?>("SeatId")
-                        .HasColumnType("uuid");
+                    b.Property<long?>("SeatId")
+                        .HasColumnType("bigint");
 
-                    b.Property<Guid>("TicketId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("TicketId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -157,9 +168,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Seat", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("Category")
                         .HasColumnType("integer");
@@ -170,8 +183,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("LocationId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -186,9 +199,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Ticket", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AvailableQuantity")
                         .HasColumnType("integer");
@@ -196,8 +211,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("EventId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Name")
                         .HasColumnType("text");
@@ -245,9 +260,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Payment.Entities.PaymentTransaction", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime?>("ApprovedAt")
                         .HasColumnType("timestamp with time zone");
@@ -261,8 +278,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<string>("Method")
                         .HasColumnType("text");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("RefusedAt")
                         .HasColumnType("timestamp with time zone");
@@ -290,9 +307,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Payment.Entities.Refund", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -300,8 +319,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("PaymentTransactionId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("PaymentTransactionId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Reason")
                         .HasColumnType("text");
@@ -332,9 +351,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.IssuedTicket", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<string>("AccessCode")
                         .HasColumnType("text");
@@ -345,20 +366,20 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<DateTime?>("CheckedInAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("ClientId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("EventId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("IssuedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("OrderItemId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("OrderItemId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -373,15 +394,17 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.Order", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime?>("CancelledAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("ClientId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -409,21 +432,23 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.OrderItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("OrderId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
-                    b.Property<Guid>("TicketId")
-                        .HasColumnType("uuid");
+                    b.Property<long>("TicketId")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("TicketName")
                         .HasColumnType("text");
