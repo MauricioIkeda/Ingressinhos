@@ -28,6 +28,26 @@ public class Location : BaseEntity
         TotalCapacity = totalCapacity;
         HasSeats = hasSeats;
     }
+    
+    public void ChangeName(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+        {
+            throw new Exception("Deve ser informado o nome do local");
+        }
+        
+        Name = name;
+    }
+
+    public void ChangeTotalCapacity(int totalCapacity)
+    {
+        if (totalCapacity <= 0)
+        {
+            throw new Exception("Deve ser informado uma capacidade valida");
+        }
+        
+        TotalCapacity = totalCapacity;
+    }
 
     public void ChangeSeatMode(bool hasSeats)
     {
