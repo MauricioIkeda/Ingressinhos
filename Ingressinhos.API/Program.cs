@@ -2,6 +2,7 @@ using Generic.Application.Interface;
 using Generic.Infrastructure.Interfaces;
 using Generic.Infrastructure.Repositories;
 using Ingressinhos.Application.Catalog.Dtos;
+using Ingressinhos.Application.Catalog.Location.UseCases;
 using Ingressinhos.Application.Catalog.UseCases;
 using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Infrastructure.Context;
@@ -28,6 +29,7 @@ builder.Services.AddScoped<IRepositorySession, RepositorySessionEF>();
 builder.Services.AddScoped<SellerInclude>();
 builder.Services.AddScoped<SellerUpdate>();
 builder.Services.AddScoped<IUseCaseCrudCollection<Seller, SellerDto>, UseCaseSellerCollection>();
+builder.Services.AddScoped<CreateLocationUseCase>();
 
 var app = builder.Build();
 
