@@ -22,18 +22,36 @@ public class TicketInclude
         }
 
         var utcNow = DateTime.UtcNow;
-        if (_repositorySession.GetRepositoryQuery().Return<Event>(ticket.EventId) == null)
+
+        var littleEvent = _repositorySession.GetRepositoryQuery().Return<Event>(ticket.EventId);
+        
+        if (littleEvent == null)
         {
-            throw new Exception("Evento não encontrado");
+            throw new Exception("Evento nï¿½o encontrado");
         }
+
+        var seller = _repositorySession.GetRepositoryQuery().Return<Seller>(ticket.SellerId);
+
+        if (seller != null)
+        {
+            throw new Exception("O vendedor deve ser informado!");
+        }
+
+        if (littleEvent.SellerId != seller.Id)
+        {
+            throw new Exception("O vendedor do ingresso deve ser dono do evento");
+        }
+        
+        Domain.Catalog.Entities.Location location =  _repositorySession.GetRepositoryQuery().Return<Domain.Catalog.Entities.Location>(littleEvent.LocationId);
 
         var ticketEntity = new Ticket(
             ticket.EventId,
+            ticket.SellerId,
             ticket.Name,
             ticket.BasePrice,
             ticket.PremiumPrice,
             ticket.VipPrice,
-            ticket.TotalQuantity,
+            location.TotalCapacity,
             ticket.SalesStartsAt,
             ticket.SalesEndsAt)
         {
