@@ -1,6 +1,7 @@
 ﻿using Generic.Api.Controllers;
 using Generic.Application.Interface;
 using Ingressinhos.Application.Catalog.Dtos;
+using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace Ingressinhos.API.Controllers.Catalog;
 [Route("api/sellers")]
 public class SellerController : ApiCrud<Seller, SellerDto>
 {
-    public SellerController(IUseCaseCrudCollection<Seller, SellerDto> useCaseCollection)
+    public SellerController(IUseCaseSellerCollection useCaseCollection)
         : base(useCaseCollection)
     {
     }

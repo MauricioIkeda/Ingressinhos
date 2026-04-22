@@ -12,11 +12,11 @@ public class CreateLocationUseCase
         _repositorySession = repositorySession;
     }
     
-    public Domain.Catalog.Entities.Location Execute(LocationDto locationDto)
+    public bool Execute(LocationDto locationDto)
     {
         if (locationDto == null)
         {
-            throw new Exception("Deve ser informado a localizacao");
+            throw new Exception("Deve ser informado a localização");
         }
 
         var locationEntity = new Domain.Catalog.Entities.Location(locationDto.Name, locationDto.TotalCapacity, locationDto.HasSeats)
@@ -28,6 +28,6 @@ public class CreateLocationUseCase
         var repository = _repositorySession.GetRepository();
         repository.Include(locationEntity);
         repository.Flush().GetAwaiter().GetResult();
-        return locationEntity;
+        return true;
     }
 }

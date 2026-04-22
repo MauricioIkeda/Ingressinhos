@@ -12,41 +12,42 @@ public class UpdateLocationUseCase
         _repositorySession = repositorySession;
     }
     
-    public Domain.Catalog.Entities.Location Execute(LocationUpdateDto locationUpdateDto)
+    public bool Execute(LocationDto locationDto)
     {
-        if (locationUpdateDto == null)
+        if (locationDto == null)
         {
             throw new Exception("Deve ser informado o que mudar");
         }
 
-        if (locationUpdateDto.Id <= 0)
+        if (locationDto.Id <= 0)
         {
-            throw new Exception("Deve ser informado qual Location mudar");
+            throw new Exception("Deve ser informado qual Localiza��o mudar");
         }
         
         var repositoryQuery = _repositorySession.GetRepositoryQuery();
-        var locationEntity = repositoryQuery.Return<Domain.Catalog.Entities.Location>(locationUpdateDto.Id);
+        var locationEntity = repositoryQuery.Return<Domain.Catalog.Entities.Location>(locationDto.Id);
 
         if (locationEntity == null)
         {
-            throw new Exception("Nao foi encontrado essa Localizacao");
+            throw new Exception("N�o foi encontrado essa Localiza��o");
         }
         
-        if (locationUpdateDto.Name != null)
+        if (locationDto.Name != locationEntity.Name)
         {
-            locationEntity.ChangeName(locationUpdateDto.Name);
+            locationEntity.ChangeName(locationDto.Name);
         }
 
-        if (locationUpdateDto.TotalCapacity != null)
+        if (locationDto.TotalCapacity != locationEntity.TotalCapacity)
         {
-            locationEntity.ChangeTotalCapacity(locationUpdateDto.TotalCapacity.Value);
+            locationEntity.ChangeTotalCapacity(locationDto.TotalCapacity);
         }
 
-        if (locationUpdateDto.HasSeats != null)
+        if (locationDto.HasSeats != locationEntity.HasSeats)
         {
-            locationEntity.ChangeSeatMode(locationUpdateDto.HasSeats.Value);
+            locationEntity.ChangeSeatMode(locationDto.HasSeats);
         }
         
-        return locationEntity;
+        _repositorySession.GetRepository().Merge(locationEntity);
+        return true;
     }
 }

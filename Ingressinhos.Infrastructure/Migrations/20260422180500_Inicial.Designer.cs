@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ingressinhos.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260417174054_InitialAppSchema")]
-    partial class InitialAppSchema
+    [Migration("20260422180500_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,19 +40,15 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "Email", "Generic.Domain.Entities.User.Email#Email", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<string>("Endereco")
-                                .HasColumnType("text");
-                        });
 
                     b.HasKey("Id");
 
@@ -72,6 +68,9 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<bool>("HasSeats")
                         .HasColumnType("boolean");
 
@@ -81,6 +80,9 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("text");
 
+                    b.Property<long>("SellerId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime>("StarTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -88,6 +90,10 @@ namespace Ingressinhos.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("SellerId");
 
                     b.ToTable("Events");
                 });
@@ -166,6 +172,10 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SeatId");
+
+                    b.HasIndex("TicketId");
+
                     b.ToTable("PublishedTickets");
                 });
 
@@ -197,6 +207,8 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LocationId");
+
                     b.ToTable("Seats");
                 });
 
@@ -225,6 +237,9 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.Property<DateTime>("SalesStartsAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("SellerId")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -257,6 +272,10 @@ namespace Ingressinhos.Infrastructure.Migrations
                         });
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("SellerId");
 
                     b.ToTable("Tickets");
                 });
@@ -305,6 +324,8 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrderId");
+
                     b.ToTable("PaymentTransactions");
                 });
 
@@ -349,6 +370,8 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("PaymentTransactionId");
+
                     b.ToTable("Refunds");
                 });
 
@@ -392,6 +415,12 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("OrderItemId");
+
                     b.ToTable("IssuedTickets");
                 });
 
@@ -429,6 +458,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
 
                     b.ToTable("Orders");
                 });
@@ -468,6 +499,10 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("TicketId");
+
                     b.ToTable("OrderItems");
                 });
 
@@ -502,6 +537,122 @@ namespace Ingressinhos.Infrastructure.Migrations
                         });
 
                     b.ToTable("Clients", (string)null);
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Event", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Location", null)
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Seller", null)
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.PublishedTicket", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Seat", null)
+                        .WithMany()
+                        .HasForeignKey("SeatId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Ticket", null)
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Seat", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Location", null)
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Ticket", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Event", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Seller", null)
+                        .WithMany()
+                        .HasForeignKey("SellerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Payment.Entities.PaymentTransaction", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Sales.Entities.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Payment.Entities.Refund", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Payment.Entities.PaymentTransaction", null)
+                        .WithMany()
+                        .HasForeignKey("PaymentTransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.IssuedTicket", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Sales.Entities.Client", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Event", null)
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ingressinhos.Domain.Sales.Entities.OrderItem", null)
+                        .WithMany()
+                        .HasForeignKey("OrderItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.Order", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Sales.Entities.Client", null)
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.OrderItem", b =>
+                {
+                    b.HasOne("Ingressinhos.Domain.Sales.Entities.Order", null)
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Ingressinhos.Domain.Catalog.Entities.Ticket", null)
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

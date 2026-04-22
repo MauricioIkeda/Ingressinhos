@@ -33,9 +33,13 @@ public class SellerUpdate
             throw new Exception("Vendedor nao encontrado");
         }
 
-        sellerEntity.ChangeName(seller.Name);
-        sellerEntity.ChangeEmail(seller.Email);
-        sellerEntity.ChangeTradingName(seller.TradingName);
+        if( seller.Name != sellerEntity.Name)
+            sellerEntity.ChangeName(seller.Name);
+        if( seller.Email != sellerEntity.Email.Endereco)
+            sellerEntity.ChangeEmail(seller.Email);
+        if( seller.Cnpj != sellerEntity.Cnpj.Numero)
+            sellerEntity.ChangeTradingName(seller.TradingName);
+
         sellerEntity.UpdatedAt = DateTime.UtcNow;
 
         var repository = _repositorySession.GetRepository();

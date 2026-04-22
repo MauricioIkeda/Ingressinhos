@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Ingressinhos.Application.Catalog.Interfaces
 {
-    internal interface IUseCaseSellerCollection : IUseCaseCrudCollection<Seller, SellerDto>
+    public interface IUseCaseSellerCollection : IUseCaseCrudCollection<Seller, SellerDto>
     {
     }
 }
