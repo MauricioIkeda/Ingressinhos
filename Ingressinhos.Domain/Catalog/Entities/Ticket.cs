@@ -23,7 +23,7 @@ public class Ticket : BaseEntity
         
     }
     
-    public Ticket(long eventId, string name, decimal basePrice, decimal? premiumPrice, decimal? vipPrice, int totalQuantity, DateTime salesStartsAt, DateTime salesEndsAt)
+    public Ticket(long eventId, long sellerId, string name, decimal basePrice, decimal? premiumPrice, decimal? vipPrice, int totalQuantity, DateTime salesStartsAt, DateTime salesEndsAt)
     {
         if (eventId <= 0)
         {
@@ -46,6 +46,7 @@ public class Ticket : BaseEntity
         }
 
         EventId = eventId;
+        SellerId = sellerId;
         Name = name.Trim();
         BasePrice = new Price(basePrice);
         PremiumPrice = premiumPrice.HasValue ? new Price(premiumPrice.Value) : null;
