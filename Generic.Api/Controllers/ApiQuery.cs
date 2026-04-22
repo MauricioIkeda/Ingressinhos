@@ -32,7 +32,7 @@ public abstract class ApiQuery<TEntity> : ControllerBase
         try
         {
             ResetMessages();
-            var result = _queryCollection.GetOdata(where);
+            var result = _queryCollection.GetOdata(where).ToList();
             return Ok(result);
         }
         catch

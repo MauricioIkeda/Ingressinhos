@@ -2,6 +2,7 @@ using Generic.Application.Interface;
 using Generic.Infrastructure.Interfaces;
 using Generic.Infrastructure.Repositories;
 using Ingressinhos.Application.Catalog.Dtos;
+using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Application.Catalog.Location.UseCases;
 using Ingressinhos.Application.Catalog.UseCases;
 using Ingressinhos.Domain.Catalog.Entities;
@@ -26,9 +27,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<DbContext>(provider => provider.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<IRepositorySession, RepositorySessionEF>();
+builder.Services.AddScoped<EventInclude>();
+builder.Services.AddScoped<EventUpdate>();
+builder.Services.AddScoped<IUseCaseEventCollection, UseCaseEventCollection>();
+
+builder.Services.AddScoped<CreateLocationUseCase>();
+builder.Services.AddScoped<UpdateLocationUseCase>();
+builder.Services.AddScoped<IUseCaseLocationCollection, UseCaseLocationCollection>();
+
+builder.Services.AddScoped<SeatInclude>();
+builder.Services.AddScoped<SeatUpdate>();
+builder.Services.AddScoped<IUseCaseSeatCollection, UseCaseSeatCollection>();
+
+builder.Services.AddScoped<TicketInclude>();
+builder.Services.AddScoped<TicketUpdate>();
+builder.Services.AddScoped<IUseCaseTicketCollection, UseCaseTicketCollection>();
+
 builder.Services.AddScoped<SellerInclude>();
 builder.Services.AddScoped<SellerUpdate>();
-builder.Services.AddScoped<IUseCaseCrudCollection<Seller, SellerDto>, UseCaseSellerCollection>();
+builder.Services.AddScoped<IUseCaseSellerCollection, UseCaseSellerCollection>();
 builder.Services.AddScoped<CreateLocationUseCase>();
 
 var app = builder.Build();

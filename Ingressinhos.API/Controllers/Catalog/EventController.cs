@@ -1,16 +1,16 @@
 using Generic.Api.Controllers;
+using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Catalog.Interfaces;
-using Ingressinhos.Application.Catalog.Location.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ingressinhos.API.Controllers.Catalog;
 
 [ApiController]
-[Route("api/locations")]
-public class LocationController : ApiCrud<Location, LocationDto>
+[Route("api/events")]
+public class EventController : ApiCrud<Event, EventDto>
 {
-    public LocationController(IUseCaseLocationCollection useCaseCollection)
+    public EventController(IUseCaseEventCollection useCaseCollection)
         : base(useCaseCollection)
     {
     }
@@ -28,13 +28,13 @@ public class LocationController : ApiCrud<Location, LocationDto>
     }
 
     [HttpPost]
-    public IActionResult Include([FromBody] LocationDto command)
+    public IActionResult Include([FromBody] EventDto command)
     {
         return IncludeResult(command);
     }
 
     [HttpPut]
-    public IActionResult Update([FromBody] LocationDto command)
+    public IActionResult Update([FromBody] EventDto command)
     {
         return UpdateResult(command);
     }
