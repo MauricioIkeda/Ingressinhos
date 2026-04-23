@@ -2,6 +2,7 @@ using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Catalog.Enums;
+using LocationDomain = Ingressinhos.Domain.Catalog.Entities.Location;
 
 namespace Ingressinhos.Application.Catalog.UseCases;
 
@@ -26,12 +27,12 @@ public class SeatUpdate
             throw new Exception("Deve ser informado o identificador do assento");
         }
 
-        var repositoryQuery = _repositorySession.GetRepositoryQuery();
-        var seatEntity = repositoryQuery.Return<Seat>(seat.SeatId);
+        IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
+        Seat seatEntity = repositoryQuery.Return<Seat>(seat.SeatId);
 
         if (seatEntity is null)
         {
-            throw new Exception("Assento nao encontrado");
+            throw new Exception("Assento não encontrado");
         }
 
         if (seat.Category != seatEntity.Category)
@@ -41,6 +42,15 @@ public class SeatUpdate
 
         if (seat.Status != seatEntity.Status)
         {
+            if(seat.Status != SeatStatus.Blocked)
+            {
+                LocationDomain location = repositoryQuery.Return<LocationDomain>(seatEntity.LocationId);
+                if(location.HasSeats == false)
+                {
+                    throw new Exception("Não é possível alterar o status do assento, pois a localização não possui assentos disponiveis");
+                }
+
+            }
             ApplySeatStatus(seatEntity, seat.Status);
         }
 

@@ -41,11 +41,6 @@ public class TicketUpdate
             ticketEntity.ChangePrices(ticket.BasePrice, ticket.PremiumPrice, ticket.VipPrice);
         }
 
-        if (ticket.TotalQuantity > ticketEntity.TotalQuantity)
-        {
-            ticketEntity.AddCapacity(ticket.TotalQuantity - ticketEntity.TotalQuantity);
-        }
-
         if (ticket.IsActive && ticketEntity.Status == CatalogTicketStatus.Inactive)
         {
             ticketEntity.Enable();

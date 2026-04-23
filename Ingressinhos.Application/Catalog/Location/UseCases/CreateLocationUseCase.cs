@@ -1,5 +1,6 @@
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Location.Dtos;
+using LocationDomain = Ingressinhos.Domain.Catalog.Entities.Location;
 
 namespace Ingressinhos.Application.Catalog.Location.UseCases;
 
@@ -19,7 +20,7 @@ public class CreateLocationUseCase
             throw new Exception("Deve ser informado a localização");
         }
 
-        var locationEntity = new Domain.Catalog.Entities.Location(locationDto.Name, locationDto.TotalCapacity, locationDto.HasSeats)
+        var locationEntity = new LocationDomain(locationDto.Name, locationDto.TotalCapacity, locationDto.HasSeats)
         {
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow

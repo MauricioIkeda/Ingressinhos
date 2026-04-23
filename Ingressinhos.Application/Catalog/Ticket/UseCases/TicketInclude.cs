@@ -2,7 +2,7 @@ using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Catalog.Enums;
-
+using LocationDoman = Ingressinhos.Domain.Catalog.Entities.Location;
 namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class TicketInclude
@@ -22,17 +22,18 @@ public class TicketInclude
         }
 
         var utcNow = DateTime.UtcNow;
+        IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
 
-        var littleEvent = _repositorySession.GetRepositoryQuery().Return<Event>(ticket.EventId);
+        var littleEvent = repositoryQuery.Return<Event>(ticket.EventId);
         
         if (littleEvent == null)
         {
-            throw new Exception("Evento n�o encontrado");
+            throw new Exception("Evento não encontrado");
         }
 
-        var seller = _repositorySession.GetRepositoryQuery().Return<Seller>(ticket.SellerId);
+        Seller seller = repositoryQuery.Return<Seller>(ticket.SellerId);
 
-        if (seller != null)
+        if (seller == null)
         {
             throw new Exception("O vendedor deve ser informado!");
         }
@@ -42,7 +43,11 @@ public class TicketInclude
             throw new Exception("O vendedor do ingresso deve ser dono do evento");
         }
         
-        Domain.Catalog.Entities.Location location =  _repositorySession.GetRepositoryQuery().Return<Domain.Catalog.Entities.Location>(littleEvent.LocationId);
+        LocationDoman location = repositoryQuery.Return<LocationDoman>(littleEvent.LocationId);
+        if (location is null)
+        {
+            throw new Exception("Local do evento nao encontrado");
+        }
 
         var ticketEntity = new Ticket(
             ticket.EventId,

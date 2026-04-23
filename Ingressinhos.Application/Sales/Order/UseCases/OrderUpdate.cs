@@ -45,7 +45,7 @@ public class OrderUpdate
                     orderEntity.Cancel();
                     break;
                 default:
-                    throw new Exception("Nao eh possivel retornar o pedido para pendente");
+                    throw new Exception("Não é possivel retornar o pedido para pendente");
             }
         }
 

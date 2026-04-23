@@ -2,6 +2,7 @@ using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Catalog.Enums;
+using LocationDomain = Ingressinhos.Domain.Catalog.Entities.Location;
 
 namespace Ingressinhos.Application.Catalog.UseCases;
 
@@ -22,6 +23,24 @@ public class SeatInclude
         }
 
         var utcNow = DateTime.UtcNow;
+
+        IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
+        LocationDomain location = repositoryQuery.Return<LocationDomain>(seat.LocationId);
+        if (location is null)
+        {
+            throw new Exception("Local não encontrado");
+        }
+
+        if (!location.HasSeats)
+        {
+            throw new Exception("O local informado não possui assentos");
+        }
+
+        var existingSeat = repositoryQuery.Count<Seat>(s => s.LocationId == seat.LocationId && s.Code == seat.Code) > 0;
+        if (existingSeat)
+        {
+            throw new Exception("Já existe um assento com o mesmo código neste local");
+        }
 
         var seatEntity = new Seat(seat.LocationId, seat.Code, seat.Category)
         {

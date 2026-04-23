@@ -21,11 +21,6 @@ public class EventInclude
             throw new Exception("Deve ser informado o evento");
         }
 
-        if (eventDto.EndTime <= eventDto.StartTime)
-        {
-            throw new Exception("A data de fim deve ser maior que a data de inicio");
-        }
-
         IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
 
         if(repositoryQuery.Return<LocationDomain>(eventDto.LocationId) is null)
