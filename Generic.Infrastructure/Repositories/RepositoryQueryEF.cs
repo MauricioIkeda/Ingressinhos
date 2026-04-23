@@ -29,6 +29,11 @@ public class RepositoryQueryEF : IRepositoryQuery
         return _context.Set<T>().Where(where);
     }
 
+    public int Count<T>(Expression<Func<T, bool>> where) where T : BaseEntity
+    {
+        return _context.Set<T>().Count(where);
+    }
+
     public Task<T> ReturnAsync<T>(long id) where T : BaseEntity
     {
         return _context.Set<T>().FirstOrDefaultAsync(entity => entity.Id == id);

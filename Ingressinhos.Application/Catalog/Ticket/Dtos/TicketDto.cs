@@ -3,8 +3,8 @@ namespace Ingressinhos.Application.Catalog.Dtos;
 public class TicketDto
 {
     public long TicketId { get; set; }
-    public long SellerId { get; set; }
-    public long EventId { get; set; }
+    public long SellerId { get; set; }  // Apenas no inclui, nunca permitir editar
+    public long EventId { get; set; } // Apenas no inclui, nunca permitir editar
     public string Name { get; set; }
     public decimal BasePrice { get; set; }
     public decimal? PremiumPrice { get; set; }
