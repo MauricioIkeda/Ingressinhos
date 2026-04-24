@@ -27,8 +27,8 @@ public class UpdateLocationUseCase
             throw new Exception("Deve ser informado qual Localização mudar");
         }
         
-        var repositoryQuery = _repositorySession.GetRepositoryQuery();
-        var locationEntity = repositoryQuery.Return<LocationDomain>(locationDto.Id);
+        IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
+        LocationDomain locationEntity = repositoryQuery.Return<LocationDomain>(locationDto.Id);
 
         if (locationEntity == null)
         {

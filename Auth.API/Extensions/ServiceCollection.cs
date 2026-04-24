@@ -1,0 +1,37 @@
+﻿using Auth.Application.Authorization.UserAccess.Interfaces;
+using Auth.Application.Authorization.UserAccess.UseCases;
+using Auth.Infrastructure.Context;
+using Generic.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+
+namespace Auth.API.Extensions;
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddAuthServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddAuthDatabase(configuration);
+        services.AddAuthApplicationUseCases();
+        return services;
+    }
+
+    public static IServiceCollection AddAuthDatabase(this IServiceCollection services, IConfiguration configuration)
+    {
+        var authConnectionString = configuration.GetConnectionString("AuthConnection")
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'AuthConnection' nao foi configurada.");
+
+        services.AddDbContext<AuthDbContext>(options =>
+            options.UseNpgsql(authConnectionString));
+
+        return services;
+    }
+
+    public static IServiceCollection AddAuthApplicationUseCases(this IServiceCollection services)
+    {
+        //criar para criar usuario, alterar senha, desativar usuário, etc
+        services.AddScoped<IUseCaseUserAccessQuery, UseCaseUserAccessQuery>(); // 
+
+        return services;
+    }
+}
