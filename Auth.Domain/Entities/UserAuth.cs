@@ -1,23 +1,26 @@
-using Generic.Domain.Entities;
 using Auth.Domain.Enums;
+using Generic.Domain.Entities;
 
-namespace Ingressinhos.Domain.Auth.Entities;
+namespace Auth.Domain.Entities;
 
 public class UserAuth : BaseEntity
 {
     public long UserId { get; private set; }
     public string PasswordHash { get; private set; }
-    public AuthUserStatus Status { get; private set; }
-    public bool IsActive => Status == AuthUserStatus.Active;
+    public bool Active { get; private set; } = true;
+    public RoleUser Role { get; private set; } = new RoleUser();
     public DateTime CreatedAtAuth { get; private set; }
     public DateTime? LastPasswordChangedAt { get; private set; }
+    public string RefreshToken { get; private set; }
+    public DateTime TokenIssuedAt { get; private set; }
+
+    protected UserAuth()
+    {
+    }
 
     public UserAuth(long userId, string passwordHash)
     {
-        if (userId <= 0)
-        {
-            throw new Exception("Deve ser informado o usuario para autenticacao");
-        }
+        ValidateUser(userId);
 
         if (string.IsNullOrWhiteSpace(passwordHash))
         {
@@ -25,9 +28,14 @@ public class UserAuth : BaseEntity
         }
 
         UserId = userId;
-        PasswordHash = passwordHash.Trim();
-        Status = AuthUserStatus.Active;
+        PasswordHash = passwordHash;
         CreatedAtAuth = DateTime.UtcNow;
+    }
+
+    public void ChangeUser(long userId)
+    {
+        ValidateUser(userId);
+        UserId = userId;
     }
 
     public void ChangePassword(string newPasswordHash)
@@ -43,11 +51,40 @@ public class UserAuth : BaseEntity
 
     public void Deactivate()
     {
-        Status = AuthUserStatus.Inactive;
+        Active = false;
     }
 
     public void Activate()
     {
-        Status = AuthUserStatus.Active;
+        Active = true;
+    }
+
+    private static void ValidateUser(long userId)
+    {
+        if (userId <= 0)
+        {
+            throw new Exception("Deve ser informado o identificador do usuario para autenticacao");
+        }
+    }
+
+    public void SetRefreshToken(string refreshToken)
+    {
+        RefreshToken = refreshToken;
+        TokenIssuedAt = DateTime.UtcNow;
+    }
+
+    public void ClearRefreshToken()
+    {
+        RefreshToken = string.Empty;
+        TokenIssuedAt = DateTime.MinValue;
+    }
+
+    public bool IsRefreshTokenValid(string refreshToken)
+    {
+        if (string.IsNullOrEmpty(RefreshToken)) return false;
+        if (RefreshToken != refreshToken) return false;
+
+        var expirationDate = TokenIssuedAt.AddDays(7);
+        return DateTime.UtcNow < expirationDate;
     }
 }

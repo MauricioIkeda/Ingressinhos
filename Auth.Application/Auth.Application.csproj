@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Auth.Domain\Auth.Domain.csproj" />
+	  <ProjectReference Include="..\Generic.Application\Generic.Application.csproj" />
+	  <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />
+	</ItemGroup>
+
+
+</Project>
