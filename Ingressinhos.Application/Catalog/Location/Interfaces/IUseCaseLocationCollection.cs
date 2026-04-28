@@ -1,4 +1,4 @@
-using Generic.Application.Interface;
+using Generic.Application.Crud.Interface;
 using Ingressinhos.Application.Catalog.Location.Dtos;
 using DomainLocation = Ingressinhos.Domain.Catalog.Entities.Location;
 

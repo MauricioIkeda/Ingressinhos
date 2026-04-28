@@ -12,7 +12,7 @@ public class Client : User
         
     }
 
-    public Client(string name, string email, string cpf) : base(name, email)
+    public Client(string name, string email, string cpf, string userId) : base(name, email, userId)
     {
         Cpf = new CPF(cpf);
     }

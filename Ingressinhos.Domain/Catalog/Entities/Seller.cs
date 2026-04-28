@@ -13,7 +13,7 @@ public class Seller : User
         
     }
 
-    public Seller(string name, string email, string cnpj, string tradingName) : base(name, email)
+    public Seller(string name, string email, string cnpj, string tradingName, string userId) : base(name, email, userId)
     {
         Cnpj = new CNPJ(cnpj);
 

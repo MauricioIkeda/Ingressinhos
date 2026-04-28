@@ -1,7 +1,7 @@
 ﻿using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 
-namespace Generic.Application.UseCases;
+namespace Generic.Application.Crud.UseCases;
 
 public class UseCaseDelete<TEntity>
     where TEntity : BaseEntity

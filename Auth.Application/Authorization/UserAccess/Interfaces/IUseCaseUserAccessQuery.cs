@@ -4,5 +4,5 @@ namespace Auth.Application.Authorization.UserAccess.Interfaces;
 
 public interface IUseCaseUserAccessQuery
 {
-    UserAccessDto Execute(long userId);
+    UserAccessDto Execute(string userId);
 }

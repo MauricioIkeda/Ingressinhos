@@ -1,3 +1,4 @@
+using Generic.Application.Utils.Interface;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Dtos;
 using ClientDomain = Ingressinhos.Domain.Sales.Entities.Client;
@@ -7,10 +8,12 @@ namespace Ingressinhos.Application.Sales.UseCases;
 public class ClientInclude
 {
     private readonly IRepositorySession _repositorySession;
+    private readonly IRequestAuth _requestAuth;
 
-    public ClientInclude(IRepositorySession repositorySession)
+    public ClientInclude(IRepositorySession repositorySession, IRequestAuth requestAuth)
     {
         _repositorySession = repositorySession;
+        _requestAuth = requestAuth;
     }
 
     public bool Execute(ClientDto clientDto)
@@ -22,7 +25,10 @@ public class ClientInclude
         
         var utcNow = DateTime.UtcNow;
 
-        var clientEntity = new ClientDomain(clientDto.Name, clientDto.Email, clientDto.Cpf)
+        string userId = _requestAuth.CreateUser(clientDto.Name, clientDto.Email, clientDto.Password, 2)
+            .GetAwaiter().GetResult();
+
+        var clientEntity = new ClientDomain(clientDto.Name, clientDto.Email, clientDto.Cpf, userId)
         {
             CreatedAt = utcNow,
             UpdatedAt = utcNow

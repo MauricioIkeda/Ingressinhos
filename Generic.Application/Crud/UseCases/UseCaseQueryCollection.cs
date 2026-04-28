@@ -1,9 +1,9 @@
-using Generic.Application.Interface;
+using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using System.Linq.Expressions;
 
-namespace Generic.Application.UseCases;
+namespace Generic.Application.Crud.UseCases;
 
 public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
     where TEntity : BaseEntity

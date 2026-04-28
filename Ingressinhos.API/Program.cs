@@ -1,11 +1,11 @@
-using Generic.Application.Interface;
+using Generic.Api.Extensions;
+using Generic.Application.Utils.Interface;
+using Generic.Application.Utils.UseCase;
 using Generic.Infrastructure.Interfaces;
 using Generic.Infrastructure.Repositories;
-using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Application.Catalog.Location.UseCases;
 using Ingressinhos.Application.Catalog.UseCases;
-using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -48,6 +48,19 @@ builder.Services.AddScoped<SellerUpdate>();
 builder.Services.AddScoped<IUseCaseSellerCollection, UseCaseSellerCollection>();
 builder.Services.AddScoped<CreateLocationUseCase>();
 
+var authApiBaseUrl = builder.Configuration["AuthApi:BaseUrl"];
+if (string.IsNullOrWhiteSpace(authApiBaseUrl))
+{
+    throw new InvalidOperationException("AuthApi:BaseUrl não foi configurado. Ex.: http://localhost:5254");
+}
+
+builder.Services.AddHttpClient<IRequestAuth, RequestAuth>(client =>
+{
+    client.BaseAddress = new Uri(authApiBaseUrl);
+});
+
+builder.Services.AddAuthSecurity<object>(builder.Configuration);
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -61,6 +74,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
