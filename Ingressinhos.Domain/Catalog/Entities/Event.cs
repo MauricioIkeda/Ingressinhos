@@ -6,7 +6,7 @@ public class Event : BaseEntity
 {
     public long SellerId { get; private set; }
     public string Name { get; private set; }
-    public DateTime StarTime { get; private set; }
+    public DateTime StartTime { get; private set; }
     public DateTime EndTime { get; private set; }
     public long LocationId { get; private set; }
     public bool HasSeats { get; private set; }
@@ -16,7 +16,7 @@ public class Event : BaseEntity
         
     }
 
-    public Event(string name, DateTime startTime, DateTime endTime, long locationId, bool hasSeats = true)
+    public Event(long sellerId, string name, DateTime startTime, DateTime endTime, long locationId, bool hasSeats = true)
     {
         if (string.IsNullOrEmpty(name))
         {
@@ -30,16 +30,22 @@ public class Event : BaseEntity
 
         if (endTime <= startTime)
         {
-            throw new Exception("O evento deve acabar depois de começar");
+            throw new Exception("O evento deve acabar depois de comeï¿½ar");
         }
 
         if (locationId <= 0)
         {
             throw  new Exception("Deve ser informado uma localidade");
         }
+
+        if (sellerId <= 0)
+        {
+            throw  new Exception("Deve ser informado um vendedor valido");
+        }
         
+        SellerId = sellerId;
         Name = name;
-        StarTime = startTime;
+        StartTime = startTime;
         EndTime = endTime;
         LocationId = locationId;
         HasSeats = hasSeats;
@@ -74,10 +80,10 @@ public class Event : BaseEntity
 
         if (novaDataHoraFim <= novaDataHoraInicio)
         {
-            throw new Exception("O evento deve acabar depois de começar");
+            throw new Exception("O evento deve acabar depois de comeï¿½ar");
         }
         
-        StarTime = novaDataHoraInicio;
+        StartTime = novaDataHoraInicio;
         EndTime = novaDataHoraFim;
     }
 
