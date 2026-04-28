@@ -10,6 +10,10 @@ public static class AuthSecurityExtensions
     {
         // Fazer com JwtBearer
         var secretKey = configuration.GetSection("AppSettings")["SecretKey"];  // Não esquecer de configurar isso no appsettings.json ou nas variáveis de ambiente
+        if (string.IsNullOrWhiteSpace(secretKey))
+        {
+            throw new InvalidOperationException("AppSettings:SecretKey não foi configurada.");
+        }
         var key = Encoding.ASCII.GetBytes(secretKey!);
 
         services.AddAuthentication(options =>
@@ -25,8 +29,11 @@ public static class AuthSecurityExtensions
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuer = false,
-                ValidateAudience = false,
+                    ValidateIssuer = configuration["AppSettings:Issuer"] != null,
+                    ValidIssuer = configuration["AppSettings:Issuer"],
+
+                    ValidateAudience = configuration["AppSettings:Audience"] != null,
+                    ValidAudience = configuration["AppSettings:Audience"],
                 ClockSkew = TimeSpan.Zero
             };
         });

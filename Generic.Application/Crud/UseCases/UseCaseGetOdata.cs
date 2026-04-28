@@ -2,7 +2,7 @@
 using Generic.Infrastructure.Interfaces;
 using System.Linq.Expressions;
 
-namespace Generic.Application.UseCases;
+namespace Generic.Application.Crud.UseCases;
 
 public class UseCaseGetOdata<TEntity>
     where TEntity : BaseEntity

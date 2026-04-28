@@ -1,6 +1,6 @@
 using Generic.Domain.Entities;
 
-namespace Generic.Application.Interface;
+namespace Generic.Application.Crud.Interface;
 
 public interface IUseCaseCrudCollection<TEntity, in TCommand> : IUseCaseQueryCollection<TEntity>
     where TEntity : BaseEntity

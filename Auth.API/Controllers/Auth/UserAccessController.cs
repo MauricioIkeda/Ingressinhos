@@ -14,8 +14,8 @@ public class UserAccessController : ControllerBase
         _useCaseUserAccessQuery = useCaseUserAccessQuery;
     }
 
-    [HttpGet("{userId:long}/access")] // Precisa fazer uma forma bem mais complexa de pegar o userId, no momento basicamente não tem segurança
-    public IActionResult GetAccess(long userId)
+    [HttpGet("{userId}/access")]
+    public IActionResult GetAccess(string userId)
     {
         try
         {

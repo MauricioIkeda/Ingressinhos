@@ -1,6 +1,9 @@
 ﻿using Auth.Application.Authorization.UserAccess.Interfaces;
 using Auth.Application.Authorization.UserAccess.UseCases;
+using Auth.Application.Utils.Interface;
+using Auth.Application.Utils.Services;
 using Auth.Infrastructure.Context;
+using Generic.Infrastructure.Interfaces;
 using Generic.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +27,9 @@ public static class ServiceCollectionExtensions
         services.AddDbContext<AuthDbContext>(options =>
             options.UseNpgsql(authConnectionString));
 
+        services.AddScoped<DbContext>(sp => sp.GetRequiredService<AuthDbContext>());
+        services.AddScoped<IRepositorySession, RepositorySessionEF>();
+
         return services;
     }
 
@@ -31,6 +37,16 @@ public static class ServiceCollectionExtensions
     {
         //criar para criar usuario, alterar senha, desativar usuário, etc
         services.AddScoped<IUseCaseUserAccessQuery, UseCaseUserAccessQuery>(); // 
+        services.AddScoped<IToken>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+
+            return new Token(
+                config["AppSettings:SecretKey"],
+                config["AppSettings:Issuer"],
+                config["AppSettings:Audience"]
+            );
+        });
 
         return services;
     }

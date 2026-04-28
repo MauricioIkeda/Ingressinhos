@@ -1,7 +1,7 @@
 using Generic.Domain.Entities;
 using System.Linq.Expressions;
 
-namespace Generic.Application.Interface;
+namespace Generic.Application.Crud.Interface;
 
 public interface IUseCaseQueryCollection<TEntity>
     where TEntity : BaseEntity

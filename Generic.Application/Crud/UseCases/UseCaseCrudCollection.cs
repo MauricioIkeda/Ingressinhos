@@ -1,8 +1,8 @@
-using Generic.Application.Interface;
+using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 
-namespace Generic.Application.UseCases;
+namespace Generic.Application.Crud.UseCases;
 
 public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCollection<TEntity>, IUseCaseCrudCollection<TEntity, TCommand>
     where TEntity : BaseEntity

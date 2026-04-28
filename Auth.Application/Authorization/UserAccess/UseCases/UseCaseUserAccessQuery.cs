@@ -15,16 +15,16 @@ public class UseCaseUserAccessQuery : IUseCaseUserAccessQuery
         _repositorySession = repositorySession;
     }
 
-    public UserAccessDto Execute(long userId)
+    public UserAccessDto Execute(string userId)
     {
-        if (userId <= 0)
-            throw new ArgumentException("Deve ser informado um identificador válido");
+        if (string.IsNullOrEmpty(userId))
+            throw new ArgumentException("Deve ser informado um identificador");
 
         UserAuth userAuth = _repositorySession.GetRepositoryQuery()
             .Query<UserAuth>(u => u.UserId == userId && u.Active).FirstOrDefault();
 
         if (userAuth == null)
-            throw new UnauthorizedAccessException("Nenhum usuário ativo encontrado");
+            throw new UnauthorizedAccessException("Nenhum usuï¿½rio ativo encontrado");
 
         return new UserAccessDto
         {

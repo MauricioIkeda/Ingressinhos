@@ -1,4 +1,4 @@
-using Generic.Application.UseCases;
+using Generic.Application.Crud.UseCases;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Catalog.Interfaces;

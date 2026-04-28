@@ -1,4 +1,4 @@
-using Generic.Application.Interface;
+using Generic.Application.Crud.Interface;
 using Ingressinhos.Application.Sales.Dtos;
 using IssuedTicketDomain = Ingressinhos.Domain.Sales.Entities.IssuedTicket;
 

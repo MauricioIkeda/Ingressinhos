@@ -1,4 +1,4 @@
-﻿using Generic.Application.Interface;
+﻿using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System;

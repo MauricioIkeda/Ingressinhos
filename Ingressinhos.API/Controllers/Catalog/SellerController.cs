@@ -1,5 +1,4 @@
 ﻿using Generic.Api.Controllers;
-using Generic.Application.Interface;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
