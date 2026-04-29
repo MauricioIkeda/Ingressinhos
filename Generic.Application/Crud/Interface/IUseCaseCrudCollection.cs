@@ -5,7 +5,7 @@ namespace Generic.Application.Crud.Interface;
 public interface IUseCaseCrudCollection<TEntity, in TCommand> : IUseCaseQueryCollection<TEntity>
     where TEntity : BaseEntity
 {
-    bool Include(TCommand command);
-    bool Update(TCommand command);
-    bool Delete(long id);
+    OperationResult Include(TCommand command);
+    OperationResult Update(TCommand command);
+    OperationResult Delete(long id);
 }

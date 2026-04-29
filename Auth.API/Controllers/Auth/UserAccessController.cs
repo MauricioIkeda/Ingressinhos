@@ -18,11 +18,11 @@ public class UserAccessController : ControllerBase
     public IActionResult GetAccess(string userId)
     {
         var result = _useCaseUserAccessQuery.Execute(userId);
-        if (result is null)
+        if (!result.Success)
         {
-            return BadRequest(_useCaseUserAccessQuery.Messages);
+            return StatusCode(result.StatusCode, result.Errors);
         }
 
-        return Ok(result);
+        return StatusCode(result.StatusCode, result.Data);
     }
 }

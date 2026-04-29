@@ -7,26 +7,20 @@ namespace Generic.Application.Crud.UseCases;
 public class UseCaseGet<TEntity> : IUseCaseGet<TEntity>
     where TEntity : BaseEntity
 {
-    public ListMessages Messages { get; } = new();
-
-    public TEntity Execute(long entityId, IRepositoryQuery repositoryQuery)
+    public OperationResult<TEntity> Execute(long entityId, IRepositoryQuery repositoryQuery)
     {
-        Messages.Clear();
-
         if (entityId <= 0)
         {
-            Messages.Add("Deve ser informado o identificador", error: true);
-            return null;
+            return OperationResult<TEntity>.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador."));
         }
 
         var entity = repositoryQuery.Return<TEntity>(entityId);
 
         if (entity is null)
         {
-            Messages.Add("Nada foi encontrado", error: true);
-            return null;
+            return OperationResult<TEntity>.NotFound(new MensagemErro("Id", "Nada foi encontrado."));
         }
 
-        return entity;
+        return OperationResult<TEntity>.Ok(entity);
     }
 }

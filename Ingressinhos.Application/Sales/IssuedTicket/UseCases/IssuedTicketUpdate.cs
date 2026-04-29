@@ -9,8 +9,6 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public IssuedTicketUpdate(IRepositorySession repositorySession)
@@ -18,20 +16,16 @@ public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(IssuedTicketDto issuedTicketDto)
+    public OperationResult Execute(IssuedTicketDto issuedTicketDto)
     {
-        Messages.Clear();
-
         if (issuedTicketDto is null)
         {
-            Messages.Add("Deve ser informado o ingresso emitido", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("IssuedTicket", "Deve ser informado o ingresso emitido."));
         }
 
         if (issuedTicketDto.IssuedTicketId <= 0)
         {
-            Messages.Add("Deve ser informado o identificador do ingresso emitido", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador do ingresso emitido."));
         }
 
         try
@@ -41,8 +35,7 @@ public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
 
             if (issuedTicketEntity is null)
             {
-                Messages.Add("Ingresso emitido nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("Id", "Ingresso emitido nao encontrado."));
             }
 
             if (issuedTicketDto.OrderItemId != issuedTicketEntity.OrderItemId ||
@@ -50,8 +43,7 @@ public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
                 issuedTicketDto.EventId != issuedTicketEntity.EventId ||
                 issuedTicketDto.AccessCode != issuedTicketEntity.AccessCode)
             {
-                Messages.Add("Nao eh permitido alterar os dados base do ingresso emitido", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("IssuedTicket", "Nao eh permitido alterar os dados base do ingresso emitido."));
             }
 
             if (issuedTicketDto.Status != issuedTicketEntity.Status)
@@ -65,8 +57,7 @@ public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
                         issuedTicketEntity.Cancel();
                         break;
                     default:
-                        Messages.Add("Nao eh possivel retornar o ingresso ao status emitido", error: true);
-                        return false;
+                        return OperationResult.UnprocessableEntity(new MensagemErro("Status", "Nao eh possivel retornar o ingresso ao status emitido."));
                 }
             }
 
@@ -75,12 +66,11 @@ public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
             var repository = _repositorySession.GetRepository();
             repository.Upsert(issuedTicketEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

@@ -7,28 +7,22 @@ namespace Generic.Application.Crud.UseCases;
 public class UseCaseDelete<TEntity> : IUseCaseDelete<TEntity>
     where TEntity : BaseEntity
 {
-    public ListMessages Messages { get; } = new();
-
-    public virtual bool Execute(long entityId, IRepositorySession repositorySession)
+    public virtual OperationResult Execute(long entityId, IRepositorySession repositorySession)
     {
-        Messages.Clear();
-
         if (entityId <= 0)
         {
-            Messages.Add("Deve ser informado o identificador", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador."));
         }
 
         var entity = repositorySession.GetRepositoryQuery().Return<TEntity>(entityId);
         if (entity == null)
         {
-            Messages.Add("Nada encontrado", error: true);
-            return false;
+            return OperationResult.NotFound(new MensagemErro("Id", "Nada encontrado."));
         }
 
         var repository = repositorySession.GetRepository();
         repository.Delete(entity);
         repository.Flush().GetAwaiter().GetResult();
-        return true;
+        return OperationResult.Ok();
     }
 }

@@ -6,6 +6,5 @@ namespace Generic.Application.Crud.Interface;
 public interface IUseCaseDelete<TEntity>
     where TEntity : BaseEntity
 {
-    ListMessages Messages { get; }
-    bool Execute(long entityId, IRepositorySession repositorySession);
+    OperationResult Execute(long entityId, IRepositorySession repositorySession);
 }

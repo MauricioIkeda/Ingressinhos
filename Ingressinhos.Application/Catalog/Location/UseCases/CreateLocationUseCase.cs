@@ -8,8 +8,6 @@ namespace Ingressinhos.Application.Catalog.Location.UseCases;
 
 public class CreateLocationUseCase : IUseCaseCommand<LocationDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public CreateLocationUseCase(IRepositorySession repositorySession)
@@ -17,14 +15,11 @@ public class CreateLocationUseCase : IUseCaseCommand<LocationDto>
         _repositorySession = repositorySession;
     }
     
-    public bool Execute(LocationDto locationDto)
+    public OperationResult Execute(LocationDto locationDto)
     {
-        Messages.Clear();
-
         if (locationDto == null)
         {
-            Messages.Add("Deve ser informado a localizacao", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Location", "Deve ser informado a localizacao."));
         }
 
         try
@@ -38,12 +33,11 @@ public class CreateLocationUseCase : IUseCaseCommand<LocationDto>
             var repository = _repositorySession.GetRepository();
             repository.Include(locationEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Created();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

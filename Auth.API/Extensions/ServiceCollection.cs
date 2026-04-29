@@ -35,8 +35,8 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuthApplicationUseCases(this IServiceCollection services)
     {
-        //criar para criar usuario, alterar senha, desativar usuário, etc
-        services.AddScoped<IUseCaseUserAccessQuery, UseCaseUserAccessQuery>(); // 
+        services.AddScoped<IUseCaseUserAccessQuery, UseCaseUserAccessQuery>();
+        services.AddScoped<IUseCaseUserAuthCollection, AuthenticateUserUseCase>();
         services.AddScoped<IToken>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();

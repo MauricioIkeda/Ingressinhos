@@ -9,8 +9,6 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class SellerUpdate : IUseCaseCommand<SellerDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
     private readonly IRequestAuth _requestAuth;
 
@@ -20,20 +18,16 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
         _requestAuth = requestAuth;
     }
 
-    public bool Execute(SellerDto seller)
+    public OperationResult Execute(SellerDto seller)
     {
-        Messages.Clear();
-
         if (seller is null)
         {
-            Messages.Add("Deve ser informado o vendedor", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Seller", "Deve ser informado o vendedor."));
         }
 
         if (seller.SellerId <= 0)
         {
-            Messages.Add("Deve ser informado o identificador do vendedor", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador do vendedor."));
         }
 
         try
@@ -43,8 +37,7 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
 
             if (sellerEntity is null)
             {
-                Messages.Add("Vendedor nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("Id", "Vendedor nao encontrado."));
             }
 
             if (seller.Name != sellerEntity.Name)
@@ -55,8 +48,7 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
                 sellerEntity.ChangeEmail(seller.Email);
                 if (!_requestAuth.ChangeEmail(sellerEntity.UserId, seller.Email).GetAwaiter().GetResult())
                 {
-                    Messages.Add("Falha ao atualizar o email do usuario", error: true);
-                    return false;
+                    return OperationResult.UnprocessableEntity(new MensagemErro("Email", "Falha ao atualizar o email do usuario."));
                 }
             }
 
@@ -68,12 +60,11 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
             var repository = _repositorySession.GetRepository();
             repository.Upsert(sellerEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

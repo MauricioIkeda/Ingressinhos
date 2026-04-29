@@ -1,13 +1,8 @@
-﻿using Generic.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Generic.Domain.Entities;
 
-namespace Auth.Application.Authorization.UserAccess.Interfaces
+namespace Auth.Application.Authorization.UserAccess.Interfaces;
+
+public interface IUseCaseUserAuthCollection
 {
-    public interface IUseCaseUserAuthCollection
-    {
-        ListMessages Messages { get; }
-        (bool success, string token) Execute(string email, string password);
-    }
+    OperationResult<string> Execute(string email, string password);
 }

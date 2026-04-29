@@ -10,8 +10,6 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class IssuedTicketInclude : IUseCaseCommand<IssuedTicketDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public IssuedTicketInclude(IRepositorySession repositorySession)
@@ -19,14 +17,11 @@ public class IssuedTicketInclude : IUseCaseCommand<IssuedTicketDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(IssuedTicketDto issuedTicketDto)
+    public OperationResult Execute(IssuedTicketDto issuedTicketDto)
     {
-        Messages.Clear();
-
         if (issuedTicketDto is null)
         {
-            Messages.Add("Deve ser informado o ingresso emitido", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("IssuedTicket", "Deve ser informado o ingresso emitido."));
         }
 
         try
@@ -35,20 +30,17 @@ public class IssuedTicketInclude : IUseCaseCommand<IssuedTicketDto>
 
             if (repositoryQuery.Return<OrderItem>(issuedTicketDto.OrderItemId) is null)
             {
-                Messages.Add("Deve ser informado um pedido valido", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("OrderItemId", "Deve ser informado um pedido valido."));
             }
             
             if (repositoryQuery.Return<Client>(issuedTicketDto.ClientId) is null)
             {
-                Messages.Add("Deve ser informado um cliente valido", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("ClientId", "Deve ser informado um cliente valido."));
             }
             
             if (repositoryQuery.Return<Event>(issuedTicketDto.EventId) is null)
             {
-                Messages.Add("Deve ser informado um evento valido", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("EventId", "Deve ser informado um evento valido."));
             }
 
             var utcNow = DateTime.UtcNow;
@@ -66,12 +58,11 @@ public class IssuedTicketInclude : IUseCaseCommand<IssuedTicketDto>
             var repository = _repositorySession.GetRepository();
             repository.Include(issuedTicketEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Created();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

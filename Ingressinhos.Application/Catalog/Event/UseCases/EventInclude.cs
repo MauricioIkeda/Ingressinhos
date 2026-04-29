@@ -9,8 +9,6 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class EventInclude : IUseCaseCommand<EventDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public EventInclude(IRepositorySession repositorySession)
@@ -18,14 +16,11 @@ public class EventInclude : IUseCaseCommand<EventDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(EventDto eventDto)
+    public OperationResult Execute(EventDto eventDto)
     {
-        Messages.Clear();
-
         if (eventDto is null)
         {
-            Messages.Add("Deve ser informado o evento", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Event", "Deve ser informado o evento."));
         }
 
         try
@@ -34,8 +29,7 @@ public class EventInclude : IUseCaseCommand<EventDto>
 
             if (repositoryQuery.Return<LocationDomain>(eventDto.LocationId) is null)
             {
-                Messages.Add("Localizacao informada nao existe", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("LocationId", "Localizacao informada nao existe."));
             }
 
             var hasConflictingEvent = repositoryQuery.Query<Event>(
@@ -46,8 +40,7 @@ public class EventInclude : IUseCaseCommand<EventDto>
 
             if (hasConflictingEvent)
             {
-                Messages.Add("Ja existe evento para o local no intervalo informado", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("Period", "Ja existe evento para o local no intervalo informado."));
             }
 
             var utcNow = DateTime.UtcNow;
@@ -61,12 +54,11 @@ public class EventInclude : IUseCaseCommand<EventDto>
             var repository = _repositorySession.GetRepository();
             repository.Include(eventEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Created();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

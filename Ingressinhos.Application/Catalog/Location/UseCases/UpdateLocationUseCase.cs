@@ -10,8 +10,6 @@ namespace Ingressinhos.Application.Catalog.Location.UseCases;
 
 public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public UpdateLocationUseCase(IRepositorySession repositorySession)
@@ -19,20 +17,16 @@ public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
         _repositorySession = repositorySession;
     }
     
-    public bool Execute(LocationDto locationDto)
+    public OperationResult Execute(LocationDto locationDto)
     {
-        Messages.Clear();
-
         if (locationDto == null)
         {
-            Messages.Add("Deve ser informado o que mudar", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Location", "Deve ser informado o que mudar."));
         }
 
         if (locationDto.Id <= 0)
         {
-            Messages.Add("Deve ser informado qual Localizacao mudar", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado qual localizacao mudar."));
         }
         
         try
@@ -42,8 +36,7 @@ public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
 
             if (locationEntity == null)
             {
-                Messages.Add("Nao foi encontrado essa Localizacao", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("Id", "Nao foi encontrado essa localizacao."));
             }
             
             if (locationDto.Name != locationEntity.Name)
@@ -63,8 +56,7 @@ public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
                     int totalSeats = repositoryQuery.Count<Seat>(s => s.LocationId == locationEntity.Id && s.Status != SeatStatus.Blocked);
                     if (totalSeats > 0)
                     {
-                        Messages.Add("Nao e possivel desativar os assentos, pois existem assentos associados a esta localizacao", error: true);
-                        return false;
+                        return OperationResult.UnprocessableEntity(new MensagemErro("HasSeats", "Nao e possivel desativar os assentos, pois existem assentos associados a esta localizacao."));
                     }
                 }
 
@@ -72,12 +64,11 @@ public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
             }
             
             _repositorySession.GetRepository().Merge(locationEntity);
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

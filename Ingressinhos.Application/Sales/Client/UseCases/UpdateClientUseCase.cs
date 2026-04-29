@@ -8,8 +8,6 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class ClientUpdate : IUseCaseCommand<ClientDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public ClientUpdate(IRepositorySession repositorySession)
@@ -17,20 +15,16 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(ClientDto clientDto)
+    public OperationResult Execute(ClientDto clientDto)
     {
-        Messages.Clear();
-
         if (clientDto is null)
         {
-            Messages.Add("Deve ser informado o cliente", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Client", "Deve ser informado o cliente."));
         }
 
         if (clientDto.ClientId <= 0)
         {
-            Messages.Add("Deve ser informado um Id valido", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado um Id valido."));
         }
         
         try
@@ -40,8 +34,7 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
 
             if (clientEntity is null)
             {
-                Messages.Add("Cliente nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("Id", "Cliente nao encontrado."));
             }
 
             if (clientDto.Name != clientEntity.Name)
@@ -59,12 +52,11 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
             var repository = _repositorySession.GetRepository();
             repository.Upsert(clientEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

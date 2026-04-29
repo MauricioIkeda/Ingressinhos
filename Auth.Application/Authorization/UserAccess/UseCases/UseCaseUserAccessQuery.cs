@@ -8,8 +8,6 @@ namespace Auth.Application.Authorization.UserAccess.UseCases;
 
 public class UseCaseUserAccessQuery : IUseCaseUserAccessQuery
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public UseCaseUserAccessQuery(IRepositorySession repositorySession)
@@ -17,14 +15,11 @@ public class UseCaseUserAccessQuery : IUseCaseUserAccessQuery
         _repositorySession = repositorySession;
     }
 
-    public UserAccessDto Execute(string userId)
+    public OperationResult<UserAccessDto> Execute(string userId)
     {
-        Messages.Clear();
-
         if (string.IsNullOrEmpty(userId))
         {
-            Messages.Add("Deve ser informado um identificador", error: true);
-            return null;
+            return OperationResult<UserAccessDto>.UnprocessableEntity(new MensagemErro("UserId", "Deve ser informado um identificador."));
         }
 
         UserAuth userAuth = _repositorySession.GetRepositoryQuery()
@@ -32,11 +27,10 @@ public class UseCaseUserAccessQuery : IUseCaseUserAccessQuery
 
         if (userAuth == null)
         {
-            Messages.Add("Nenhum usuario ativo encontrado", error: true);
-            return null;
+            return OperationResult<UserAccessDto>.Unauthorized(new MensagemErro("UserId", "Nenhum usuario ativo encontrado."));
         }
 
-        return new UserAccessDto
+        return OperationResult<UserAccessDto>.Ok(new UserAccessDto
         {
             UserId = userAuth.UserId,
             Active = userAuth.Active,
@@ -44,6 +38,6 @@ public class UseCaseUserAccessQuery : IUseCaseUserAccessQuery
             HasActiveRefreshToken = !string.IsNullOrEmpty(userAuth.RefreshToken),
             TokenIssuedAt = userAuth.TokenIssuedAt == DateTime.MinValue ? null : userAuth.TokenIssuedAt,
             CreatedAtAuth = userAuth.CreatedAtAuth
-        };
+        });
     }
 }

@@ -5,6 +5,5 @@ namespace Auth.Application.Authorization.UserAccess.Interfaces;
 
 public interface IUseCaseUserAccessQuery
 {
-    ListMessages Messages { get; }
-    UserAccessDto Execute(string userId);
+    OperationResult<UserAccessDto> Execute(string userId);
 }

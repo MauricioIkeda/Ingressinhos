@@ -9,8 +9,6 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class OrderUpdate : IUseCaseCommand<OrderDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public OrderUpdate(IRepositorySession repositorySession)
@@ -18,20 +16,16 @@ public class OrderUpdate : IUseCaseCommand<OrderDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(OrderDto orderDto)
+    public OperationResult Execute(OrderDto orderDto)
     {
-        Messages.Clear();
-
         if (orderDto is null)
         {
-            Messages.Add("Deve ser informado o pedido", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Order", "Deve ser informado o pedido."));
         }
 
         if (orderDto.OrderId <= 0)
         {
-            Messages.Add("Deve ser informado o identificador do pedido", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador do pedido."));
         }
 
         try
@@ -41,8 +35,7 @@ public class OrderUpdate : IUseCaseCommand<OrderDto>
 
             if (orderEntity is null)
             {
-                Messages.Add("Pedido nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("Id", "Pedido nao encontrado."));
             }
 
             if (orderDto.Status != orderEntity.Status)
@@ -56,8 +49,7 @@ public class OrderUpdate : IUseCaseCommand<OrderDto>
                         orderEntity.Cancel();
                         break;
                     default:
-                        Messages.Add("Nao e possivel retornar o pedido para pendente", error: true);
-                        return false;
+                        return OperationResult.UnprocessableEntity(new MensagemErro("Status", "Nao e possivel retornar o pedido para pendente."));
                 }
             }
 
@@ -66,12 +58,11 @@ public class OrderUpdate : IUseCaseCommand<OrderDto>
             var repository = _repositorySession.GetRepository();
             repository.Upsert(orderEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

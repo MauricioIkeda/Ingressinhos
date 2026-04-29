@@ -9,8 +9,6 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class TicketInclude : IUseCaseCommand<TicketDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public TicketInclude(IRepositorySession repositorySession)
@@ -18,14 +16,11 @@ public class TicketInclude : IUseCaseCommand<TicketDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(TicketDto ticket)
+    public OperationResult Execute(TicketDto ticket)
     {
-        Messages.Clear();
-
         if (ticket is null)
         {
-            Messages.Add("Deve ser informado o ingresso", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Ticket", "Deve ser informado o ingresso."));
         }
 
         try
@@ -36,28 +31,24 @@ public class TicketInclude : IUseCaseCommand<TicketDto>
             var littleEvent = repositoryQuery.Return<Event>(ticket.EventId);
             if (littleEvent == null)
             {
-                Messages.Add("Evento nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("EventId", "Evento nao encontrado."));
             }
 
             Seller seller = repositoryQuery.Return<Seller>(ticket.SellerId);
             if (seller == null)
             {
-                Messages.Add("O vendedor deve ser informado!", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("SellerId", "O vendedor deve ser informado."));
             }
 
             if (littleEvent.SellerId != seller.Id)
             {
-                Messages.Add("O vendedor do ingresso deve ser dono do evento", error: true);
-                return false;
+                return OperationResult.Forbidden(new MensagemErro("SellerId", "O vendedor do ingresso deve ser dono do evento."));
             }
             
             LocationDomain location = repositoryQuery.Return<LocationDomain>(littleEvent.LocationId);
             if (location is null)
             {
-                Messages.Add("Local do evento nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("LocationId", "Local do evento nao encontrado."));
             }
 
             var ticketEntity = new Ticket(
@@ -83,12 +74,11 @@ public class TicketInclude : IUseCaseCommand<TicketDto>
             var repository = _repositorySession.GetRepository();
             repository.Include(ticketEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Created();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

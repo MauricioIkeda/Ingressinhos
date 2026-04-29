@@ -9,8 +9,6 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class ClientInclude : IUseCaseCommand<ClientDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
     private readonly IRequestAuth _requestAuth;
 
@@ -20,14 +18,11 @@ public class ClientInclude : IUseCaseCommand<ClientDto>
         _requestAuth = requestAuth;
     }
 
-    public bool Execute(ClientDto clientDto)
+    public OperationResult Execute(ClientDto clientDto)
     {
-        Messages.Clear();
-
         if (clientDto is null)
         {
-            Messages.Add("Deve informar o cliente", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Client", "Deve informar o cliente."));
         }
         
         try
@@ -46,12 +41,11 @@ public class ClientInclude : IUseCaseCommand<ClientDto>
             var repository = _repositorySession.GetRepository();
             repository.Include(clientEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Created();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

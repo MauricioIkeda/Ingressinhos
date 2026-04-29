@@ -4,6 +4,5 @@ namespace Generic.Application.Crud.Interface;
 
 public interface IUseCaseCommand<in TCommand>
 {
-    ListMessages Messages { get; }
-    bool Execute(TCommand command);
+    OperationResult Execute(TCommand command);
 }

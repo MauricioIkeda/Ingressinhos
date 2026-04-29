@@ -9,8 +9,6 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class SellerInclude : IUseCaseCommand<SellerDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
     private readonly IRequestAuth _requestAuth;
 
@@ -20,14 +18,11 @@ public class SellerInclude : IUseCaseCommand<SellerDto>
         _requestAuth = requestAuth;
     }
 
-    public bool Execute(SellerDto seller)
+    public OperationResult Execute(SellerDto seller)
     {
-        Messages.Clear();
-
         if (seller is null)
         {
-            Messages.Add("Deve ser informado o vendedor", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Seller", "Deve ser informado o vendedor."));
         }
 
         try
@@ -46,12 +41,11 @@ public class SellerInclude : IUseCaseCommand<SellerDto>
             var repository = _repositorySession.GetRepository();
             repository.Include(sellerEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Created();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

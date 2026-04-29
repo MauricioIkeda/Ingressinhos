@@ -8,8 +8,6 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class OrderItemInclude : IUseCaseCommand<OrderItemDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public OrderItemInclude(IRepositorySession repositorySession)
@@ -17,14 +15,11 @@ public class OrderItemInclude : IUseCaseCommand<OrderItemDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(OrderItemDto orderItemDto)
+    public OperationResult Execute(OrderItemDto orderItemDto)
     {
-        Messages.Clear();
-
         if (orderItemDto is null)
         {
-            Messages.Add("Deve ser informado o item do pedido", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("OrderItem", "Deve ser informado o item do pedido."));
         }
 
         try
@@ -45,12 +40,11 @@ public class OrderItemInclude : IUseCaseCommand<OrderItemDto>
             var repository = _repositorySession.GetRepository();
             repository.Include(orderItemEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Created();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

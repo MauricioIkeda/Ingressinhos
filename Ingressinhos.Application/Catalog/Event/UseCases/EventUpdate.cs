@@ -9,8 +9,6 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class EventUpdate : IUseCaseCommand<EventDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public EventUpdate(IRepositorySession repositorySession)
@@ -18,20 +16,16 @@ public class EventUpdate : IUseCaseCommand<EventDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(EventDto eventDto)
+    public OperationResult Execute(EventDto eventDto)
     {
-        Messages.Clear();
-
         if (eventDto is null)
         {
-            Messages.Add("Deve ser informado o evento", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Event", "Deve ser informado o evento."));
         }
 
         if (eventDto.EventId <= 0)
         {
-            Messages.Add("Deve ser informado o identificador do evento", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador do evento."));
         }
 
         try
@@ -41,14 +35,12 @@ public class EventUpdate : IUseCaseCommand<EventDto>
 
             if (eventEntity is null)
             {
-                Messages.Add("Evento nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("Id", "Evento nao encontrado."));
             }
 
             if (repositoryQuery.Return<LocationDomain>(eventDto.LocationId) is null)
             {
-                Messages.Add("Localizacao informada nao existe", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("LocationId", "Localizacao informada nao existe."));
             }
 
             var hasConflictingEvent = repositoryQuery.Query<Event>(
@@ -60,8 +52,7 @@ public class EventUpdate : IUseCaseCommand<EventDto>
 
             if (hasConflictingEvent)
             {
-                Messages.Add("Ja existe evento para o local no intervalo informado", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("Period", "Ja existe evento para o local no intervalo informado."));
             }
 
             if (eventDto.Name != eventEntity.Name)
@@ -89,12 +80,11 @@ public class EventUpdate : IUseCaseCommand<EventDto>
             var repository = _repositorySession.GetRepository();
             repository.Upsert(eventEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }
