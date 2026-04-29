@@ -9,7 +9,7 @@ namespace Auth.API.Controllers.Auth;
 
 [ApiController]
 [Route("api/auth/users")]
-public sealed class UserManagementController : ControllerBase
+public class UserManagementController : ControllerBase
 {
     private readonly IUseCaseUserAuthColletion _userAuthUseCases;
 

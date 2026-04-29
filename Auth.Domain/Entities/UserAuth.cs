@@ -95,4 +95,9 @@ public class UserAuth : BaseEntity
     {
         return DateTime.UtcNow < RefreshTokenExpiration;
     }
+
+    public bool VerifyPassword(string password)
+    {
+        return PasswordHash.Verify(password, PasswordHash);
+    }
 }

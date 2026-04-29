@@ -4,58 +4,31 @@ using Auth.Domain.Entities;
 using Generic.Domain.ValueObjects;
 using Generic.Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Auth.Application.Utils.Services;
-using Generic.Application.Crud.Interface;
+using Auth.Application.Authorization.UserAccess.Interfaces;
 
 namespace Auth.API.Controllers.Auth;
 
 [ApiController]
 [Route("api/auth")]
-public sealed class TokenController : ControllerBase
+public class TokenController : ControllerBase
 {
     private readonly IToken _token;
-    private readonly IUseCaseUserAuthColletion _userAuthUseCase; // preciso fazer
-    public TokenController(IToken token, IUseCaseUserAuthColletion userAuth)
+    private readonly IUseCaseUserAuthCollection _authUseCase; // preciso fazer
+    public TokenController(IToken token, IUseCaseUserAuthCollection authUseCase)
     {
         _token = token;
-        _userAuth = userAuth;
+        _authUseCase = authUseCase;
     }
 
-    [HttpPost("token")]
+    [HttpPost("login")]
     public IActionResult Authenticate([FromBody] AuthenticateRequest request)
     {
-        try
-        {
-            if (request is null)
-            {
-                return BadRequest(new { message = "Deve ser informado o corpo da requisição." });
-            }
+        (bool success, string token) = _authUseCase.Execute(request.Email, request.Password);
 
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
-            {
-                return BadRequest(new { message = "Email e senha devem ser informados." });
-            }
+        if (!success)
+            return Unauthorized(_authUseCase.Messages);
 
-            var email = new Email(request.Email);
-            var user = _userAuthUseCase.Query(u => u.Email == email).FirstOrDefault();
-
-            if (user == null)
-            {
-                return Unauthorized(new { message = "Credenciais inválidas." });
-            }
-
-            if (!PasswordHash.Verify(request.Password, user.PasswordHash))
-            {
-                return Unauthorized(new { message = "Credenciais inválidas." });
-            }
-
-            var token = _token.Generate(user);
-            return Ok(new AuthenticateResponse(token));
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+        return Ok(new AuthenticateResponse(token));
     }
 
     public record AuthenticateRequest(string Email, string Password);
