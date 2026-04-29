@@ -1,11 +1,15 @@
+using Generic.Application.Crud.Interface;
+using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Dtos;
 using ClientDomain = Ingressinhos.Domain.Sales.Entities.Client;
 
 namespace Ingressinhos.Application.Sales.UseCases;
 
-public class ClientUpdate
+public class ClientUpdate : IUseCaseCommand<ClientDto>
 {
+    public ListMessages Messages { get; } = new();
+
     private readonly IRepositorySession _repositorySession;
 
     public ClientUpdate(IRepositorySession repositorySession)
@@ -15,39 +19,52 @@ public class ClientUpdate
 
     public bool Execute(ClientDto clientDto)
     {
+        Messages.Clear();
+
         if (clientDto is null)
         {
-            throw new Exception("Deve ser informado o cliente");
+            Messages.Add("Deve ser informado o cliente", error: true);
+            return false;
         }
 
         if (clientDto.ClientId <= 0)
         {
-            throw new Exception("Deve ser informado um Id valido");
+            Messages.Add("Deve ser informado um Id valido", error: true);
+            return false;
         }
         
-        var repositoryQuery = _repositorySession.GetRepositoryQuery();
-        var clientEntity = repositoryQuery.Return<ClientDomain>(clientDto.ClientId);
-
-        if (clientEntity is null)
+        try
         {
-            throw new Exception("Cliente nao encontrado");
-        }
+            var repositoryQuery = _repositorySession.GetRepositoryQuery();
+            var clientEntity = repositoryQuery.Return<ClientDomain>(clientDto.ClientId);
 
-        if (clientDto.Name != clientEntity.Name)
+            if (clientEntity is null)
+            {
+                Messages.Add("Cliente nao encontrado", error: true);
+                return false;
+            }
+
+            if (clientDto.Name != clientEntity.Name)
+            {
+                clientEntity.ChangeName(clientDto.Name);
+            }
+
+            if (clientDto.Email != clientEntity.Email.Endereco)
+            {
+                clientEntity.ChangeEmail(clientDto.Email);
+            }
+
+            clientEntity.UpdatedAt = DateTime.UtcNow;
+
+            var repository = _repositorySession.GetRepository();
+            repository.Upsert(clientEntity);
+            repository.Flush().GetAwaiter().GetResult();
+            return true;
+        }
+        catch (Exception ex)
         {
-            clientEntity.ChangeName(clientDto.Name);
+            Messages.Add(ex);
+            return false;
         }
-
-        if (clientDto.Email != clientEntity.Email.Endereco)
-        {
-            clientEntity.ChangeEmail(clientDto.Email);
-        }
-
-        clientEntity.UpdatedAt = DateTime.UtcNow;
-
-        var repository = _repositorySession.GetRepository();
-        repository.Upsert(clientEntity);
-        repository.Flush().GetAwaiter().GetResult();
-        return true;
     }
 }

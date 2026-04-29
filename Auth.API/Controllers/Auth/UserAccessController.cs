@@ -17,14 +17,12 @@ public class UserAccessController : ControllerBase
     [HttpGet("{userId}/access")]
     public IActionResult GetAccess(string userId)
     {
-        try
+        var result = _useCaseUserAccessQuery.Execute(userId);
+        if (result is null)
         {
-            var result = _useCaseUserAccessQuery.Execute(userId);
-            return Ok(result);
+            return BadRequest(_useCaseUserAccessQuery.Messages);
         }
-        catch (Exception ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
+
+        return Ok(result);
     }
 }

@@ -9,7 +9,7 @@ namespace Ingressinhos.Application.Sales.UseCases;
 public class UseCaseIssuedTicketCollection : UseCaseCrudCollection<IssuedTicketDomain, IssuedTicketDto>, IUseCaseIssuedTicketCollection
 {
     public UseCaseIssuedTicketCollection(IRepositorySession repositorySession, IssuedTicketUpdate update, IssuedTicketInclude include)
-        : base(include.Execute, update.Execute, new UseCaseGetOdata<IssuedTicketDomain>(), new UseCaseGet<IssuedTicketDomain>(), new UseCaseDelete<IssuedTicketDomain>(), repositorySession)
+        : base(include, update, new UseCaseGetOdata<IssuedTicketDomain>(), new UseCaseGet<IssuedTicketDomain>(), new UseCaseDelete<IssuedTicketDomain>(), repositorySession)
     {
     }
 }

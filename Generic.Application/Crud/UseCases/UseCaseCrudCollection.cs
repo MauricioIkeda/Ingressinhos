@@ -7,12 +7,17 @@ namespace Generic.Application.Crud.UseCases;
 public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCollection<TEntity>, IUseCaseCrudCollection<TEntity, TCommand>
     where TEntity : BaseEntity
 {
-    private readonly UseCaseDelete<TEntity> _useCaseDelete;
-    private readonly Func<TCommand, bool> _include;
-    private readonly Func<TCommand, bool> _update;
+    private readonly IUseCaseDelete<TEntity> _useCaseDelete;
+    private readonly IUseCaseCommand<TCommand> _include;
+    private readonly IUseCaseCommand<TCommand> _update;
 
-    protected UseCaseCrudCollection( Func<TCommand, bool> include, Func<TCommand, bool> update, UseCaseGetOdata<TEntity> useCaseGetOdata, 
-        UseCaseGet<TEntity> useCaseGetById, UseCaseDelete<TEntity> useCaseDelete, IRepositorySession repositorySession)
+    protected UseCaseCrudCollection(
+        IUseCaseCommand<TCommand> include,
+        IUseCaseCommand<TCommand> update,
+        UseCaseGetOdata<TEntity> useCaseGetOdata,
+        IUseCaseGet<TEntity> useCaseGetById,
+        IUseCaseDelete<TEntity> useCaseDelete,
+        IRepositorySession repositorySession)
         : base(useCaseGetOdata, useCaseGetById, repositorySession)
     {
         _include = include;
@@ -22,67 +27,73 @@ public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCol
 
     public virtual bool Include(TCommand command)
     {
-        try
+        Messages.Clear();
+
+        var result = _include.Execute(command);
+
+        if (_include.Messages.Any())
         {
-            var result = _include(command);
-
-            if (!result)
-            {
-                Messages.Add($"{typeof(TEntity).Name} nao foi incluido.", error: true);
-                return false;
-            }
-
-            Messages.Add($"{typeof(TEntity).Name} incluido com sucesso.");
-            return result;
+            Messages.AddRange(_include.Messages);
         }
-        catch (Exception ex)
+
+        if (!result)
         {
-            Messages.Add(ex);
             return false;
         }
+
+        if (!Messages.Any())
+        {
+            Messages.Add($"{typeof(TEntity).Name} incluido com sucesso.");
+        }
+
+        return true;
     }
 
     public virtual bool Update(TCommand command)
     {
-        try
+        Messages.Clear();
+
+        var result = _update.Execute(command);
+
+        if (_update.Messages.Any())
         {
-            var result = _update(command);
-
-            if (!result)
-            {
-                Messages.Add($"{typeof(TEntity).Name} nao foi atualizado.", error: true);
-                return false;
-            }
-
-            Messages.Add($"{typeof(TEntity).Name} atualizado com sucesso.");
-            return result;
+            Messages.AddRange(_update.Messages);
         }
-        catch (Exception ex)
+
+        if (!result)
         {
-            Messages.Add(ex);
             return false;
         }
+
+        if (!Messages.Any())
+        {
+            Messages.Add($"{typeof(TEntity).Name} atualizado com sucesso.");
+        }
+
+        return true;
     }
 
     public virtual bool Delete(long id)
     {
-        try
+        Messages.Clear();
+
+        var result = _useCaseDelete.Execute(id, _repositorySession);
+
+        if (_useCaseDelete.Messages.Any())
         {
-            var result = _useCaseDelete.Execute(id, _repositorySession);
-
-            if (!result)
-            {
-                Messages.Add($"{typeof(TEntity).Name} nao foi removido.", error: true);
-                return false;
-            }
-
-            Messages.Add($"{typeof(TEntity).Name} removido com sucesso.");
-            return true;
+            Messages.AddRange(_useCaseDelete.Messages);
         }
-        catch (Exception ex)
+
+        if (!result)
         {
-            Messages.Add(ex);
             return false;
         }
+
+        if (!Messages.Any())
+        {
+            Messages.Add($"{typeof(TEntity).Name} removido com sucesso.");
+        }
+
+        return true;
     }
 }

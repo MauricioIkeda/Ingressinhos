@@ -1,12 +1,16 @@
+using Generic.Application.Crud.Interface;
+using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
-using Ingressinhos.Domain.Catalog.Enums;
-using LocationDoman = Ingressinhos.Domain.Catalog.Entities.Location;
+using LocationDomain = Ingressinhos.Domain.Catalog.Entities.Location;
+
 namespace Ingressinhos.Application.Catalog.UseCases;
 
-public class TicketInclude
+public class TicketInclude : IUseCaseCommand<TicketDto>
 {
+    public ListMessages Messages { get; } = new();
+
     private readonly IRepositorySession _repositorySession;
 
     public TicketInclude(IRepositorySession repositorySession)
@@ -16,62 +20,75 @@ public class TicketInclude
 
     public bool Execute(TicketDto ticket)
     {
+        Messages.Clear();
+
         if (ticket is null)
         {
-            throw new Exception("Deve ser informado o ingresso");
+            Messages.Add("Deve ser informado o ingresso", error: true);
+            return false;
         }
 
-        var utcNow = DateTime.UtcNow;
-        IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
-
-        var littleEvent = repositoryQuery.Return<Event>(ticket.EventId);
-        
-        if (littleEvent == null)
+        try
         {
-            throw new Exception("Evento não encontrado");
+            var utcNow = DateTime.UtcNow;
+            IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
+
+            var littleEvent = repositoryQuery.Return<Event>(ticket.EventId);
+            if (littleEvent == null)
+            {
+                Messages.Add("Evento nao encontrado", error: true);
+                return false;
+            }
+
+            Seller seller = repositoryQuery.Return<Seller>(ticket.SellerId);
+            if (seller == null)
+            {
+                Messages.Add("O vendedor deve ser informado!", error: true);
+                return false;
+            }
+
+            if (littleEvent.SellerId != seller.Id)
+            {
+                Messages.Add("O vendedor do ingresso deve ser dono do evento", error: true);
+                return false;
+            }
+            
+            LocationDomain location = repositoryQuery.Return<LocationDomain>(littleEvent.LocationId);
+            if (location is null)
+            {
+                Messages.Add("Local do evento nao encontrado", error: true);
+                return false;
+            }
+
+            var ticketEntity = new Ticket(
+                ticket.EventId,
+                ticket.SellerId,
+                ticket.Name,
+                ticket.BasePrice,
+                ticket.PremiumPrice,
+                ticket.VipPrice,
+                location.TotalCapacity,
+                ticket.SalesStartsAt,
+                ticket.SalesEndsAt)
+            {
+                CreatedAt = utcNow,
+                UpdatedAt = utcNow
+            };
+
+            if (!ticket.IsActive)
+            {
+                ticketEntity.Disable();
+            }
+
+            var repository = _repositorySession.GetRepository();
+            repository.Include(ticketEntity);
+            repository.Flush().GetAwaiter().GetResult();
+            return true;
         }
-
-        Seller seller = repositoryQuery.Return<Seller>(ticket.SellerId);
-
-        if (seller == null)
+        catch (Exception ex)
         {
-            throw new Exception("O vendedor deve ser informado!");
+            Messages.Add(ex);
+            return false;
         }
-
-        if (littleEvent.SellerId != seller.Id)
-        {
-            throw new Exception("O vendedor do ingresso deve ser dono do evento");
-        }
-        
-        LocationDoman location = repositoryQuery.Return<LocationDoman>(littleEvent.LocationId);
-        if (location is null)
-        {
-            throw new Exception("Local do evento nao encontrado");
-        }
-
-        var ticketEntity = new Ticket(
-            ticket.EventId,
-            ticket.SellerId,
-            ticket.Name,
-            ticket.BasePrice,
-            ticket.PremiumPrice,
-            ticket.VipPrice,
-            location.TotalCapacity,
-            ticket.SalesStartsAt,
-            ticket.SalesEndsAt)
-        {
-            CreatedAt = utcNow,
-            UpdatedAt = utcNow
-        };
-
-        if (!ticket.IsActive)
-        {
-            ticketEntity.Disable();
-        }
-
-        var repository = _repositorySession.GetRepository();
-        repository.Include(ticketEntity);
-        repository.Flush().GetAwaiter().GetResult();
-        return true;
     }
 }
