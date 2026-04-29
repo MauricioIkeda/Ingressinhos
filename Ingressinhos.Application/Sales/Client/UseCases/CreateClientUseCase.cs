@@ -37,6 +37,10 @@ public class ClientInclude : IUseCaseCommand<ClientDto>
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow
             };
+            if (!clientEntity.IsValid)
+            {
+                return clientEntity.ToUnprocessableEntityResult();
+            }
             
             var repository = _repositorySession.GetRepository();
             repository.Include(clientEntity);

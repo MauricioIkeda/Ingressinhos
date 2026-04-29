@@ -29,6 +29,10 @@ public class CreateLocationUseCase : IUseCaseCommand<LocationDto>
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
+            if (!locationEntity.IsValid)
+            {
+                return locationEntity.ToUnprocessableEntityResult();
+            }
             
             var repository = _repositorySession.GetRepository();
             repository.Include(locationEntity);

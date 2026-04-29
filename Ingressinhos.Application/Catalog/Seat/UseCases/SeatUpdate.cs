@@ -42,6 +42,10 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
             if (seat.Category != seatEntity.Category)
             {
                 seatEntity.ChangeCategory(seat.Category);
+                if (!seatEntity.IsValid)
+                {
+                    return seatEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (seat.Status != seatEntity.Status)
@@ -56,6 +60,10 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
                 }
 
                 ApplySeatStatus(seatEntity, seat.Status);
+                if (!seatEntity.IsValid)
+                {
+                    return seatEntity.ToUnprocessableEntityResult();
+                }
             }
 
             seatEntity.UpdatedAt = DateTime.UtcNow;

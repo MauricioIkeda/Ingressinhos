@@ -43,6 +43,10 @@ public class TicketUpdate : IUseCaseCommand<TicketDto>
                 ticket.VipPrice != ticketEntity.VIPPrice?.Value)
             {
                 ticketEntity.ChangePrices(ticket.BasePrice, ticket.PremiumPrice, ticket.VipPrice);
+                if (!ticketEntity.IsValid)
+                {
+                    return ticketEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (ticket.IsActive && ticketEntity.Status == CatalogTicketStatus.Inactive)

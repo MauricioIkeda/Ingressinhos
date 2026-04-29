@@ -1,21 +1,25 @@
+using Generic.Domain.Entities;
+
 namespace Generic.Domain.ValueObjects;
 
-public record CPF
+public class CPF : ValidatableObject
 {
-    public string Numero { get; init; }
+    public string Numero { get; init; } = string.Empty;
 
     public CPF(string numero)
     {
         if (string.IsNullOrWhiteSpace(numero))
         {
-            throw new Exception("O CPF eh obrigatorio e nao pode ser vazio");
+            AddError("Cpf", "O CPF eh obrigatorio e nao pode ser vazio");
+            return;
         }
         
         var numeroTratado = Limpar(numero);
 
         if (!Validar(numeroTratado))
         {
-            throw new Exception("CPF Invalido");
+            AddError("Cpf", "CPF Invalido");
+            return;
         }
         
         Numero = numeroTratado;
@@ -34,7 +38,7 @@ public record CPF
         if (cpf.Distinct().Count() == 1) 
             return false;
 
-        int[] multiplicador1 = new int[9] { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+        int[] multiplicador1 = [10, 9, 8, 7, 6, 5, 4, 3, 2];
         string tempCpf = cpf.Substring(0, 9);
         int soma = 0;
 
@@ -51,7 +55,7 @@ public record CPF
         tempCpf = tempCpf + digito;
         soma = 0;
 
-        int[] multiplicador2 = new int[10] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+        int[] multiplicador2 = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
         for (int i = 0; i < 10; i++)
             soma += int.Parse(tempCpf[i].ToString()) * multiplicador2[i];
 
@@ -68,7 +72,7 @@ public record CPF
 
     public string Formatado()
     {
-        return Convert.ToUInt64(Numero).ToString(@"000\.000\.000\-00");
+        return string.IsNullOrWhiteSpace(Numero) ? string.Empty : Convert.ToUInt64(Numero).ToString(@"000\.000\.000\-00");
     }
 
     public override string ToString()

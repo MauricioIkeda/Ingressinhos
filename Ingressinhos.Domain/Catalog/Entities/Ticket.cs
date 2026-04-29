@@ -8,8 +8,8 @@ public class Ticket : BaseEntity
 {
     public long EventId { get; private set; }
     public long SellerId { get; private set; }
-    public string Name { get; private set; }
-    public Price BasePrice { get; private set; }
+    public string Name { get; private set; } = string.Empty;
+    public Price BasePrice { get; private set; } = new(0);
     public Price? PremiumPrice { get; private set; }
     public Price? VIPPrice { get; private set; }
     public int TotalQuantity { get; private set; }
@@ -20,63 +20,134 @@ public class Ticket : BaseEntity
 
     protected Ticket()
     {
-        
     }
     
     public Ticket(long eventId, long sellerId, string name, decimal basePrice, decimal? premiumPrice, decimal? vipPrice, int totalQuantity, DateTime salesStartsAt, DateTime salesEndsAt)
     {
         if (eventId <= 0)
         {
-            throw new Exception("Deve ser informado o evento do ingresso");
+            AddError("EventId", "Deve ser informado o evento do ingresso");
         }
+        else
+        {
+            EventId = eventId;
+        }
+
+        SellerId = sellerId;
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new Exception("Deve ser informado o nome do ingresso");
+            AddError("Name", "Deve ser informado o nome do ingresso");
+        }
+        else
+        {
+            Name = name.Trim();
         }
 
         if (totalQuantity <= 0)
         {
-            throw new Exception("A quantidade total do ingresso deve ser maior que zero");
+            AddError("TotalQuantity", "A quantidade total do ingresso deve ser maior que zero");
+        }
+        else
+        {
+            TotalQuantity = totalQuantity;
+            AvailableQuantity = totalQuantity;
         }
 
         if (salesEndsAt <= salesStartsAt)
         {
-            throw new Exception("O fim das vendas deve ser posterior ao inicio");
+            AddError("SalesEndsAt", "O fim das vendas deve ser posterior ao inicio");
+        }
+        else
+        {
+            SalesStartsAt = salesStartsAt;
+            SalesEndsAt = salesEndsAt;
         }
 
-        EventId = eventId;
-        SellerId = sellerId;
-        Name = name.Trim();
-        BasePrice = new Price(basePrice);
-        PremiumPrice = premiumPrice.HasValue ? new Price(premiumPrice.Value) : null;
-        VIPPrice = vipPrice.HasValue ? new Price(vipPrice.Value) : null;
-        TotalQuantity = totalQuantity;
-        AvailableQuantity = totalQuantity;
-        SalesStartsAt = salesStartsAt;
-        SalesEndsAt = salesEndsAt;
+        var basePriceValue = new Price(basePrice);
+        CopyErrorsFrom(basePriceValue);
+        if (basePriceValue.IsValid)
+        {
+            BasePrice = basePriceValue;
+        }
+
+        if (premiumPrice.HasValue)
+        {
+            var premium = new Price(premiumPrice.Value);
+            CopyErrorsFrom(premium);
+            if (premium.IsValid)
+            {
+                PremiumPrice = premium;
+            }
+        }
+
+        if (vipPrice.HasValue)
+        {
+            var vip = new Price(vipPrice.Value);
+            CopyErrorsFrom(vip);
+            if (vip.IsValid)
+            {
+                VIPPrice = vip;
+            }
+        }
+
         Status = CatalogTicketStatus.Active;
     }
 
-    public void ChangePrices(decimal? newBasePrice, decimal? newPremiumPrice,  decimal? newVIPPrice)
+    public void ChangePrices(decimal? newBasePrice, decimal? newPremiumPrice, decimal? newVIPPrice)
     {
-        BasePrice = newBasePrice.HasValue ? new Price(newBasePrice.Value) : BasePrice;
-        PremiumPrice = newPremiumPrice.HasValue ? new Price(newPremiumPrice.Value) : PremiumPrice;
-        VIPPrice = newVIPPrice.HasValue ? new Price(newVIPPrice.Value) : VIPPrice;
+        ClearErrors();
+
+        if (newBasePrice.HasValue)
+        {
+            var basePrice = new Price(newBasePrice.Value);
+            CopyErrorsFrom(basePrice);
+            if (basePrice.IsValid)
+            {
+                BasePrice = basePrice;
+            }
+        }
+
+        if (newPremiumPrice.HasValue)
+        {
+            var premiumPrice = new Price(newPremiumPrice.Value);
+            CopyErrorsFrom(premiumPrice);
+            if (premiumPrice.IsValid)
+            {
+                PremiumPrice = premiumPrice;
+            }
+        }
+
+        if (newVIPPrice.HasValue)
+        {
+            var vipPrice = new Price(newVIPPrice.Value);
+            CopyErrorsFrom(vipPrice);
+            if (vipPrice.IsValid)
+            {
+                VIPPrice = vipPrice;
+            }
+        }
     }
 
     public void Reserve(int quantity, DateTime referenceDate)
     {
+        ClearErrors();
         EnsureTicketCanSell(referenceDate);
+        if (!IsValid)
+        {
+            return;
+        }
 
         if (quantity <= 0)
         {
-            throw new Exception("A quantidade deve ser maior que zero");
+            AddError("Quantity", "A quantidade deve ser maior que zero");
+            return;
         }
 
         if (quantity > AvailableQuantity)
         {
-            throw new Exception("Nao ha ingressos suficientes disponiveis");
+            AddError("Quantity", "Nao ha ingressos suficientes disponiveis");
+            return;
         }
 
         AvailableQuantity -= quantity;
@@ -89,14 +160,18 @@ public class Ticket : BaseEntity
 
     public void RestoreQuantity(int quantity)
     {
+        ClearErrors();
+
         if (quantity <= 0)
         {
-            throw new Exception("A quantidade deve ser maior que zero");
+            AddError("Quantity", "A quantidade deve ser maior que zero");
+            return;
         }
 
         if (AvailableQuantity + quantity > TotalQuantity)
         {
-            throw new Exception("A quantidade restaurada excede o total de ingressos");
+            AddError("Quantity", "A quantidade restaurada excede o total de ingressos");
+            return;
         }
 
         AvailableQuantity += quantity;
@@ -109,19 +184,24 @@ public class Ticket : BaseEntity
 
     public void Disable()
     {
+        ClearErrors();
         Status = CatalogTicketStatus.Inactive;
     }
 
     public void Enable()
     {
+        ClearErrors();
         Status = AvailableQuantity > 0 ? CatalogTicketStatus.Active : CatalogTicketStatus.SoldOut;
     }
 
     public void AddCapacity(int quantity)
     {
+        ClearErrors();
+
         if (quantity <= 0)
         {
-            throw new Exception("A quantidade deve ser maior que zero");
+            AddError("Quantity", "A quantidade deve ser maior que zero");
+            return;
         }
 
         TotalQuantity += quantity;
@@ -137,17 +217,19 @@ public class Ticket : BaseEntity
     {
         if (Status == CatalogTicketStatus.Inactive)
         {
-            throw new Exception("O ingresso esta inativo");
+            AddError("Status", "O ingresso esta inativo");
+            return;
         }
 
         if (Status == CatalogTicketStatus.SoldOut)
         {
-            throw new Exception("O ingresso esta esgotado");
+            AddError("Status", "O ingresso esta esgotado");
+            return;
         }
 
         if (referenceDate < SalesStartsAt || referenceDate > SalesEndsAt)
         {
-            throw new Exception("O ingresso esta fora da janela de venda");
+            AddError("SalesWindow", "O ingresso esta fora da janela de venda");
         }
     }
 }

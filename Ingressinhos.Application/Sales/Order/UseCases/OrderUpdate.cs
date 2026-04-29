@@ -44,9 +44,17 @@ public class OrderUpdate : IUseCaseCommand<OrderDto>
                 {
                     case OrderStatus.Paid:
                         orderEntity.ConfirmPayment();
+                        if (!orderEntity.IsValid)
+                        {
+                            return orderEntity.ToUnprocessableEntityResult();
+                        }
                         break;
                     case OrderStatus.Cancelled:
                         orderEntity.Cancel();
+                        if (!orderEntity.IsValid)
+                        {
+                            return orderEntity.ToUnprocessableEntityResult();
+                        }
                         break;
                     default:
                         return OperationResult.UnprocessableEntity(new MensagemErro("Status", "Nao e possivel retornar o pedido para pendente."));

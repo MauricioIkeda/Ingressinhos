@@ -51,8 +51,16 @@ public class SeatInclude : IUseCaseCommand<SeatDto>
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow
             };
+            if (!seatEntity.IsValid)
+            {
+                return seatEntity.ToUnprocessableEntityResult();
+            }
 
             ApplySeatStatus(seatEntity, seat.Status);
+            if (!seatEntity.IsValid)
+            {
+                return seatEntity.ToUnprocessableEntityResult();
+            }
 
             var repository = _repositorySession.GetRepository();
             repository.Include(seatEntity);

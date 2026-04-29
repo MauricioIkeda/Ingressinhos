@@ -14,17 +14,19 @@ public class Order : BaseEntity
 
     protected Order()
     {
-        
     }
     
     public Order(long clientId)
     {
         if (clientId <= 0)
         {
-            throw new Exception("Deve ser informado o cliente do pedido");
+            AddError("ClientId", "Deve ser informado o cliente do pedido");
+        }
+        else
+        {
+            ClientId = clientId;
         }
 
-        ClientId = clientId;
         Status = OrderStatus.PendingPayment;
         OrderedAt = DateTime.UtcNow;
         TotalAmount = 0;
@@ -32,19 +34,24 @@ public class Order : BaseEntity
 
     public void AddItem(decimal unitPrice, int quantity)
     {
+        ClearErrors();
+
         if (Status != OrderStatus.PendingPayment)
         {
-            throw new Exception("Nao eh possivel alterar itens de um pedido finalizado");
+            AddError("Status", "Nao eh possivel alterar itens de um pedido finalizado");
+            return;
         }
 
         if (unitPrice < 0)
         {
-            throw new Exception("O valor unitario nao pode ser negativo");
+            AddError("UnitPrice", "O valor unitario nao pode ser negativo");
+            return;
         }
 
         if (quantity <= 0)
         {
-            throw new Exception("A quantidade deve ser maior que zero");
+            AddError("Quantity", "A quantidade deve ser maior que zero");
+            return;
         }
 
         TotalAmount += unitPrice * quantity;
@@ -52,9 +59,12 @@ public class Order : BaseEntity
 
     public void ConfirmPayment()
     {
+        ClearErrors();
+
         if (Status != OrderStatus.PendingPayment)
         {
-            throw new Exception("Apenas pedidos pendentes podem ser pagos");
+            AddError("Status", "Apenas pedidos pendentes podem ser pagos");
+            return;
         }
 
         Status = OrderStatus.Paid;
@@ -63,9 +73,12 @@ public class Order : BaseEntity
 
     public void Cancel()
     {
+        ClearErrors();
+
         if (Status == OrderStatus.Cancelled)
         {
-            throw new Exception("O pedido ja esta cancelado");
+            AddError("Status", "O pedido ja esta cancelado");
+            return;
         }
 
         Status = OrderStatus.Cancelled;

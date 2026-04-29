@@ -50,6 +50,10 @@ public class EventInclude : IUseCaseCommand<EventDto>
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow
             };
+            if (!eventEntity.IsValid)
+            {
+                return eventEntity.ToUnprocessableEntityResult();
+            }
 
             var repository = _repositorySession.GetRepository();
             repository.Include(eventEntity);

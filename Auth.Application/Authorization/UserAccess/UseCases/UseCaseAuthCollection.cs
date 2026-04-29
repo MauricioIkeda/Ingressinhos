@@ -3,16 +3,19 @@ using Auth.Application.Utils.Interface;
 using Auth.Application.Utils.Services;
 using Auth.Domain.Entities;
 using Generic.Domain.Entities;
+using Generic.Domain.ValueObjects;
 using Generic.Infrastructure.Interfaces;
+
+namespace Auth.Application.Authorization.UserAccess.UseCases;
 
 public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
 {
-    private readonly IRepositoryQuery _repositoryQuery;
+    private readonly IRepositorySession _repositorySession;
     private readonly IToken _token;
 
-    public AuthenticateUserUseCase(IRepositoryQuery repositoryQuery, IToken token)
+    public AuthenticateUserUseCase(IRepositorySession repositorySession, IToken token)
     {
-        _repositoryQuery = repositoryQuery;
+        _repositorySession = repositorySession;
         _token = token;
     }
 
@@ -23,7 +26,7 @@ public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
             return OperationResult<string>.UnprocessableEntity(new MensagemErro("Login", "Email e senha sao obrigatorios."));
         }
 
-        var user = _repositoryQuery.Query<UserAuth>(x => x.Email.Endereco == email)
+        UserAuth user = _repositorySession.GetRepositoryQuery().Query<UserAuth>(x => x.Email == new Email(email)).ToList()
             .FirstOrDefault();
 
         if (user == null)
@@ -37,6 +40,10 @@ public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
         }
 
         var token = _token.Generate(user);
+        user.SetRefreshToken(token);
+
+        _repositorySession.GetRepository().Upsert(user);
+        _repositorySession.GetRepository().Flush().GetAwaiter();
 
         return OperationResult<string>.Ok(token);
     }

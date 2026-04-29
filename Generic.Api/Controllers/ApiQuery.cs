@@ -22,11 +22,6 @@ public abstract class ApiQuery<TEntity> : ControllerBase
 
     protected IActionResult QueryResult(Expression<Func<TEntity, bool>> where)
     {
-        if (where is null)
-        {
-            return StatusCode(422, [new MensagemErro("Filtro", "Filtro de consulta deve ser informado.")]);
-        }
-
         var result = _queryCollection.GetOdata(where);
         if (!result.Success)
         {

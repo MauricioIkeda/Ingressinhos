@@ -40,11 +40,19 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
             if (clientDto.Name != clientEntity.Name)
             {
                 clientEntity.ChangeName(clientDto.Name);
+                if (!clientEntity.IsValid)
+                {
+                    return clientEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (clientDto.Email != clientEntity.Email.Endereco)
             {
                 clientEntity.ChangeEmail(clientDto.Email);
+                if (!clientEntity.IsValid)
+                {
+                    return clientEntity.ToUnprocessableEntityResult();
+                }
             }
 
             clientEntity.UpdatedAt = DateTime.UtcNow;

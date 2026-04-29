@@ -54,6 +54,10 @@ public class IssuedTicketInclude : IUseCaseCommand<IssuedTicketDto>
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow
             };
+            if (!issuedTicketEntity.IsValid)
+            {
+                return issuedTicketEntity.ToUnprocessableEntityResult();
+            }
 
             var repository = _repositorySession.GetRepository();
             repository.Include(issuedTicketEntity);

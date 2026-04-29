@@ -65,6 +65,10 @@ public class TicketInclude : IUseCaseCommand<TicketDto>
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow
             };
+            if (!ticketEntity.IsValid)
+            {
+                return ticketEntity.ToUnprocessableEntityResult();
+            }
 
             if (!ticket.IsActive)
             {

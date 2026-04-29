@@ -1,12 +1,12 @@
-using Generic.Domain.ValueObjects;
+ï»¿using Generic.Domain.ValueObjects;
 
 namespace Generic.Domain.Entities;
 
 public abstract class User : BaseEntity
 {
-    public string UserId { get; private set; }  // Id para identificação no Auth, nunca expor fora da aplicação
-    public string Name { get; private set; }
-    public Email Email { get; private set; }
+    public string UserId { get; private set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
+    public Email Email { get; private set; } = new(string.Empty);
     
     protected User() { }
 
@@ -14,19 +14,31 @@ public abstract class User : BaseEntity
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new Exception("Deve ser informado o nome do usuario");
+            AddError("Name", "Deve ser informado o nome do usuario");
+        }
+        else
+        {
+            Name = name.Trim();
         }
 
-        Name = name.Trim();
-        Email = new Email(email);
+        var emailValue = new Email(email);
+        CopyErrorsFrom(emailValue);
+        if (emailValue.IsValid)
+        {
+            Email = emailValue;
+        }
+
         UserId = userId;
     }
 
     public void ChangeName(string name)
     {
+        ClearErrors();
+
         if (string.IsNullOrWhiteSpace(name))
         {
-            throw new Exception("Deve ser informado o nome do usuario");
+            AddError("Name", "Deve ser informado o nome do usuario");
+            return;
         }
 
         Name = name.Trim();
@@ -34,6 +46,15 @@ public abstract class User : BaseEntity
 
     public void ChangeEmail(string email)
     {
-        Email = new Email(email);
+        ClearErrors();
+
+        var emailValue = new Email(email);
+        CopyErrorsFrom(emailValue);
+        if (!emailValue.IsValid)
+        {
+            return;
+        }
+
+        Email = emailValue;
     }
 }

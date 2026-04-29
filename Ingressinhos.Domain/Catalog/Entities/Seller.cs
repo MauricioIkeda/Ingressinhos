@@ -5,21 +5,26 @@ namespace Ingressinhos.Domain.Catalog.Entities;
 
 public class Seller : User
 {
-    public CNPJ Cnpj { get; private set; }
-    public string TradingName { get; private set; }
+    public CNPJ Cnpj { get; private set; } = new(string.Empty);
+    public string TradingName { get; private set; } = string.Empty;
 
     protected Seller()
     {
-        
     }
 
     public Seller(string name, string email, string cnpj, string tradingName, string userId) : base(name, email, userId)
     {
-        Cnpj = new CNPJ(cnpj);
+        var cnpjValue = new CNPJ(cnpj);
+        CopyErrorsFrom(cnpjValue);
+        if (cnpjValue.IsValid)
+        {
+            Cnpj = cnpjValue;
+        }
 
         if (string.IsNullOrWhiteSpace(tradingName))
         {
-            throw new Exception("Deve ser informado o nome comercial do vendedor");
+            AddError("TradingName", "Deve ser informado o nome comercial do vendedor");
+            return;
         }
 
         TradingName = tradingName.Trim();
@@ -27,9 +32,12 @@ public class Seller : User
 
     public void ChangeTradingName(string tradingName)
     {
+        ClearErrors();
+
         if (string.IsNullOrWhiteSpace(tradingName))
         {
-            throw new Exception("Deve ser informado o nome comercial do vendedor");
+            AddError("TradingName", "Deve ser informado o nome comercial do vendedor");
+            return;
         }
 
         TradingName = tradingName.Trim();

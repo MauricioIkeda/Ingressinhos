@@ -42,11 +42,19 @@ public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
             if (locationDto.Name != locationEntity.Name)
             {
                 locationEntity.ChangeName(locationDto.Name);
+                if (!locationEntity.IsValid)
+                {
+                    return locationEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (locationDto.TotalCapacity != locationEntity.TotalCapacity)
             {
                 locationEntity.ChangeTotalCapacity(locationDto.TotalCapacity);
+                if (!locationEntity.IsValid)
+                {
+                    return locationEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (locationDto.HasSeats != locationEntity.HasSeats)
