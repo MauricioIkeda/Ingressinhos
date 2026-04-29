@@ -27,11 +27,16 @@ public class EventInclude
         {
             throw new Exception("Localizacao informada nao existe");
         }
+        
+        if(repositoryQuery.Return<Seller>(eventDto.SellerId) is null)
+        {
+            throw new Exception("Vendedor informado nao existe");
+        }
 
         var hasConflictingEvent = repositoryQuery.Query<Event>(
             existingEvent => existingEvent.LocationId == eventDto.LocationId &&
                              eventDto.StartTime < existingEvent.EndTime &&
-                             eventDto.EndTime > existingEvent.StarTime)
+                             eventDto.EndTime > existingEvent.StartTime)
             .Any();
 
         if (hasConflictingEvent)
@@ -42,7 +47,7 @@ public class EventInclude
 
         var utcNow = DateTime.UtcNow;
 
-        var eventEntity = new Event(eventDto.Name, eventDto.StartTime, eventDto.EndTime, eventDto.LocationId, eventDto.HasSeats)
+        var eventEntity = new Event(eventDto.SellerId, eventDto.Name, eventDto.StartTime, eventDto.EndTime, eventDto.LocationId, eventDto.HasSeats)
         {
             CreatedAt = utcNow,
             UpdatedAt = utcNow

@@ -43,7 +43,7 @@ public class EventUpdate
             existingEvent => existingEvent.Id != eventDto.EventId &&
                              existingEvent.LocationId == eventDto.LocationId &&
                              eventDto.StartTime < existingEvent.EndTime &&
-                             eventDto.EndTime > existingEvent.StarTime)
+                             eventDto.EndTime > existingEvent.StartTime)
             .Any();
 
         if (hasConflictingEvent)
@@ -61,7 +61,7 @@ public class EventUpdate
             eventEntity.ChangeLocation(eventDto.LocationId);
         }
 
-        if (eventDto.StartTime != eventEntity.StarTime || eventDto.EndTime != eventEntity.EndTime)
+        if (eventDto.StartTime != eventEntity.StartTime || eventDto.EndTime != eventEntity.EndTime)
         {
             eventEntity.RescheduleEvent(eventDto.StartTime, eventDto.EndTime);
         }
