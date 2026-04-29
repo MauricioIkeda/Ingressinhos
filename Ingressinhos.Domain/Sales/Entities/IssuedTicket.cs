@@ -1,5 +1,4 @@
 using Generic.Domain.Entities;
-using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Sales.Enums;
 
 namespace Ingressinhos.Domain.Sales.Entities;
@@ -9,7 +8,7 @@ public class IssuedTicket : BaseEntity
     public long OrderItemId { get; private set; }
     public long ClientId { get; private set; }
     public long EventId { get; private set; }
-    public string AccessCode { get; private set; }
+    public string AccessCode { get; private set; } = string.Empty;
     public IssuedTicketStatus Status { get; private set; }
     public bool IsCheckedIn => Status == IssuedTicketStatus.CheckedIn;
     public DateTime IssuedAt { get; private set; }
@@ -18,49 +17,64 @@ public class IssuedTicket : BaseEntity
 
     protected IssuedTicket()
     {
-        
     }
 
     public IssuedTicket(long orderItemId, long clientId, long eventId, string accessCode)
     {
         if (orderItemId <= 0)
         {
-            throw new Exception("Deve ser informado o item do pedido");
+            AddError("OrderItemId", "Deve ser informado o item do pedido");
+        }
+        else
+        {
+            OrderItemId = orderItemId;
         }
 
         if (clientId <= 0)
         {
-            throw new Exception("Deve ser informado o cliente");
+            AddError("ClientId", "Deve ser informado o cliente");
+        }
+        else
+        {
+            ClientId = clientId;
         }
 
         if (eventId <= 0)
         {
-            throw new Exception("Deve ser informado o evento");
+            AddError("EventId", "Deve ser informado o evento");
+        }
+        else
+        {
+            EventId = eventId;
         }
 
         if (string.IsNullOrWhiteSpace(accessCode))
         {
-            throw new Exception("Deve ser informado o codigo de acesso do ingresso");
+            AddError("AccessCode", "Deve ser informado o codigo de acesso do ingresso");
+        }
+        else
+        {
+            AccessCode = accessCode.Trim();
         }
 
-        OrderItemId = orderItemId;
-        ClientId = clientId;
-        EventId = eventId;
-        AccessCode = accessCode.Trim();
         Status = IssuedTicketStatus.Issued;
         IssuedAt = DateTime.UtcNow;
     }
 
     public void CheckIn()
     {
+        ClearErrors();
+
         if (Status == IssuedTicketStatus.CheckedIn)
         {
-            throw new Exception("O ingresso ja foi utilizado no check-in");
+            AddError("Status", "O ingresso ja foi utilizado no check-in");
+            return;
         }
 
         if (Status == IssuedTicketStatus.Cancelled)
         {
-            throw new Exception("Nao eh possivel fazer check-in com bilhete cancelado");
+            AddError("Status", "Nao eh possivel fazer check-in com bilhete cancelado");
+            return;
         }
 
         Status = IssuedTicketStatus.CheckedIn;
@@ -69,14 +83,18 @@ public class IssuedTicket : BaseEntity
 
     public void Cancel()
     {
+        ClearErrors();
+
         if (Status == IssuedTicketStatus.CheckedIn)
         {
-            throw new Exception("Nao eh possivel cancelar um bilhete ja utilizado");
+            AddError("Status", "Nao eh possivel cancelar um bilhete ja utilizado");
+            return;
         }
 
         if (Status == IssuedTicketStatus.Cancelled)
         {
-            throw new Exception("O bilhete ja esta cancelado");
+            AddError("Status", "O bilhete ja esta cancelado");
+            return;
         }
 
         Status = IssuedTicketStatus.Cancelled;

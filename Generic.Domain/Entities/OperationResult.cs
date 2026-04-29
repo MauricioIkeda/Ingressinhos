@@ -59,6 +59,7 @@ public class OperationResult<T> : OperationResult
     }
 
     public static OperationResult<T> Ok(T data) => new(true, 200, data);
+    public static OperationResult<T> Created(T data) => new(true, 201, data);
     public static new OperationResult<T> Created() => new(true, 201);
     public static new OperationResult<T> Fail(IEnumerable<MensagemErro> errors) => new(false, 400, default, errors);
     public static new OperationResult<T> Fail(MensagemErro error) => new(false, 400, default, [error]);

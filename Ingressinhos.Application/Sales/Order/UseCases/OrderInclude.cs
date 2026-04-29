@@ -39,6 +39,10 @@ public class OrderInclude : IUseCaseCommand<OrderDto>
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow
             };
+            if (!orderEntity.IsValid)
+            {
+                return orderEntity.ToUnprocessableEntityResult();
+            }
 
             var repository = _repositorySession.GetRepository();
             repository.Include(orderEntity);

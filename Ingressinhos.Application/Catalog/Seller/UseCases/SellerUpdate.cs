@@ -41,11 +41,22 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
             }
 
             if (seller.Name != sellerEntity.Name)
+            {
                 sellerEntity.ChangeName(seller.Name);
+                if (!sellerEntity.IsValid)
+                {
+                    return sellerEntity.ToUnprocessableEntityResult();
+                }
+            }
 
             if (seller.Email != sellerEntity.Email.Endereco)
             {
                 sellerEntity.ChangeEmail(seller.Email);
+                if (!sellerEntity.IsValid)
+                {
+                    return sellerEntity.ToUnprocessableEntityResult();
+                }
+
                 if (!_requestAuth.ChangeEmail(sellerEntity.UserId, seller.Email).GetAwaiter().GetResult())
                 {
                     return OperationResult.UnprocessableEntity(new MensagemErro("Email", "Falha ao atualizar o email do usuario."));
@@ -53,7 +64,13 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
             }
 
             if (seller.Cnpj != sellerEntity.Cnpj.Numero)
+            {
                 sellerEntity.ChangeTradingName(seller.TradingName);
+                if (!sellerEntity.IsValid)
+                {
+                    return sellerEntity.ToUnprocessableEntityResult();
+                }
+            }
 
             sellerEntity.UpdatedAt = DateTime.UtcNow;
 

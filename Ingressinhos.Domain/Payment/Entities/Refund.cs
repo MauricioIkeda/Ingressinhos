@@ -7,8 +7,8 @@ namespace Ingressinhos.Domain.Payment.Entities;
 public class Refund : BaseEntity
 {
     public long PaymentTransactionId { get; private set; }
-    public Price Amount { get; private set; }
-    public string Reason { get; private set; }
+    public Price Amount { get; private set; } = new(0);
+    public string Reason { get; private set; } = string.Empty;
     public RefundStatus Status { get; private set; }
     public DateTime RequestedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
@@ -16,33 +16,47 @@ public class Refund : BaseEntity
 
     protected Refund()
     {
-        
     }
 
     public Refund(long paymentTransactionId, decimal amount, string reason)
     {
         if (paymentTransactionId <= 0)
         {
-            throw new Exception("Deve ser informado o pagamento do reembolso");
+            AddError("PaymentTransactionId", "Deve ser informado o pagamento do reembolso");
+        }
+        else
+        {
+            PaymentTransactionId = paymentTransactionId;
         }
 
         if (string.IsNullOrWhiteSpace(reason))
         {
-            throw new Exception("Deve ser informada a justificativa do reembolso");
+            AddError("Reason", "Deve ser informada a justificativa do reembolso");
+        }
+        else
+        {
+            Reason = reason.Trim();
         }
 
-        PaymentTransactionId = paymentTransactionId;
-        Amount = new Price(amount);
-        Reason = reason.Trim();
+        var price = new Price(amount);
+        CopyErrorsFrom(price);
+        if (price.IsValid)
+        {
+            Amount = price;
+        }
+
         Status = RefundStatus.Requested;
         RequestedAt = DateTime.UtcNow;
     }
 
     public void Complete()
     {
+        ClearErrors();
+
         if (Status != RefundStatus.Requested)
         {
-            throw new Exception("Somente reembolsos solicitados podem ser finalizados");
+            AddError("Status", "Somente reembolsos solicitados podem ser finalizados");
+            return;
         }
 
         Status = RefundStatus.Completed;
@@ -51,9 +65,12 @@ public class Refund : BaseEntity
 
     public void Reject()
     {
+        ClearErrors();
+
         if (Status != RefundStatus.Requested)
         {
-            throw new Exception("Somente reembolsos solicitados podem ser rejeitados");
+            AddError("Status", "Somente reembolsos solicitados podem ser rejeitados");
+            return;
         }
 
         Status = RefundStatus.Rejected;

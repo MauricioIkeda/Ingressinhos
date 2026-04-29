@@ -1,9 +1,5 @@
-using Auth.Application.Utils.Services;
-using Auth.Domain.Entities;
-using Auth.Domain.Enums;
-using Generic.Domain.Entities;
-using Generic.Domain.ValueObjects;
-using Generic.Infrastructure.Interfaces;
+using Auth.Application.Authorization.UserAccess.Dtos;
+using Auth.Application.Authorization.UserAccess.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.API.Controllers.Auth;
@@ -12,103 +8,42 @@ namespace Auth.API.Controllers.Auth;
 [Route("api/auth/users")]
 public class UserManagementController : ControllerBase
 {
-    private readonly IRepositorySession _repositorySession;
+    private readonly IUseCaseCreateUserAuth _createUserAuth;
+    private readonly IUseCaseChangeUserEmail _changeUserEmail;
 
-    public UserManagementController(IRepositorySession repositorySession)
+    public UserManagementController(IUseCaseCreateUserAuth createUserAuth, IUseCaseChangeUserEmail changeUserEmail)
     {
-        _repositorySession = repositorySession;
+        _createUserAuth = createUserAuth;
+        _changeUserEmail = changeUserEmail;
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+    public IActionResult CreateUser([FromBody] CreateUserRequest request)
     {
-        if (request is null)
+        var result = _createUserAuth.Execute(new CreateUserAuthDto(request?.Name, request?.Email, request?.Password, request?.Role ?? 0));
+
+        if (!result.Success)
         {
-            return StatusCode(422, [new MensagemErro("Body", "Deve ser informado o corpo da requisicao.")]);
+            return StatusCode(result.StatusCode, result.Errors);
         }
 
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
-            return StatusCode(422, [new MensagemErro("Name", "Deve ser informado o nome.")]);
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Email))
-        {
-            return StatusCode(422, [new MensagemErro("Email", "Deve ser informado o email.")]);
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Password))
-        {
-            return StatusCode(422, [new MensagemErro("Password", "Deve ser informada a senha.")]);
-        }
-
-        if (!Enum.IsDefined(typeof(RoleUser), request.Role))
-        {
-            return StatusCode(422, [new MensagemErro("Role", "Perfil (role) invalido.")]);
-        }
-
-        try
-        {
-            var email = new Email(request.Email);
-            var repositoryQuery = _repositorySession.GetRepositoryQuery();
-
-            var emailInUse = repositoryQuery.Query<UserAuth>(u => u.Email == email).Any();
-            if (emailInUse)
-            {
-                return StatusCode(400, [new MensagemErro("Email", "Ja existe um usuario cadastrado com esse email.")]);
-            }
-
-            var passwordHash = PasswordHash.Hash(request.Password);
-            var user = new UserAuth(request.Name, request.Email, (RoleUser)request.Role, passwordHash);
-
-            var repository = _repositorySession.GetRepository();
-            repository.Include(user);
-            await repository.Flush();
-
-            return StatusCode(201, new CreateUserResponse(user.UserId));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(422, [MensagemErro.Geral(ex.Message)]);
-        }
+        return StatusCode(result.StatusCode, new CreateUserResponse(result.Data));
     }
 
-    [HttpPut("{userId}/email")]
-    public async Task<IActionResult> ChangeEmail(string userId, [FromBody] ChangeEmailRequest request)
+    [HttpPut("{userId}/email")]  // preciso mudar
+    public IActionResult ChangeEmail(string userId, [FromBody] ChangeEmailRequest request)
     {
-        if (string.IsNullOrWhiteSpace(userId))
+        var result = _changeUserEmail.Execute(new ChangeUserEmailDto(userId, request?.NewEmail));
+
+        if (!result.Success)
         {
-            return StatusCode(422, [new MensagemErro("UserId", "Deve ser informado o identificador do usuario.")]);
+            return StatusCode(result.StatusCode, result.Errors);
         }
 
-        if (request is null || string.IsNullOrWhiteSpace(request.NewEmail))
-        {
-            return StatusCode(422, [new MensagemErro("NewEmail", "Deve ser informado o novo email.")]);
-        }
-
-        try
-        {
-            var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var user = repositoryQuery.Query<UserAuth>(u => u.UserId == userId && u.Active).FirstOrDefault();
-            if (user is null)
-            {
-                return StatusCode(404, [new MensagemErro("UserId", "Usuario nao encontrado.")]);
-            }
-
-            user.ChangeEmail(request.NewEmail);
-
-            var repository = _repositorySession.GetRepository();
-            repository.Upsert(user);
-            await repository.Flush();
-
-            return StatusCode(200, new ChangeEmailResponse(true));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(422, [MensagemErro.Geral(ex.Message)]);
-        }
+        return StatusCode(result.StatusCode, new ChangeEmailResponse(true));
     }
 
+    //Dtos somente usados aqui
     public record CreateUserRequest(string Name, string Email, string Password, int Role);
     public record CreateUserResponse(string UserId);
     public record ChangeEmailRequest(string NewEmail);

@@ -52,9 +52,17 @@ public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
                 {
                     case IssuedTicketStatus.CheckedIn:
                         issuedTicketEntity.CheckIn();
+                        if (!issuedTicketEntity.IsValid)
+                        {
+                            return issuedTicketEntity.ToUnprocessableEntityResult();
+                        }
                         break;
                     case IssuedTicketStatus.Cancelled:
                         issuedTicketEntity.Cancel();
+                        if (!issuedTicketEntity.IsValid)
+                        {
+                            return issuedTicketEntity.ToUnprocessableEntityResult();
+                        }
                         break;
                     default:
                         return OperationResult.UnprocessableEntity(new MensagemErro("Status", "Nao eh possivel retornar o ingresso ao status emitido."));

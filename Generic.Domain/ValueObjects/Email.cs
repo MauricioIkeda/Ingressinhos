@@ -1,26 +1,29 @@
+using Generic.Domain.Entities;
 using System.Text.RegularExpressions;
 
 namespace Generic.Domain.ValueObjects;
 
-public record Email
+public class Email : ValidatableObject
 {
-    public string Endereco { get; init; }
+    public string Endereco { get; init; } = string.Empty;
 
     public Email(string endereco)
     {
         if (string.IsNullOrWhiteSpace(endereco))
         {
-            throw new Exception("Deve ser informado o email");
+            AddError("Email", "Deve ser informado o email");
+            return;
         }
         
-        var emailFormatado = endereco.Trim().ToLower();
+        var emailFormatado = endereco.Trim().ToLowerInvariant();
 
         if (!Validar(emailFormatado))
         {
-            throw new Exception("O email deve ser valido!");
+            AddError("Email", "O email deve ser valido!");
+            return;
         }
         
-        Endereco = endereco;
+        Endereco = emailFormatado;
     }
 
     private static bool Validar(string endereco)

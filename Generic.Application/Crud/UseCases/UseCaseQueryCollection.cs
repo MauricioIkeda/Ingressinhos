@@ -21,6 +21,11 @@ public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
 
     public virtual OperationResult<IQueryable<TEntity>> GetOdata(Expression<Func<TEntity, bool>> where)
     {
+        if (where is null)
+        {
+            return OperationResult<IQueryable<TEntity>>.UnprocessableEntity(new MensagemErro("Filtro", "Filtro de consulta deve ser informado."));
+        }
+
         var result = _useCaseGetOdata.Execute(where, _repositorySession.GetRepositoryQuery());
         return OperationResult<IQueryable<TEntity>>.Ok(result);
     }

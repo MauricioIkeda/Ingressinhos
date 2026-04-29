@@ -58,16 +58,28 @@ public class EventUpdate : IUseCaseCommand<EventDto>
             if (eventDto.Name != eventEntity.Name)
             {
                 eventEntity.ChangeName(eventDto.Name);
+                if (!eventEntity.IsValid)
+                {
+                    return eventEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (eventDto.LocationId != eventEntity.LocationId)
             {
                 eventEntity.ChangeLocation(eventDto.LocationId);
+                if (!eventEntity.IsValid)
+                {
+                    return eventEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (eventDto.StartTime != eventEntity.StartTime || eventDto.EndTime != eventEntity.EndTime)
             {
                 eventEntity.RescheduleEvent(eventDto.StartTime, eventDto.EndTime);
+                if (!eventEntity.IsValid)
+                {
+                    return eventEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (eventDto.HasSeats != eventEntity.HasSeats)

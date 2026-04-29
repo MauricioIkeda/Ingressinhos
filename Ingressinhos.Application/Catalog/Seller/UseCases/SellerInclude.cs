@@ -37,6 +37,10 @@ public class SellerInclude : IUseCaseCommand<SellerDto>
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow
             };
+            if (!sellerEntity.IsValid)
+            {
+                return sellerEntity.ToUnprocessableEntityResult();
+            }
 
             var repository = _repositorySession.GetRepository();
             repository.Include(sellerEntity);

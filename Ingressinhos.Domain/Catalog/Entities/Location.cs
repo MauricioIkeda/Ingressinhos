@@ -4,7 +4,7 @@ namespace Ingressinhos.Domain.Catalog.Entities;
 
 public class Location : BaseEntity
 {
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
     public int TotalCapacity { get; private set; }
     public bool HasSeats { get; private set; }
 
@@ -16,24 +16,33 @@ public class Location : BaseEntity
     {
         if (string.IsNullOrEmpty(name))
         {
-            throw new Exception("Deve ser informado o nome do local");
+            AddError("Name", "Deve ser informado o nome do local");
+        }
+        else
+        {
+            Name = name;
         }
 
         if (totalCapacity <= 0)
         {
-            throw new Exception("Deve ser informado uma capacidade valida do local");
+            AddError("TotalCapacity", "Deve ser informado uma capacidade valida do local");
+        }
+        else
+        {
+            TotalCapacity = totalCapacity;
         }
         
-        Name = name;
-        TotalCapacity = totalCapacity;
         HasSeats = hasSeats;
     }
     
     public void ChangeName(string name)
     {
+        ClearErrors();
+
         if (string.IsNullOrEmpty(name))
         {
-            throw new Exception("Deve ser informado o nome do local");
+            AddError("Name", "Deve ser informado o nome do local");
+            return;
         }
         
         Name = name;
@@ -41,9 +50,12 @@ public class Location : BaseEntity
 
     public void ChangeTotalCapacity(int totalCapacity)
     {
+        ClearErrors();
+
         if (totalCapacity <= 0)
         {
-            throw new Exception("Deve ser informado uma capacidade valida");
+            AddError("TotalCapacity", "Deve ser informado uma capacidade valida");
+            return;
         }
         
         TotalCapacity = totalCapacity;
@@ -51,6 +63,7 @@ public class Location : BaseEntity
 
     public void ChangeSeatMode(bool hasSeats)
     {
+        ClearErrors();
         HasSeats = hasSeats;
     }
 }

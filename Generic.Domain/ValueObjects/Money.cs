@@ -1,20 +1,24 @@
+using Generic.Domain.Entities;
+
 namespace Generic.Domain.ValueObjects;
 
-public record Money
+public class Money : ValidatableObject
 {
     public decimal Amount { get; init; }
-    public string Currency { get; init; }
+    public string Currency { get; init; } = "BRL";
 
     public Money(decimal amount, string currency = "BRL")
     {
         if (amount < 0)
         {
-            throw new Exception("O valor monetario nao pode ser negativo");
+            AddError("Amount", "O valor monetario nao pode ser negativo");
+            return;
         }
 
         if (string.IsNullOrWhiteSpace(currency))
         {
-            throw new Exception("Deve ser informada a moeda");
+            AddError("Currency", "Deve ser informada a moeda");
+            return;
         }
 
         Amount = decimal.Round(amount, 2, MidpointRounding.AwayFromZero);
@@ -23,33 +27,59 @@ public record Money
 
     public Money Add(Money other)
     {
-        EnsureSameCurrency(other);
-        return new Money(Amount + other.Amount, Currency);
+        ClearErrors();
+
+        if (!EnsureSameCurrency(other))
+        {
+            return this;
+        }
+
+        var result = new Money(Amount + other.Amount, Currency);
+        CopyErrorsFrom(result);
+        return result;
     }
 
     public Money Subtract(Money other)
     {
-        EnsureSameCurrency(other);
+        ClearErrors();
+
+        if (!EnsureSameCurrency(other))
+        {
+            return this;
+        }
 
         if (other.Amount > Amount)
         {
-            throw new Exception("Nao eh possivel subtrair valor maior do que o atual");
+            AddError("Amount", "Nao eh possivel subtrair valor maior do que o atual");
+            return this;
         }
 
-        return new Money(Amount - other.Amount, Currency);
+        var result = new Money(Amount - other.Amount, Currency);
+        CopyErrorsFrom(result);
+        return result;
     }
 
-    private void EnsureSameCurrency(Money other)
+    private bool EnsureSameCurrency(Money other)
     {
         if (other is null)
         {
-            throw new Exception("Deve ser informado um valor monetario");
+            AddError("Money", "Deve ser informado um valor monetario");
+            return false;
+        }
+
+        if (!other.IsValid)
+        {
+            CopyErrorsFrom(other);
+            return false;
         }
 
         if (Currency != other.Currency)
         {
-            throw new Exception("Nao eh possivel operar valores de moedas diferentes");
+            AddError("Currency", "Nao eh possivel operar valores de moedas diferentes");
+            return false;
         }
+
+        return true;
     }
 
     public override string ToString()

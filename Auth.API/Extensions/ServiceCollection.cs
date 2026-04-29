@@ -28,6 +28,8 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(authConnectionString));
 
         services.AddScoped<DbContext>(sp => sp.GetRequiredService<AuthDbContext>());
+        services.AddScoped<IRepository>(sp => new RepositoryEF(sp.GetRequiredService<DbContext>()));
+        services.AddScoped<IRepositoryQuery>(sp => new RepositoryQueryEF(sp.GetRequiredService<DbContext>()));
         services.AddScoped<IRepositorySession, RepositorySessionEF>();
 
         return services;
@@ -37,6 +39,8 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IUseCaseUserAccessQuery, UseCaseUserAccessQuery>();
         services.AddScoped<IUseCaseUserAuthCollection, AuthenticateUserUseCase>();
+        services.AddScoped<IUseCaseCreateUserAuth, CreateUserAuthUseCase>();
+        services.AddScoped<IUseCaseChangeUserEmail, ChangeUserEmailUseCase>();
         services.AddScoped<IToken>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();
