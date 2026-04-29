@@ -1,4 +1,5 @@
 using Auth.Domain.Entities;
+using Auth.Application.Authorization.UserAccess.Interfaces;
 using Auth.Application.Utils.Services;
 using Auth.Domain.Enums;
 using Generic.Domain.ValueObjects;
@@ -11,9 +12,9 @@ namespace Auth.API.Controllers.Auth;
 [Route("api/auth/users")]
 public class UserManagementController : ControllerBase
 {
-    private readonly IUseCaseUserAuthColletion _userAuthUseCases;
+    private readonly IUseCaseUserAuthCollection _userAuthUseCases;
 
-    public UserManagementController(IUseCaseUserAuthColletion userAuthUseCases)
+    public UserManagementController(IUseCaseUserAuthCollection userAuthUseCases)
     {
         _userAuthUseCases = userAuthUseCases;
     }

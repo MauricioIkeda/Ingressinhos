@@ -9,7 +9,7 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 public class UseCaseSellerCollection : UseCaseCrudCollection<Seller, SellerDto>, IUseCaseSellerCollection
 {
     public UseCaseSellerCollection(IRepositorySession repositorySession, SellerUpdate update, SellerInclude sellerInclude)
-        : base( sellerInclude.Execute, update.Execute, new UseCaseGetOdata<Seller>(), new UseCaseGet<Seller>(), new UseCaseDelete<Seller>(), repositorySession)
+        : base(sellerInclude, update, new UseCaseGetOdata<Seller>(), new UseCaseGet<Seller>(), new UseCaseDelete<Seller>(), repositorySession)
     {
     }
 }

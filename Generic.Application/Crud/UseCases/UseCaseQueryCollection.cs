@@ -9,12 +9,12 @@ public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
     where TEntity : BaseEntity
 {
     private readonly UseCaseGetOdata<TEntity> _useCaseGetOdata;
-    private readonly UseCaseGet<TEntity> _useCaseGetById;
+    private readonly IUseCaseGet<TEntity> _useCaseGetById;
     protected readonly IRepositorySession _repositorySession;
 
     public ListMessages Messages { get; } = new();
 
-    public UseCaseQueryCollection(UseCaseGetOdata<TEntity> useCaseGetOdata, UseCaseGet<TEntity> useCaseGetById, IRepositorySession repositorySession)
+    public UseCaseQueryCollection(UseCaseGetOdata<TEntity> useCaseGetOdata, IUseCaseGet<TEntity> useCaseGetById, IRepositorySession repositorySession)
     {
         _useCaseGetOdata = useCaseGetOdata;
         _useCaseGetById = useCaseGetById;
@@ -23,31 +23,21 @@ public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
 
     public virtual IQueryable<TEntity> GetOdata(Expression<Func<TEntity, bool>> where)
     {
-        try
-        {
-            var result = _useCaseGetOdata.Execute(where, _repositorySession.GetRepositoryQuery());
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Messages.Add(ex);
-            throw;
-        }
-
+        Messages.Clear();
+        return _useCaseGetOdata.Execute(where, _repositorySession.GetRepositoryQuery());
     }
 
     public virtual TEntity GetById(long id)
     {
-        try
-        {
-            var result = _useCaseGetById.Execute(id, _repositorySession.GetRepositoryQuery());
-            return result;
-        }
-        catch (Exception ex)
-        {
-            Messages.Add(ex);
-            throw;
-        }
-    }
+        Messages.Clear();
 
+        var result = _useCaseGetById.Execute(id, _repositorySession.GetRepositoryQuery());
+
+        if (_useCaseGetById.Messages.Any())
+        {
+            Messages.AddRange(_useCaseGetById.Messages);
+        }
+
+        return result;
+    }
 }

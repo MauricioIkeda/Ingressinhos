@@ -9,7 +9,7 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 public class UseCaseSeatCollection : UseCaseCrudCollection<Seat, SeatDto>, IUseCaseSeatCollection
 {
     public UseCaseSeatCollection(IRepositorySession repositorySession, SeatUpdate update, SeatInclude include)
-        : base(include.Execute, update.Execute, new UseCaseGetOdata<Seat>(), new UseCaseGet<Seat>(), new UseCaseDelete<Seat>(), repositorySession)
+        : base(include, update, new UseCaseGetOdata<Seat>(), new UseCaseGet<Seat>(), new UseCaseDelete<Seat>(), repositorySession)
     {
     }
 }

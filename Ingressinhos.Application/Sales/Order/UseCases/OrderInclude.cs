@@ -1,3 +1,5 @@
+using Generic.Application.Crud.Interface;
+using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Dtos;
 using Ingressinhos.Domain.Sales.Entities;
@@ -5,8 +7,10 @@ using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 
 namespace Ingressinhos.Application.Sales.UseCases;
 
-public class OrderInclude
+public class OrderInclude : IUseCaseCommand<OrderDto>
 {
+    public ListMessages Messages { get; } = new();
+
     private readonly IRepositorySession _repositorySession;
 
     public OrderInclude(IRepositorySession repositorySession)
@@ -16,29 +20,41 @@ public class OrderInclude
 
     public bool Execute(OrderDto orderDto)
     {
+        Messages.Clear();
+
         if (orderDto is null)
         {
-            throw new Exception("Deve ser informado o pedido");
+            Messages.Add("Deve ser informado o pedido", error: true);
+            return false;
         }
         
-        var client = _repositorySession.GetRepositoryQuery().Return<Client>(orderDto.ClientId);
-
-        if (client is null)
+        try
         {
-            throw new Exception("Deve ser informado o cliente");
+            var client = _repositorySession.GetRepositoryQuery().Return<Client>(orderDto.ClientId);
+
+            if (client is null)
+            {
+                Messages.Add("Deve ser informado o cliente", error: true);
+                return false;
+            }
+
+            var utcNow = DateTime.UtcNow;
+
+            var orderEntity = new OrderDomain(orderDto.ClientId)
+            {
+                CreatedAt = utcNow,
+                UpdatedAt = utcNow
+            };
+
+            var repository = _repositorySession.GetRepository();
+            repository.Include(orderEntity);
+            repository.Flush().GetAwaiter().GetResult();
+            return true;
         }
-
-        var utcNow = DateTime.UtcNow;
-
-        var orderEntity = new OrderDomain(orderDto.ClientId)
+        catch (Exception ex)
         {
-            CreatedAt = utcNow,
-            UpdatedAt = utcNow
-        };
-
-        var repository = _repositorySession.GetRepository();
-        repository.Include(orderEntity);
-        repository.Flush().GetAwaiter().GetResult();
-        return true;
+            Messages.Add(ex);
+            return false;
+        }
     }
 }

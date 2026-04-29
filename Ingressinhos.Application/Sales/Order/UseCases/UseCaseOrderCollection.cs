@@ -9,7 +9,7 @@ namespace Ingressinhos.Application.Sales.UseCases;
 public class UseCaseOrderCollection : UseCaseCrudCollection<OrderDomain, OrderDto>, IUseCaseOrderCollection
 {
     public UseCaseOrderCollection(IRepositorySession repositorySession, OrderUpdate update, OrderInclude include)
-        : base(include.Execute, update.Execute, new UseCaseGetOdata<OrderDomain>(), new UseCaseGet<OrderDomain>(), new UseCaseDelete<OrderDomain>(), repositorySession)
+        : base(include, update, new UseCaseGetOdata<OrderDomain>(), new UseCaseGet<OrderDomain>(), new UseCaseDelete<OrderDomain>(), repositorySession)
     {
     }
 }

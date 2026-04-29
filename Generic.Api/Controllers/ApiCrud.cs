@@ -48,22 +48,15 @@ public abstract class ApiCrud<TEntity, TCommand> : ApiQuery<TEntity>
             return BadRequestFromMessages("A acao de comando nao foi configurada.");
         }
 
-        try
-        {
-            ResetMessages();
+        ResetMessages();
 
-            var result = commandAction();
+        var result = commandAction();
 
-            if (!result)
-            {
-                return BadRequestFromMessages(errorMessage);
-            }
-
-            return OkFromMessages(successMessage);
-        }
-        catch
+        if (!result)
         {
             return BadRequestFromMessages(errorMessage);
         }
+
+        return OkFromMessages(successMessage);
     }
 }

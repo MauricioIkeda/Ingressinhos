@@ -1,3 +1,5 @@
+ï»¿using Generic.Application.Crud.Interface;
+using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
@@ -6,8 +8,10 @@ using LocationDomain = Ingressinhos.Domain.Catalog.Entities.Location;
 
 namespace Ingressinhos.Application.Catalog.UseCases;
 
-public class SeatInclude
+public class SeatInclude : IUseCaseCommand<SeatDto>
 {
+    public ListMessages Messages { get; } = new();
+
     private readonly IRepositorySession _repositorySession;
 
     public SeatInclude(IRepositorySession repositorySession)
@@ -17,43 +21,57 @@ public class SeatInclude
 
     public bool Execute(SeatDto seat)
     {
+        Messages.Clear();
+
         if (seat is null)
         {
-            throw new Exception("Deve ser informado o assento");
+            Messages.Add("Deve ser informado o assento", error: true);
+            return false;
         }
 
-        var utcNow = DateTime.UtcNow;
-
-        IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
-        LocationDomain location = repositoryQuery.Return<LocationDomain>(seat.LocationId);
-        if (location is null)
+        try
         {
-            throw new Exception("Local não encontrado");
+            var utcNow = DateTime.UtcNow;
+
+            IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
+            LocationDomain location = repositoryQuery.Return<LocationDomain>(seat.LocationId);
+            if (location is null)
+            {
+                Messages.Add("Local nao encontrado", error: true);
+                return false;
+            }
+
+            if (!location.HasSeats)
+            {
+                Messages.Add("O local informado nao possui assentos", error: true);
+                return false;
+            }
+
+            var existingSeat = repositoryQuery.Count<Seat>(s => s.LocationId == seat.LocationId && s.Code == seat.Code) > 0;
+            if (existingSeat)
+            {
+                Messages.Add("Ja existe um assento com o mesmo codigo neste local", error: true);
+                return false;
+            }
+
+            var seatEntity = new Seat(seat.LocationId, seat.Code, seat.Category)
+            {
+                CreatedAt = utcNow,
+                UpdatedAt = utcNow
+            };
+
+            ApplySeatStatus(seatEntity, seat.Status);
+
+            var repository = _repositorySession.GetRepository();
+            repository.Include(seatEntity);
+            repository.Flush().GetAwaiter().GetResult();
+            return true;
         }
-
-        if (!location.HasSeats)
+        catch (Exception ex)
         {
-            throw new Exception("O local informado não possui assentos");
+            Messages.Add(ex);
+            return false;
         }
-
-        var existingSeat = repositoryQuery.Count<Seat>(s => s.LocationId == seat.LocationId && s.Code == seat.Code) > 0;
-        if (existingSeat)
-        {
-            throw new Exception("Já existe um assento com o mesmo código neste local");
-        }
-
-        var seatEntity = new Seat(seat.LocationId, seat.Code, seat.Category)
-        {
-            CreatedAt = utcNow,
-            UpdatedAt = utcNow
-        };
-
-        ApplySeatStatus(seatEntity, seat.Status);
-
-        var repository = _repositorySession.GetRepository();
-        repository.Include(seatEntity);
-        repository.Flush().GetAwaiter().GetResult();
-        return true;
     }
 
     private static void ApplySeatStatus(Seat seatEntity, SeatStatus status)

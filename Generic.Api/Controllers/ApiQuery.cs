@@ -29,30 +29,21 @@ public abstract class ApiQuery<TEntity> : ControllerBase
             return BadRequest(CreateMessages($"Filtro de consulta de deve ser informado."));
         }
 
-        try
-        {
-            ResetMessages();
-            var result = _queryCollection.GetOdata(where).ToList();
-            return Ok(result);
-        }
-        catch
-        {
-            return BadRequest(MessagesOrFallback($"Nao foi possivel consultar."));
-        }
+        ResetMessages();
+        var result = _queryCollection.GetOdata(where).ToList();
+        return Ok(result);
     }
 
     protected IActionResult GetByIdResult(long id)
     {
-        try
-        {
-            ResetMessages();
-            var result = _queryCollection.GetById(id);
-            return Ok(result);
-        }
-        catch
+        ResetMessages();
+        var result = _queryCollection.GetById(id);
+        if (result is null)
         {
             return BadRequest(MessagesOrFallback($"Nao foi possivel buscar {typeof(TEntity).Name}."));
         }
+
+        return Ok(result);
     }
 
     protected IActionResult OkFromMessages(string successMessage)

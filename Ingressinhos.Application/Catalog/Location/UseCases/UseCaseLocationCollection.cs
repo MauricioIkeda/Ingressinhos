@@ -10,7 +10,7 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 public class UseCaseLocationCollection : UseCaseCrudCollection<DomainLocation, LocationDto>, IUseCaseLocationCollection
 {
     public UseCaseLocationCollection(IRepositorySession repositorySession, UpdateLocationUseCase update, CreateLocationUseCase include)
-        : base(include.Execute, update.Execute, new UseCaseGetOdata<DomainLocation>(), new UseCaseGet<DomainLocation>(), new UseCaseDelete<DomainLocation>(), repositorySession)
+        : base(include, update, new UseCaseGetOdata<DomainLocation>(), new UseCaseGet<DomainLocation>(), new UseCaseDelete<DomainLocation>(), repositorySession)
     {
     }
 }

@@ -1,3 +1,5 @@
+using Generic.Application.Crud.Interface;
+using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
@@ -6,8 +8,10 @@ using IssuedTicketDomain = Ingressinhos.Domain.Sales.Entities.IssuedTicket;
 
 namespace Ingressinhos.Application.Sales.UseCases;
 
-public class IssuedTicketInclude
+public class IssuedTicketInclude : IUseCaseCommand<IssuedTicketDto>
 {
+    public ListMessages Messages { get; } = new();
+
     private readonly IRepositorySession _repositorySession;
 
     public IssuedTicketInclude(IRepositorySession repositorySession)
@@ -17,41 +21,57 @@ public class IssuedTicketInclude
 
     public bool Execute(IssuedTicketDto issuedTicketDto)
     {
+        Messages.Clear();
+
         if (issuedTicketDto is null)
         {
-            throw new Exception("Deve ser informado o ingresso emitido");
+            Messages.Add("Deve ser informado o ingresso emitido", error: true);
+            return false;
         }
 
-        if (_repositorySession.GetRepositoryQuery().Return<OrderItem>(issuedTicketDto.OrderItemId) is null)
+        try
         {
-            throw new Exception("Deve ser informado um pedido valido");
-        }
-        
-        if (_repositorySession.GetRepositoryQuery().Return<Client>(issuedTicketDto.ClientId) is null)
-        {
-            throw new Exception("Deve ser informado um cliente valido");
-        }
-        
-        if (_repositorySession.GetRepositoryQuery().Return<Event>(issuedTicketDto.EventId) is null)
-        {
-            throw new Exception("Deve ser informado um evento valido");
-        }
+            var repositoryQuery = _repositorySession.GetRepositoryQuery();
 
-        var utcNow = DateTime.UtcNow;
-        
-        var issuedTicketEntity = new IssuedTicketDomain(
-            issuedTicketDto.OrderItemId,
-            issuedTicketDto.ClientId,
-            issuedTicketDto.EventId,
-            issuedTicketDto.AccessCode)
-        {
-            CreatedAt = utcNow,
-            UpdatedAt = utcNow
-        };
+            if (repositoryQuery.Return<OrderItem>(issuedTicketDto.OrderItemId) is null)
+            {
+                Messages.Add("Deve ser informado um pedido valido", error: true);
+                return false;
+            }
+            
+            if (repositoryQuery.Return<Client>(issuedTicketDto.ClientId) is null)
+            {
+                Messages.Add("Deve ser informado um cliente valido", error: true);
+                return false;
+            }
+            
+            if (repositoryQuery.Return<Event>(issuedTicketDto.EventId) is null)
+            {
+                Messages.Add("Deve ser informado um evento valido", error: true);
+                return false;
+            }
 
-        var repository = _repositorySession.GetRepository();
-        repository.Include(issuedTicketEntity);
-        repository.Flush().GetAwaiter().GetResult();
-        return true;
+            var utcNow = DateTime.UtcNow;
+            
+            var issuedTicketEntity = new IssuedTicketDomain(
+                issuedTicketDto.OrderItemId,
+                issuedTicketDto.ClientId,
+                issuedTicketDto.EventId,
+                issuedTicketDto.AccessCode)
+            {
+                CreatedAt = utcNow,
+                UpdatedAt = utcNow
+            };
+
+            var repository = _repositorySession.GetRepository();
+            repository.Include(issuedTicketEntity);
+            repository.Flush().GetAwaiter().GetResult();
+            return true;
+        }
+        catch (Exception ex)
+        {
+            Messages.Add(ex);
+            return false;
+        }
     }
 }
