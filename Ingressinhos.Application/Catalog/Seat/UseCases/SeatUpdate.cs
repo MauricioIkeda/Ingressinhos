@@ -1,4 +1,4 @@
-﻿using Generic.Application.Crud.Interface;
+using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
@@ -10,8 +10,6 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class SeatUpdate : IUseCaseCommand<SeatDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public SeatUpdate(IRepositorySession repositorySession)
@@ -19,20 +17,16 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(SeatDto seat)
+    public OperationResult Execute(SeatDto seat)
     {
-        Messages.Clear();
-
         if (seat is null)
         {
-            Messages.Add("Deve ser informado o assento", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Seat", "Deve ser informado o assento."));
         }
 
         if (seat.SeatId <= 0)
         {
-            Messages.Add("Deve ser informado o identificador do assento", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador do assento."));
         }
 
         try
@@ -42,8 +36,7 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
 
             if (seatEntity is null)
             {
-                Messages.Add("Assento nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("Id", "Assento nao encontrado."));
             }
 
             if (seat.Category != seatEntity.Category)
@@ -58,8 +51,7 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
                     LocationDomain location = repositoryQuery.Return<LocationDomain>(seatEntity.LocationId);
                     if (location.HasSeats == false)
                     {
-                        Messages.Add("Nao e possivel alterar o status do assento, pois a localizacao nao possui assentos disponiveis", error: true);
-                        return false;
+                        return OperationResult.UnprocessableEntity(new MensagemErro("Status", "Nao e possivel alterar o status do assento, pois a localizacao nao possui assentos disponiveis."));
                     }
                 }
 
@@ -71,12 +63,11 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
             var repository = _repositorySession.GetRepository();
             repository.Upsert(seatEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 

@@ -1,10 +1,5 @@
-using Auth.API.Extensions;
-using Auth.Application.Utils.Interface;
-using Auth.Domain.Entities;
-using Generic.Domain.ValueObjects;
-using Generic.Infrastructure.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Auth.Application.Authorization.UserAccess.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.API.Controllers.Auth;
 
@@ -12,23 +7,22 @@ namespace Auth.API.Controllers.Auth;
 [Route("api/auth")]
 public class TokenController : ControllerBase
 {
-    private readonly IToken _token;
-    private readonly IUseCaseUserAuthCollection _authUseCase; // preciso fazer
-    public TokenController(IToken token, IUseCaseUserAuthCollection authUseCase)
+    private readonly IUseCaseUserAuthCollection _authUseCase;
+
+    public TokenController(IUseCaseUserAuthCollection authUseCase)
     {
-        _token = token;
         _authUseCase = authUseCase;
     }
 
     [HttpPost("login")]
     public IActionResult Authenticate([FromBody] AuthenticateRequest request)
     {
-        (bool success, string token) = _authUseCase.Execute(request.Email, request.Password);
+        var result = _authUseCase.Execute(request.Email, request.Password);
 
-        if (!success)
-            return Unauthorized(_authUseCase.Messages);
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result.Errors);
 
-        return Ok(new AuthenticateResponse(token));
+        return StatusCode(result.StatusCode, new AuthenticateResponse(result.Data));
     }
 
     public record AuthenticateRequest(string Email, string Password);

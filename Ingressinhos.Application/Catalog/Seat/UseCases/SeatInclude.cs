@@ -1,4 +1,4 @@
-﻿using Generic.Application.Crud.Interface;
+using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
@@ -10,8 +10,6 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class SeatInclude : IUseCaseCommand<SeatDto>
 {
-    public ListMessages Messages { get; } = new();
-
     private readonly IRepositorySession _repositorySession;
 
     public SeatInclude(IRepositorySession repositorySession)
@@ -19,14 +17,11 @@ public class SeatInclude : IUseCaseCommand<SeatDto>
         _repositorySession = repositorySession;
     }
 
-    public bool Execute(SeatDto seat)
+    public OperationResult Execute(SeatDto seat)
     {
-        Messages.Clear();
-
         if (seat is null)
         {
-            Messages.Add("Deve ser informado o assento", error: true);
-            return false;
+            return OperationResult.UnprocessableEntity(new MensagemErro("Seat", "Deve ser informado o assento."));
         }
 
         try
@@ -37,21 +32,18 @@ public class SeatInclude : IUseCaseCommand<SeatDto>
             LocationDomain location = repositoryQuery.Return<LocationDomain>(seat.LocationId);
             if (location is null)
             {
-                Messages.Add("Local nao encontrado", error: true);
-                return false;
+                return OperationResult.NotFound(new MensagemErro("LocationId", "Local nao encontrado."));
             }
 
             if (!location.HasSeats)
             {
-                Messages.Add("O local informado nao possui assentos", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("LocationId", "O local informado nao possui assentos."));
             }
 
             var existingSeat = repositoryQuery.Count<Seat>(s => s.LocationId == seat.LocationId && s.Code == seat.Code) > 0;
             if (existingSeat)
             {
-                Messages.Add("Ja existe um assento com o mesmo codigo neste local", error: true);
-                return false;
+                return OperationResult.UnprocessableEntity(new MensagemErro("Code", "Ja existe um assento com o mesmo codigo neste local."));
             }
 
             var seatEntity = new Seat(seat.LocationId, seat.Code, seat.Category)
@@ -65,12 +57,11 @@ public class SeatInclude : IUseCaseCommand<SeatDto>
             var repository = _repositorySession.GetRepository();
             repository.Include(seatEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return true;
+            return OperationResult.Created();
         }
         catch (Exception ex)
         {
-            Messages.Add(ex);
-            return false;
+            return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 
