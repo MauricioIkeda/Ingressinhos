@@ -1,9 +1,9 @@
-using Auth.Application.Authorization.UserAccess.Dtos;
+using Generic.Application.Dtos;
 using Generic.Domain.Entities;
 
 namespace Auth.Application.Authorization.UserAccess.Interfaces;
 
 public interface IUseCaseCreateUserAuth
 {
-    OperationResult<string> Execute(CreateUserAuthDto command);
+    OperationResult<string> Execute(CreateUserRequest command);
 }

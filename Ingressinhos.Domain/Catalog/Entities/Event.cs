@@ -19,7 +19,7 @@ public class Event : BaseEntity
     {
         if (string.IsNullOrEmpty(name))
         {
-            AddError("Name", "Deve ser informado o nome do evento");
+            AddError("Evento", "Informe o nome do evento.");
         }
         else
         {
@@ -28,7 +28,7 @@ public class Event : BaseEntity
 
         if (startTime <= DateTime.Now)
         {
-            AddError("StartTime", "Deve ser informado uma data valida para o evento");
+            AddError("Inicio", "Informe uma data de inicio valida.");
         }
         else
         {
@@ -37,7 +37,7 @@ public class Event : BaseEntity
 
         if (endTime <= startTime)
         {
-            AddError("EndTime", "O evento deve acabar depois de comecar");
+            AddError("Fim", "A data de termino precisa ser posterior ao inicio.");
         }
         else
         {
@@ -46,7 +46,7 @@ public class Event : BaseEntity
 
         if (locationId <= 0)
         {
-            AddError("LocationId", "Deve ser informado uma localidade");
+            AddError("Local", "Informe o local do evento.");
         }
         else
         {
@@ -55,7 +55,7 @@ public class Event : BaseEntity
 
         if (sellerId <= 0)
         {
-            AddError("SellerId", "Deve ser informado um vendedor valido");
+            AddError("Loja", "Nao foi possivel identificar a loja responsavel pelo evento.");
         }
         else
         {
@@ -71,7 +71,7 @@ public class Event : BaseEntity
 
         if (string.IsNullOrEmpty(name))
         {
-            AddError("Name", "Deve ser informado o nome do evento");
+            AddError("Evento", "Informe o nome do evento.");
             return;
         }
         
@@ -84,7 +84,7 @@ public class Event : BaseEntity
 
         if (locationId <= 0)
         {
-            AddError("LocationId", "Deve ser informado uma localidade");
+            AddError("Local", "Informe o local do evento.");
             return;
         }
         
@@ -97,13 +97,13 @@ public class Event : BaseEntity
 
         if (novaDataHoraInicio <= DateTime.Now)
         {
-            AddError("StartTime", "Deve ser informado uma data valida pro futuro");
+            AddError("Inicio", "Informe uma data de inicio valida no futuro.");
             return;
         }
 
         if (novaDataHoraFim <= novaDataHoraInicio)
         {
-            AddError("EndTime", "O evento deve acabar depois de comecar");
+            AddError("Fim", "A data de termino precisa ser posterior ao inicio.");
             return;
         }
         

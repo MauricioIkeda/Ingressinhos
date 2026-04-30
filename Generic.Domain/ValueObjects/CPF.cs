@@ -10,7 +10,7 @@ public class CPF : ValidatableObject
     {
         if (string.IsNullOrWhiteSpace(numero))
         {
-            AddError("Cpf", "O CPF eh obrigatorio e nao pode ser vazio");
+            AddError("CPF", "Informe um CPF.");
             return;
         }
         
@@ -18,7 +18,7 @@ public class CPF : ValidatableObject
 
         if (!Validar(numeroTratado))
         {
-            AddError("Cpf", "CPF Invalido");
+            AddError("CPF", "Informe um CPF valido.");
             return;
         }
         

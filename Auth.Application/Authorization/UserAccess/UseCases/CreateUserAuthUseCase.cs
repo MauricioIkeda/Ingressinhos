@@ -1,8 +1,8 @@
-using Auth.Application.Authorization.UserAccess.Dtos;
 using Auth.Application.Authorization.UserAccess.Interfaces;
 using Auth.Application.Utils.Services;
 using Auth.Domain.Entities;
 using Auth.Domain.Enums;
+using Generic.Application.Dtos;
 using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
 using Generic.Infrastructure.Interfaces;
@@ -18,49 +18,39 @@ public class CreateUserAuthUseCase : IUseCaseCreateUserAuth
         _repositorySession = repositorySession;
     }
 
-    public OperationResult<string> Execute(CreateUserAuthDto command)
+    public OperationResult<string> Execute(CreateUserRequest command)
     {
-        if (command is null)
+        if (command == null)
         {
-            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Body", "Deve ser informado o corpo da requisicao."));
-        }
-
-        if (string.IsNullOrWhiteSpace(command.Name))
-        {
-            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Name", "Deve ser informado o nome."));
-        }
-
-        if (string.IsNullOrWhiteSpace(command.Email))
-        {
-            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Email", "Deve ser informado o email."));
+            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Requisicao", "Envie os dados do usuario."));
         }
 
         if (string.IsNullOrWhiteSpace(command.Password))
         {
-            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Password", "Deve ser informada a senha."));
-        }
-
-        if (!Enum.IsDefined(typeof(RoleUser), command.Role))
-        {
-            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Role", "Perfil (role) invalido."));
+            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Senha", "Informe uma senha."));
         }
 
         try
         {
-            var email = new Email(command.Email);
+            Email email = new Email(command.Email);
+            if (!email.IsValid)
+            {
+                return email.ToUnprocessableEntityResult<string>();
+            }
+
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
 
             var emailInUse = repositoryQuery.Query<UserAuth>(u => u.Email == email).Any();
             if (emailInUse)
             {
-                return OperationResult<string>.Fail(new MensagemErro("Email", "Ja existe um usuario cadastrado com esse email."));
+                return OperationResult<string>.Fail(new MensagemErro("E-mail", "Ja existe uma conta cadastrada com esse e-mail."));
             }
 
             var passwordHash = PasswordHash.Hash(command.Password);
             var user = new UserAuth(command.Name, command.Email, (RoleUser)command.Role, passwordHash);
             if (!user.IsValid)
             {
-                return OperationResult<string>.UnprocessableEntity(user.Errors);
+                return user.ToUnprocessableEntityResult<string>();
             }
 
             var repository = _repositorySession.GetRepository();

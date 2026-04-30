@@ -11,7 +11,7 @@ public class Email : ValidatableObject
     {
         if (string.IsNullOrWhiteSpace(endereco))
         {
-            AddError("Email", "Deve ser informado o email");
+            AddError("E-mail", "Informe um e-mail.");
             return;
         }
         
@@ -19,7 +19,7 @@ public class Email : ValidatableObject
 
         if (!Validar(emailFormatado))
         {
-            AddError("Email", "O email deve ser valido!");
+            AddError("E-mail", "Informe um e-mail valido.");
             return;
         }
         

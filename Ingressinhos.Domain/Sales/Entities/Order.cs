@@ -20,7 +20,7 @@ public class Order : BaseEntity
     {
         if (clientId <= 0)
         {
-            AddError("ClientId", "Deve ser informado o cliente do pedido");
+            AddError("Conta", "Nao foi possivel identificar a conta do pedido.");
         }
         else
         {
@@ -38,19 +38,19 @@ public class Order : BaseEntity
 
         if (Status != OrderStatus.PendingPayment)
         {
-            AddError("Status", "Nao eh possivel alterar itens de um pedido finalizado");
+            AddError("Pedido", "Nao e possivel alterar itens de um pedido finalizado.");
             return;
         }
 
         if (unitPrice < 0)
         {
-            AddError("UnitPrice", "O valor unitario nao pode ser negativo");
+            AddError("Preco", "O valor unitario nao pode ser negativo.");
             return;
         }
 
         if (quantity <= 0)
         {
-            AddError("Quantity", "A quantidade deve ser maior que zero");
+            AddError("Quantidade", "A quantidade precisa ser maior que zero.");
             return;
         }
 
@@ -63,7 +63,7 @@ public class Order : BaseEntity
 
         if (Status != OrderStatus.PendingPayment)
         {
-            AddError("Status", "Apenas pedidos pendentes podem ser pagos");
+            AddError("Pedido", "Apenas pedidos pendentes podem ser pagos.");
             return;
         }
 
@@ -77,7 +77,7 @@ public class Order : BaseEntity
 
         if (Status == OrderStatus.Cancelled)
         {
-            AddError("Status", "O pedido ja esta cancelado");
+            AddError("Pedido", "Este pedido ja esta cancelado.");
             return;
         }
 

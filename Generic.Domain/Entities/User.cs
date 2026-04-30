@@ -14,7 +14,7 @@ public abstract class User : BaseEntity
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            AddError("Name", "Deve ser informado o nome do usuario");
+            AddError("Nome", "Informe o nome.");
         }
         else
         {
@@ -37,7 +37,7 @@ public abstract class User : BaseEntity
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            AddError("Name", "Deve ser informado o nome do usuario");
+            AddError("Nome", "Informe o nome.");
             return;
         }
 

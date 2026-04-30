@@ -19,7 +19,7 @@ public class UseCaseUserAccessQuery : IUseCaseUserAccessQuery
     {
         if (string.IsNullOrEmpty(userId))
         {
-            return OperationResult<UserAccessDto>.UnprocessableEntity(new MensagemErro("UserId", "Deve ser informado um identificador."));
+            return OperationResult<UserAccessDto>.UnprocessableEntity(new MensagemErro("Usuario", "Nao foi possivel identificar o usuario."));
         }
 
         UserAuth userAuth = _repositorySession.GetRepositoryQuery()
@@ -27,7 +27,7 @@ public class UseCaseUserAccessQuery : IUseCaseUserAccessQuery
 
         if (userAuth == null)
         {
-            return OperationResult<UserAccessDto>.Unauthorized(new MensagemErro("UserId", "Nenhum usuario ativo encontrado."));
+            return OperationResult<UserAccessDto>.Unauthorized(new MensagemErro("Usuario", "Nao encontramos uma conta ativa para este acesso."));
         }
 
         return OperationResult<UserAccessDto>.Ok(new UserAccessDto

@@ -10,7 +10,7 @@ public class CNPJ : ValidatableObject
     {
         if (string.IsNullOrWhiteSpace(numero))
         {
-            AddError("Cnpj", "O CNPJ eh obrigatorio e nao pode ser vazio");
+            AddError("CNPJ", "Informe um CNPJ.");
             return;
         }
 
@@ -18,7 +18,7 @@ public class CNPJ : ValidatableObject
 
         if (!Validar(numeroTratado))
         {
-            AddError("Cnpj", "CNPJ Invalido");
+            AddError("CNPJ", "Informe um CNPJ valido.");
             return;
         }
 

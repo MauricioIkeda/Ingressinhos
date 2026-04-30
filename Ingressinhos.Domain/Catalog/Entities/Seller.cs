@@ -23,7 +23,7 @@ public class Seller : User
 
         if (string.IsNullOrWhiteSpace(tradingName))
         {
-            AddError("TradingName", "Deve ser informado o nome comercial do vendedor");
+            AddError("Loja", "Informe o nome da loja.");
             return;
         }
 
@@ -36,7 +36,7 @@ public class Seller : User
 
         if (string.IsNullOrWhiteSpace(tradingName))
         {
-            AddError("TradingName", "Deve ser informado o nome comercial do vendedor");
+            AddError("Loja", "Informe o nome da loja.");
             return;
         }
 

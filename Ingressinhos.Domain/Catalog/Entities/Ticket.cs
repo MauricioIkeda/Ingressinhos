@@ -26,7 +26,7 @@ public class Ticket : BaseEntity
     {
         if (eventId <= 0)
         {
-            AddError("EventId", "Deve ser informado o evento do ingresso");
+            AddError("Evento", "Informe o evento desse ingresso.");
         }
         else
         {
@@ -37,7 +37,7 @@ public class Ticket : BaseEntity
 
         if (string.IsNullOrWhiteSpace(name))
         {
-            AddError("Name", "Deve ser informado o nome do ingresso");
+            AddError("Ingresso", "Informe o nome do ingresso.");
         }
         else
         {
@@ -46,7 +46,7 @@ public class Ticket : BaseEntity
 
         if (totalQuantity <= 0)
         {
-            AddError("TotalQuantity", "A quantidade total do ingresso deve ser maior que zero");
+            AddError("Quantidade", "A quantidade total precisa ser maior que zero.");
         }
         else
         {
@@ -56,7 +56,7 @@ public class Ticket : BaseEntity
 
         if (salesEndsAt <= salesStartsAt)
         {
-            AddError("SalesEndsAt", "O fim das vendas deve ser posterior ao inicio");
+            AddError("Vendas", "O fim das vendas precisa ser posterior ao inicio.");
         }
         else
         {
@@ -140,13 +140,13 @@ public class Ticket : BaseEntity
 
         if (quantity <= 0)
         {
-            AddError("Quantity", "A quantidade deve ser maior que zero");
+            AddError("Quantidade", "A quantidade precisa ser maior que zero.");
             return;
         }
 
         if (quantity > AvailableQuantity)
         {
-            AddError("Quantity", "Nao ha ingressos suficientes disponiveis");
+            AddError("Quantidade", "Nao ha ingressos suficientes disponiveis.");
             return;
         }
 
@@ -164,13 +164,13 @@ public class Ticket : BaseEntity
 
         if (quantity <= 0)
         {
-            AddError("Quantity", "A quantidade deve ser maior que zero");
+            AddError("Quantidade", "A quantidade precisa ser maior que zero.");
             return;
         }
 
         if (AvailableQuantity + quantity > TotalQuantity)
         {
-            AddError("Quantity", "A quantidade restaurada excede o total de ingressos");
+            AddError("Quantidade", "A quantidade restaurada excede o total de ingressos.");
             return;
         }
 
@@ -200,7 +200,7 @@ public class Ticket : BaseEntity
 
         if (quantity <= 0)
         {
-            AddError("Quantity", "A quantidade deve ser maior que zero");
+            AddError("Quantidade", "A quantidade precisa ser maior que zero.");
             return;
         }
 
@@ -217,19 +217,19 @@ public class Ticket : BaseEntity
     {
         if (Status == CatalogTicketStatus.Inactive)
         {
-            AddError("Status", "O ingresso esta inativo");
+            AddError("Ingresso", "Este ingresso esta inativo.");
             return;
         }
 
         if (Status == CatalogTicketStatus.SoldOut)
         {
-            AddError("Status", "O ingresso esta esgotado");
+            AddError("Ingresso", "Este ingresso esta esgotado.");
             return;
         }
 
         if (referenceDate < SalesStartsAt || referenceDate > SalesEndsAt)
         {
-            AddError("SalesWindow", "O ingresso esta fora da janela de venda");
+            AddError("Vendas", "Este ingresso esta fora do periodo de venda.");
         }
     }
 }
