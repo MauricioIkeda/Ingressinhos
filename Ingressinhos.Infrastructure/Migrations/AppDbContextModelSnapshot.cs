@@ -83,7 +83,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<long>("SellerId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("StarTime")
+                    b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("UpdatedAt")

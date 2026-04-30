@@ -11,8 +11,7 @@ namespace Ingressinhos.API.Controllers.Catalog;
 [Route("api/tickets")]
 public class TicketController : ApiCrud<Ticket, TicketDto>
 {
-    public TicketController(IUseCaseTicketCollection useCaseCollection)
-        : base(useCaseCollection)
+    public TicketController(IUseCaseTicketCollection useCaseCollection) : base(useCaseCollection)
     {
     }
 
@@ -43,7 +42,7 @@ public class TicketController : ApiCrud<Ticket, TicketDto>
     }
 
     [HttpDelete("{id:long}")]
-    [Authorize(Policy = "SellerOrAdmin")]
+    [Authorize(Policy = "AdminOnly")]
     public IActionResult Delete(long id)
     {
         return DeleteResult(id);

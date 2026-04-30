@@ -23,7 +23,7 @@ public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
-            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Login", "Email e senha sao obrigatorios."));
+            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Login", "Informe e-mail e senha."));
         }
 
         UserAuth user = _repositorySession.GetRepositoryQuery().Query<UserAuth>(x => x.Email == new Email(email)).ToList()
@@ -31,12 +31,12 @@ public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
 
         if (user == null)
         {
-            return OperationResult<string>.NotFound(new MensagemErro("Email", "Nenhum usuario encontrado para esse email."));
+            return OperationResult<string>.NotFound(new MensagemErro("Login", "Nao encontramos uma conta com esse e-mail."));
         }
 
         if (!PasswordHash.Verify(password, user.PasswordHash))
         {
-            return OperationResult<string>.Unauthorized(new MensagemErro("Password", "Senha errada."));
+            return OperationResult<string>.Unauthorized(new MensagemErro("Login", "E-mail ou senha invalidos."));
         }
 
         var token = _token.Generate(user);

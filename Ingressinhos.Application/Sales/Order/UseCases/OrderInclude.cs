@@ -1,4 +1,5 @@
 using Generic.Application.Crud.Interface;
+using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Dtos;
@@ -10,31 +11,34 @@ namespace Ingressinhos.Application.Sales.UseCases;
 public class OrderInclude : IUseCaseCommand<OrderDto>
 {
     private readonly IRepositorySession _repositorySession;
+    private readonly ICurrentUserContext _currentUserContext;
 
-    public OrderInclude(IRepositorySession repositorySession)
+    public OrderInclude(IRepositorySession repositorySession, ICurrentUserContext currentUserContext)
     {
         _repositorySession = repositorySession;
+        _currentUserContext = currentUserContext;
     }
 
     public OperationResult Execute(OrderDto orderDto)
     {
         if (orderDto is null)
         {
-            return OperationResult.UnprocessableEntity(new MensagemErro("Order", "Deve ser informado o pedido."));
+            return OperationResult.UnprocessableEntity(new MensagemErro("Pedido", "Envie os dados do pedido."));
         }
         
         try
         {
-            var client = _repositorySession.GetRepositoryQuery().Return<Client>(orderDto.ClientId);
+            var repositoryQuery = _repositorySession.GetRepositoryQuery();
+            var client = repositoryQuery.Query<Client>(c => c.UserId == _currentUserContext.UserId).FirstOrDefault();
 
             if (client is null)
             {
-                return OperationResult.UnprocessableEntity(new MensagemErro("ClientId", "Deve ser informado o cliente."));
+                return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua conta."));
             }
 
             var utcNow = DateTime.UtcNow;
 
-            var orderEntity = new OrderDomain(orderDto.ClientId)
+            var orderEntity = new OrderDomain(client.Id)
             {
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow

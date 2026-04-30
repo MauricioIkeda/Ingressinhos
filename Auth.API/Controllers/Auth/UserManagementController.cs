@@ -1,5 +1,6 @@
 using Auth.Application.Authorization.UserAccess.Dtos;
 using Auth.Application.Authorization.UserAccess.Interfaces;
+using Generic.Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Auth.API.Controllers.Auth;
@@ -20,7 +21,7 @@ public class UserManagementController : ControllerBase
     [HttpPost]
     public IActionResult CreateUser([FromBody] CreateUserRequest request)
     {
-        var result = _createUserAuth.Execute(new CreateUserAuthDto(request?.Name, request?.Email, request?.Password, request?.Role ?? 0));
+        var result = _createUserAuth.Execute(new CreateUserRequest(request?.Name, request?.Email, request?.Password, request?.Role ?? 0));
 
         if (!result.Success)
         {
@@ -42,10 +43,4 @@ public class UserManagementController : ControllerBase
 
         return StatusCode(result.StatusCode, new ChangeEmailResponse(true));
     }
-
-    //Dtos somente usados aqui
-    public record CreateUserRequest(string Name, string Email, string Password, int Role);
-    public record CreateUserResponse(string UserId);
-    public record ChangeEmailRequest(string NewEmail);
-    public record ChangeEmailResponse(bool Updated);
 }

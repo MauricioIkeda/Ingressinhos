@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ingressinhos.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260428222254_MinhaNovaAlteracao")]
-    partial class MinhaNovaAlteracao
+    [Migration("20260430114842_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -86,7 +86,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.Property<long>("SellerId")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("StarTime")
+                    b.Property<DateTime>("StartTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("UpdatedAt")

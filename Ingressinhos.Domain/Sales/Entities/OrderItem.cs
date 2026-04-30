@@ -20,7 +20,7 @@ public class OrderItem : BaseEntity
     {
         if (orderId <= 0)
         {
-            AddError("OrderId", "Deve ser informado o pedido do item");
+            AddError("Pedido", "Informe o pedido deste item.");
         }
         else
         {
@@ -29,7 +29,7 @@ public class OrderItem : BaseEntity
 
         if (ticketId <= 0)
         {
-            AddError("TicketId", "Deve ser informado o ingresso do item");
+            AddError("Ingresso", "Informe o ingresso deste item.");
         }
         else
         {
@@ -38,7 +38,7 @@ public class OrderItem : BaseEntity
 
         if (string.IsNullOrWhiteSpace(ticketName))
         {
-            AddError("TicketName", "Deve ser informado o nome do ingresso");
+            AddError("Ingresso", "Informe o nome do ingresso.");
         }
         else
         {
@@ -47,7 +47,7 @@ public class OrderItem : BaseEntity
 
         if (quantity <= 0)
         {
-            AddError("Quantity", "A quantidade deve ser maior que zero");
+            AddError("Quantidade", "A quantidade precisa ser maior que zero.");
         }
         else
         {

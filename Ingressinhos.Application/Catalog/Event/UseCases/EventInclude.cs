@@ -1,4 +1,5 @@
 using Generic.Application.Crud.Interface;
+using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
@@ -10,26 +11,33 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 public class EventInclude : IUseCaseCommand<EventDto>
 {
     private readonly IRepositorySession _repositorySession;
+    private readonly ICurrentUserContext _currentUserContext;
 
-    public EventInclude(IRepositorySession repositorySession)
+    public EventInclude(IRepositorySession repositorySession, ICurrentUserContext currentUserContext)
     {
         _repositorySession = repositorySession;
+        _currentUserContext = currentUserContext;
     }
 
     public OperationResult Execute(EventDto eventDto)
     {
         if (eventDto is null)
         {
-            return OperationResult.UnprocessableEntity(new MensagemErro("Event", "Deve ser informado o evento."));
+            return OperationResult.UnprocessableEntity(new MensagemErro("Evento", "Envie os dados do evento."));
         }
 
         try
         {
             IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
+            var seller = repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId).FirstOrDefault();
+            if (seller is null)
+            {
+                return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));
+            }
 
             if (repositoryQuery.Return<LocationDomain>(eventDto.LocationId) is null)
             {
-                return OperationResult.NotFound(new MensagemErro("LocationId", "Localizacao informada nao existe."));
+                return OperationResult.NotFound(new MensagemErro("Local", "Nao encontramos o local informado."));
             }
 
             var hasConflictingEvent = repositoryQuery.Query<Event>(
@@ -40,12 +48,12 @@ public class EventInclude : IUseCaseCommand<EventDto>
 
             if (hasConflictingEvent)
             {
-                return OperationResult.UnprocessableEntity(new MensagemErro("Period", "Ja existe evento para o local no intervalo informado."));
+                return OperationResult.UnprocessableEntity(new MensagemErro("Agenda", "Ja existe um evento para esse local no periodo informado."));
             }
 
             var utcNow = DateTime.UtcNow;
 
-            var eventEntity = new Event(eventDto.SellerId, eventDto.Name, eventDto.StartTime, eventDto.EndTime, eventDto.LocationId, eventDto.HasSeats)
+            var eventEntity = new Event(seller.Id, eventDto.Name, eventDto.StartTime, eventDto.EndTime, eventDto.LocationId, eventDto.HasSeats)
             {
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow

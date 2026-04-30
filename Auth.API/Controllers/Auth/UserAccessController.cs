@@ -14,7 +14,7 @@ public class UserAccessController : ControllerBase
         _useCaseUserAccessQuery = useCaseUserAccessQuery;
     }
 
-    [HttpGet("{userId}/access")]
+    [HttpGet("{userId}/access")]  // preciso mudar
     public IActionResult GetAccess(string userId)
     {
         var result = _useCaseUserAccessQuery.Execute(userId);

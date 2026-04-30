@@ -26,7 +26,7 @@ public class UserAuth : BaseEntity
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            AddError("Name", "Deve ser informado o nome do usuario para autenticacao");
+            AddError("Nome", "Informe o nome.");
         }
         else
         {
@@ -42,7 +42,7 @@ public class UserAuth : BaseEntity
 
         if (role <= 0)
         {
-            AddError("Role", "Deve ser informado o perfil do usuario");
+            AddError("Perfil", "Informe um perfil de acesso valido.");
         }
         else
         {
@@ -51,7 +51,7 @@ public class UserAuth : BaseEntity
 
         if (string.IsNullOrWhiteSpace(passwordHash))
         {
-            AddError("PasswordHash", "Deve ser informado o hash da senha");
+            AddError("Senha", "Nao foi possivel processar a senha informada.");
         }
         else
         {
@@ -82,7 +82,7 @@ public class UserAuth : BaseEntity
 
         if (string.IsNullOrWhiteSpace(newPasswordHash))
         {
-            AddError("PasswordHash", "Deve ser informado o hash da nova senha");
+            AddError("Senha", "Nao foi possivel processar a nova senha.");
             return;
         }
 

@@ -17,19 +17,14 @@ public class ChangeUserEmailUseCase : IUseCaseChangeUserEmail
 
     public OperationResult Execute(ChangeUserEmailDto command)
     {
-        if (command is null)
+        if (command == null)
         {
-            return OperationResult.UnprocessableEntity(new MensagemErro("Body", "Deve ser informado o corpo da requisicao."));
+            return OperationResult.UnprocessableEntity(new MensagemErro("Requisicao", "Envie os dados da alteracao."));
         }
 
         if (string.IsNullOrWhiteSpace(command.UserId))
         {
-            return OperationResult.UnprocessableEntity(new MensagemErro("UserId", "Deve ser informado o identificador do usuario."));
-        }
-
-        if (string.IsNullOrWhiteSpace(command.NewEmail))
-        {
-            return OperationResult.UnprocessableEntity(new MensagemErro("NewEmail", "Deve ser informado o novo email."));
+            return OperationResult.UnprocessableEntity(new MensagemErro("Usuario", "Nao foi possivel identificar o usuario."));
         }
 
         try
@@ -38,13 +33,13 @@ public class ChangeUserEmailUseCase : IUseCaseChangeUserEmail
             var user = repositoryQuery.Query<UserAuth>(u => u.UserId == command.UserId && u.Active).FirstOrDefault();
             if (user is null)
             {
-                return OperationResult.NotFound(new MensagemErro("UserId", "Usuario nao encontrado."));
+                return OperationResult.NotFound(new MensagemErro("Usuario", "Nao encontramos a conta informada."));
             }
 
             user.ChangeEmail(command.NewEmail);
             if (!user.IsValid)
             {
-                return user.ToUnprocessableEntityResult();
+                return OperationResult.UnprocessableEntity(user.Errors);
             }
 
             var repository = _repositorySession.GetRepository();
