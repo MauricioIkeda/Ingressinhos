@@ -1,4 +1,6 @@
 using Generic.Domain.Entities;
+using Generic.Domain.ValueObjects;
+using Ingressinhos.Domain.Catalog.Enums;
 using Ingressinhos.Domain.Sales.Enums;
 
 namespace Ingressinhos.Domain.Sales.Entities;
@@ -8,6 +10,8 @@ public class IssuedTicket : BaseEntity
     public long OrderItemId { get; private set; }
     public long ClientId { get; private set; }
     public long EventId { get; private set; }
+    public string? SeatCode { get; private set; } // colocar no construtor
+    public SeatCategory CategoryTicket { get; private set; } //colocar no construtor
     public string AccessCode { get; private set; } = string.Empty;
     public IssuedTicketStatus Status { get; private set; }
     public bool IsCheckedIn => Status == IssuedTicketStatus.CheckedIn;

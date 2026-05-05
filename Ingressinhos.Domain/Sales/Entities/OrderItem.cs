@@ -1,5 +1,6 @@
 using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
+using Ingressinhos.Domain.Catalog.Enums;
 
 namespace Ingressinhos.Domain.Sales.Entities;
 
@@ -10,6 +11,7 @@ public class OrderItem : BaseEntity
     public string TicketName { get; private set; } = string.Empty;
     public int Quantity { get; private set; }
     public Price UnitPrice { get; private set; } = new(0);
+    public SeatCategory Category { get; private set; } // colocar no construtor
     public decimal TotalPrice => Quantity * UnitPrice.Value;
 
     protected OrderItem()

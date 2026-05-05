@@ -13,7 +13,6 @@ public class AppDbContext : DbContext
 
     public DbSet<Event> Events { get; set; }
     public DbSet<Location> Locations { get; set; }
-    public DbSet<PublishedTicket> PublishedTickets { get; set; }
     public DbSet<Seat> Seats { get; set; }
     public DbSet<Seller> Sellers { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
@@ -57,9 +56,6 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Client>()
             .ComplexProperty(client => client.Cpf, c => c.IsRequired());
 
-        modelBuilder.Entity<PublishedTicket>()
-            .ComplexProperty(t => t.UnitPrice, c => c.IsRequired());
-
         modelBuilder.Entity<Event>()
             .HasOne<Seller>()
             .WithMany()
@@ -89,18 +85,6 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(ticket => ticket.SellerId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<PublishedTicket>()
-            .HasOne<Ticket>()
-            .WithMany()
-            .HasForeignKey(publishedTicket => publishedTicket.TicketId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<PublishedTicket>()
-            .HasOne<Seat>()
-            .WithMany()
-            .HasForeignKey(publishedTicket => publishedTicket.SeatId)
-            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<Order>()
             .HasOne<Client>()
