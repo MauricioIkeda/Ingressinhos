@@ -14,6 +14,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />
       <ProjectReference Include="..\Ingressinhos.Domain\Ingressinhos.Domain.csproj" />
+      <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />
     </ItemGroup>
 
 </Project>
