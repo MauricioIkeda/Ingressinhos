@@ -1,9 +1,9 @@
 using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
 using Ingressinhos.Domain.Catalog.Entities;
-using Ingressinhos.Domain.Payment.Entities;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.EntityFrameworkCore;
+using Payment.Domain.Entities;
 
 namespace Ingressinhos.Infrastructure.Context;
 

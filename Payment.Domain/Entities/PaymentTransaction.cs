@@ -1,8 +1,8 @@
 using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
-using Ingressinhos.Domain.Payment.Enums;
+using Payment.Domain.Enums;
 
-namespace Ingressinhos.Domain.Payment.Entities;
+namespace Payment.Domain.Entities;
 
 public class PaymentTransaction : BaseEntity
 {
