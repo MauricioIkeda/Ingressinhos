@@ -1,61 +1,52 @@
+﻿using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using Generic.Application.Dtos;
 using Generic.Application.Utils.Interface;
+using Generic.Domain.Entities;
 
 namespace Generic.Application.Utils.Services;
 
 public sealed class RequestAuth : IRequestAuth
 {
-    private readonly HttpClient _httpClient;
+    private readonly HttpClient _httpClient; // usar using para dar dispose automaticamente e não esquecermos
 
     public RequestAuth(HttpClient httpClient)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
-    public async Task<string> CreateUser(string name, string email, string password, int role)
+    public async Task<OperationResult<string>> CreateUser(string name, string email, string password, int role)
     {
         var request = new CreateUserRequest(name, email, password, role);
+        const string propertyName = "Conta";
 
-        using var response = await _httpClient.PostAsJsonAsync("api/auth/users", request);
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            throw new Exception(await GetErrorAsync(response, "Falha ao criar usuario no servico de autenticacao."));
-        }
+            using var response = await _httpClient.PostAsJsonAsync("api/auth/users", request);
 
-        var payload = await response.Content.ReadFromJsonAsync<CreateUserResponse>();
-        if (payload is null || string.IsNullOrWhiteSpace(payload.UserId))
+            if (!response.IsSuccessStatusCode)
+            {
+                return await CreateFailureResultAsync<string>(response, propertyName, "Nao foi possivel criar a conta agora.");
+            }
+
+            var payload = await response.Content.ReadFromJsonAsync<CreateUserResponse>();
+            if (payload is null || string.IsNullOrWhiteSpace(payload.UserId))
+            {
+                return OperationResult<string>.FatalError(new MensagemErro(propertyName, "Nao conseguimos concluir a criacao da conta agora."));
+            }
+
+            return OperationResult<string>.Created(payload.UserId);
+        }
+        catch
         {
-            throw new Exception("Servico de autenticacao retornou uma resposta invalida ao criar usuario.");
+            return OperationResult<string>.FatalError(new MensagemErro(propertyName, "Nao conseguimos falar com o servico de conta agora."));
         }
-
-        return payload.UserId;
     }
 
-    public async Task<string> Authenticate(string email, string password)
+    public async Task<OperationResult> ChangeEmail(string userId, string newEmail)
     {
-        var request = new AuthenticateRequest(email, password);
+        const string propertyName = "E-mail";
 
-        using var response = await _httpClient.PostAsJsonAsync("api/auth/token", request);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new Exception(await GetErrorAsync(response, "Falha ao autenticar no servico de autenticacao."));
-        }
-
-        var payload = await response.Content.ReadFromJsonAsync<AuthenticateResponse>();
-        if (payload is null || string.IsNullOrWhiteSpace(payload.Token))
-        {
-            throw new Exception("Servico de autenticacao retornou uma resposta invalida ao autenticar.");
-        }
-
-        return payload.Token;
-    }
-
-    public async Task<bool> ChangeEmail(string userId, string newEmail)
-    {
         try
         {
             var request = new ChangeEmailRequest(newEmail);
@@ -65,111 +56,58 @@ public sealed class RequestAuth : IRequestAuth
 
             if (!response.IsSuccessStatusCode)
             {
-                return false;
+                return await CreateFailureResultAsync(response, propertyName, "Nao foi possivel atualizar o e-mail agora.");
             }
 
             var payload = await response.Content.ReadFromJsonAsync<ChangeEmailResponse>();
-            return payload?.Updated ?? true;
+            if (payload is null || !payload.Updated)
+            {
+                return OperationResult.FatalError(new MensagemErro(propertyName, "Nao conseguimos atualizar o e-mail agora."));
+            }
+
+            return OperationResult.Ok();
         }
         catch
         {
-            return false;
+            return OperationResult.FatalError(new MensagemErro(propertyName, "Nao conseguimos falar com o servico de conta agora."));
         }
     }
 
-    private static async Task<string> GetErrorAsync(HttpResponseMessage response, string fallback)
+    private static async Task<OperationResult> CreateFailureResultAsync(HttpResponseMessage response, string propertyName, string fallback)
+    {
+        var errors = await GetErrorsAsync(response, propertyName, fallback);
+        var firstError = errors.FirstOrDefault() ?? new MensagemErro(propertyName, fallback);
+
+        return response.StatusCode switch
+        {
+            HttpStatusCode.BadRequest => OperationResult.Fail(errors),
+            HttpStatusCode.Unauthorized => OperationResult.Unauthorized(firstError),
+            HttpStatusCode.Forbidden => OperationResult.Forbidden(firstError),
+            HttpStatusCode.NotFound => OperationResult.NotFound(firstError),
+            HttpStatusCode.UnprocessableEntity => OperationResult.UnprocessableEntity(errors),
+            _ => OperationResult.FatalError(firstError)
+        };
+    }
+
+    private static async Task<OperationResult<T>> CreateFailureResultAsync<T>(HttpResponseMessage response, string propertyName, string fallback)
+    {
+        return OperationResult<T>.FromResult(await CreateFailureResultAsync(response, propertyName, fallback));
+    }
+
+    private static async Task<List<MensagemErro>> GetErrorsAsync(HttpResponseMessage response, string propertyName, string fallback)
     {
         try
         {
-            var content = await response.Content.ReadAsStringAsync();
-            if (string.IsNullOrWhiteSpace(content))
+            var errors = await response.Content.ReadFromJsonAsync<List<MensagemErro>>();
+            if (errors is { Count: > 0 })
             {
-                return $"{fallback} Status {(int)response.StatusCode} ({response.ReasonPhrase}).";
+                return errors;
             }
-
-            if (TryExtractErrorMessage(content, out var message))
-            {
-                return message;
-            }
-
-            return content;
         }
         catch
         {
-            // Se falhar ao ler a resposta, seguimos com a mensagem padrao.
         }
 
-        return $"{fallback} | Status: {(int)response.StatusCode} | ({response.ReasonPhrase}).";
-    }
-
-    private static bool TryExtractErrorMessage(string content, out string message)
-    {
-        message = string.Empty;
-
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return false;
-        }
-
-        try
-        {
-            using var document = JsonDocument.Parse(content);
-            var root = document.RootElement;
-
-            if (root.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var item in root.EnumerateArray())
-                {
-                    if (TryGetPropertyValue(item, "mensagem", out message) ||
-                        TryGetPropertyValue(item, "message", out message))
-                    {
-                        return true;
-                    }
-                }
-            }
-
-            if (root.ValueKind == JsonValueKind.Object)
-            {
-                if (TryGetPropertyValue(root, "mensagem", out message) ||
-                    TryGetPropertyValue(root, "message", out message) ||
-                    TryGetPropertyValue(root, "error", out message) ||
-                    TryGetPropertyValue(root, "title", out message) ||
-                    TryGetPropertyValue(root, "detail", out message))
-                {
-                    return true;
-                }
-            }
-        }
-        catch (JsonException)
-        {
-            message = content.Trim();
-            return !string.IsNullOrWhiteSpace(message);
-        }
-
-        return false;
-    }
-
-    private static bool TryGetPropertyValue(JsonElement element, string propertyName, out string value)
-    {
-        value = string.Empty;
-
-        foreach (var property in element.EnumerateObject())
-        {
-            if (!string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
-
-            if (property.Value.ValueKind == JsonValueKind.String)
-            {
-                value = property.Value.GetString() ?? string.Empty;
-                return !string.IsNullOrWhiteSpace(value);
-            }
-
-            value = property.Value.ToString();
-            return !string.IsNullOrWhiteSpace(value);
-        }
-
-        return false;
+        return new List<MensagemErro> { new MensagemErro(propertyName, fallback) };
     }
 }

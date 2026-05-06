@@ -1,5 +1,6 @@
 using Auth.Application.Authorization.UserAccess.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Generic.Application.Dtos;
 
 namespace Auth.API.Controllers.Auth;
 
@@ -17,14 +18,22 @@ public class TokenController : ControllerBase
     [HttpPost("login")]
     public IActionResult Authenticate([FromBody] AuthenticateRequest request)
     {
-        var result = _authUseCase.Execute(request.Email, request.Password);
+        var result = _authUseCase.Execute(request?.Email, request?.Password);
 
         if (!result.Success)
             return StatusCode(result.StatusCode, result.Errors);
 
-        return StatusCode(result.StatusCode, new AuthenticateResponse(result.Data));
+        return StatusCode(result.StatusCode, result.Data);
     }
 
-    public record AuthenticateRequest(string Email, string Password);
-    public record AuthenticateResponse(string Token);
+    [HttpPost("refresh")]
+    public IActionResult RefreshToken([FromBody] AuthenticateToken request)
+    {
+        var result = _authUseCase.Refresh(request?.Token, request?.RefreshToken);
+
+        if (!result.Success)
+            return StatusCode(result.StatusCode, result.Errors);
+
+        return StatusCode(result.StatusCode, result.Data);
+    }
 }

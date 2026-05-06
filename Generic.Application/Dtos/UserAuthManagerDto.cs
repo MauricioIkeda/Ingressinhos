@@ -8,7 +8,7 @@ namespace Generic.Application.Dtos
 
     public record AuthenticateRequest(string Email, string Password);
 
-    public record AuthenticateResponse(string Token);
+    public record AuthenticateToken(string Token, string RefreshToken);
     public record ChangeEmailRequest(string NewEmail);
 
     public record ChangeEmailResponse(bool Updated);

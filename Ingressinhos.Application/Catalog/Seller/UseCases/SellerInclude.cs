@@ -27,8 +27,14 @@ public class SellerInclude : IUseCaseCommand<SellerDto>
 
         try
         {
-            string userId = _requestAuth.CreateUser(seller.Name, seller.Email, seller.Password, 1)
+            var authResult = _requestAuth.CreateUser(seller.Name, seller.Email, seller.Password, 1)
                 .GetAwaiter().GetResult();
+            if (!authResult.Success)
+            {
+                return authResult;
+            }
+
+            string userId = authResult.Data;
 
             var utcNow = DateTime.UtcNow;
 

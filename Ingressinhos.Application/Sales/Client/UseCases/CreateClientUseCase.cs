@@ -29,8 +29,14 @@ public class ClientInclude : IUseCaseCommand<ClientDto>
         {
             var utcNow = DateTime.UtcNow;
 
-            string userId = _requestAuth.CreateUser(clientDto.Name, clientDto.Email, clientDto.Password, 2)
+            var authResult = _requestAuth.CreateUser(clientDto.Name, clientDto.Email, clientDto.Password, 2)
                 .GetAwaiter().GetResult();
+            if (!authResult.Success)
+            {
+                return authResult;
+            }
+
+            string userId = authResult.Data;
 
             var clientEntity = new ClientDomain(clientDto.Name, clientDto.Email, clientDto.Cpf, userId)
             {

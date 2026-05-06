@@ -58,6 +58,45 @@ namespace Auth.Application.Utils.Services
             rng.GetBytes(randomNumber);
             return Convert.ToBase64String(randomNumber);
         }
+
+        public ClaimsPrincipal GetPrincipalFromExpiredToken(string token) // Serve no refresh, tenho que ver see é uma boa pratica
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                return null;
+            }
+
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_secretKey)),
+                ValidateIssuer = !string.IsNullOrWhiteSpace(_issuer),
+                ValidIssuer = _issuer,
+                ValidateAudience = !string.IsNullOrWhiteSpace(_audience),
+                ValidAudience = _audience,
+                ValidateLifetime = false,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var principal = handler.ValidateToken(token, tokenValidationParameters, out var securityToken);
+
+                if (securityToken is not JwtSecurityToken jwtSecurityToken ||
+                    !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.OrdinalIgnoreCase))
+                {
+                    return null;
+                }
+
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         private static ClaimsIdentity GenerateClaims(UserAuth user)
         {
             ClaimsIdentity ci = new ClaimsIdentity();
