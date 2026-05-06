@@ -12,7 +12,7 @@ public static class PasswordHash
     {
         if (string.IsNullOrWhiteSpace(password))
         {
-            throw new Exception("Informe a senha");
+            return string.Empty;
         }
 
         var salt = RandomNumberGenerator.GetBytes(SaltSize);

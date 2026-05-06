@@ -120,6 +120,11 @@ public class UserAuth : BaseEntity
 
     public bool IsRefreshTokenValid(string refreshToken)
     {
-        return DateTime.UtcNow < RefreshTokenExpiration;
+        if (string.IsNullOrWhiteSpace(refreshToken) || string.IsNullOrWhiteSpace(RefreshToken) || !RefreshTokenExpiration.HasValue)
+        {
+            return false;
+        }
+
+        return RefreshToken == refreshToken && DateTime.UtcNow <= RefreshTokenExpiration.Value;
     }
 }

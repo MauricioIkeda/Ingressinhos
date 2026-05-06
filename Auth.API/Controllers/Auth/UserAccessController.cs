@@ -1,5 +1,8 @@
+using Auth.Application.Authorization.UserAccess.Dtos;
 using Auth.Application.Authorization.UserAccess.Interfaces;
+using Generic.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Auth.API.Controllers.Auth;
 
@@ -14,10 +17,12 @@ public class UserAccessController : ControllerBase
         _useCaseUserAccessQuery = useCaseUserAccessQuery;
     }
 
-    [HttpGet("{userId}/access")]  // preciso mudar
-    public IActionResult GetAccess(string userId)
+    [HttpGet("access")]  // preciso mudar
+    public IActionResult GetAccess()
     {
-        var result = _useCaseUserAccessQuery.Execute(userId);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        OperationResult<UserAccessDto> result = _useCaseUserAccessQuery.Execute(userId);
+
         if (!result.Success)
         {
             return StatusCode(result.StatusCode, result.Errors);

@@ -1,9 +1,11 @@
-﻿namespace Generic.Application.Utils.Interface
+using Generic.Application.Dtos;
+using Generic.Domain.Entities;
+
+namespace Generic.Application.Utils.Interface
 {
     public interface IRequestAuth
     {
-        Task<string> CreateUser(string name, string email, string password, int role);
-        Task<string> Authenticate(string email, string password);
-        Task<bool> ChangeEmail(string userId, string newEmail);
+        Task<OperationResult<string>> CreateUser(string name, string email, string password, int role);
+        Task<OperationResult> ChangeEmail(string userId, string newEmail);
     }
 }

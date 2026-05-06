@@ -57,9 +57,10 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
                     return sellerEntity.ToUnprocessableEntityResult();
                 }
 
-                if (!_requestAuth.ChangeEmail(sellerEntity.UserId, seller.Email).GetAwaiter().GetResult())
+                var authResult = _requestAuth.ChangeEmail(sellerEntity.UserId, seller.Email).GetAwaiter().GetResult();
+                if (!authResult.Success)
                 {
-                    return OperationResult.UnprocessableEntity(new MensagemErro("Email", "Falha ao atualizar o email do usuario."));
+                    return authResult;
                 }
             }
 
