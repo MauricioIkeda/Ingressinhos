@@ -3,12 +3,12 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
+        <Nullable>disable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Generic.Application\Generic.Application.csproj" />
       <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />
+      <ProjectReference Include="..\Payment.Aplication\Payment.Aplication.csproj" />
       <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />
     </ItemGroup>
 
