@@ -10,22 +10,22 @@ using System.Security.Claims;
 
 namespace Auth.Application.Authorization.UserAccess.UseCases;
 
-public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
+public class AuthenticateUser : IUseCaseUserAuthCollection
 {
     private readonly IRepositorySession _repositorySession;
     private readonly IToken _token;
 
-    public AuthenticateUserUseCase(IRepositorySession repositorySession, IToken token)
+    public AuthenticateUser(IRepositorySession repositorySession, IToken token)
     {
         _repositorySession = repositorySession;
         _token = token;
     }
 
-    public OperationResult<AuthenticateToken> Execute(string email, string password)
+    public OperationResult<AuthenticateResponse> Execute(string email, string password) //Criar o token e o refresh
     {
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
         {
-            return OperationResult<AuthenticateToken>.UnprocessableEntity(new MensagemErro("Login", "Informe e-mail e senha."));
+            return OperationResult<AuthenticateResponse>.UnprocessableEntity(new MensagemErro("Login", "Informe e-mail e senha."));
         }
 
         UserAuth user = _repositorySession.GetRepositoryQuery().Query<UserAuth>(x => x.Email == new Email(email)).ToList()
@@ -33,27 +33,27 @@ public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
 
         if (user == null)
         {
-            return OperationResult<AuthenticateToken>.NotFound(new MensagemErro("Login", "Nao encontramos uma conta com esse e-mail."));
+            return OperationResult<AuthenticateResponse>.NotFound(new MensagemErro("Login", "Nao encontramos uma conta com esse e-mail."));
         }
 
         if (!PasswordHash.Verify(password, user.PasswordHash))
         {
-            return OperationResult<AuthenticateToken>.Unauthorized(new MensagemErro("Login", "E-mail ou senha invalidos."));
+            return OperationResult<AuthenticateResponse>.Unauthorized(new MensagemErro("Login", "E-mail ou senha invalidos."));
         }
 
         if (!user.Active)
         {
-            return OperationResult<AuthenticateToken>.Forbidden(new MensagemErro("Login", "Usuario inativo."));
+            return OperationResult<AuthenticateResponse>.Forbidden(new MensagemErro("Login", "Usuario inativo."));
         }
 
         return GenerateAndPersistTokens(user);
     }
 
-    public OperationResult<AuthenticateToken> Refresh(string token, string refreshToken)
+    public OperationResult<AuthenticateResponse> Refresh(string token, string refreshToken) // Substituir o token e o refresh porn novos
     {
         if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(refreshToken))
         {
-            return OperationResult<AuthenticateToken>.UnprocessableEntity(new MensagemErro("RefreshToken", "Informe token e refresh token."));
+            return OperationResult<AuthenticateResponse>.UnprocessableEntity(new MensagemErro("RefreshToken", "Informe token e refresh token."));
         }
 
         var principal = _token.GetPrincipalFromExpiredToken(token);
@@ -61,19 +61,19 @@ public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
 
         if (!long.TryParse(userAuthId, out var id))
         {
-            return OperationResult<AuthenticateToken>.Unauthorized(new MensagemErro("RefreshToken", "Token invalido."));
+            return OperationResult<AuthenticateResponse>.Unauthorized(new MensagemErro("RefreshToken", "Token invalido."));
         }
 
         UserAuth user = _repositorySession.GetRepositoryQuery().Query<UserAuth>(x => x.Id == id).ToList().FirstOrDefault();
 
         if (user == null)
         {
-            return OperationResult<AuthenticateToken>.NotFound(new MensagemErro("RefreshToken", "Usuario nao encontrado."));
+            return OperationResult<AuthenticateResponse>.NotFound(new MensagemErro("RefreshToken", "Usuario nao encontrado."));
         }
 
         if (!user.Active)
         {
-            return OperationResult<AuthenticateToken>.Forbidden(new MensagemErro("RefreshToken", "Usuario inativo."));
+            return OperationResult<AuthenticateResponse>.Forbidden(new MensagemErro("RefreshToken", "Usuario inativo."));
         }
 
         if (!user.IsRefreshTokenValid(refreshToken))
@@ -82,21 +82,23 @@ public class AuthenticateUserUseCase : IUseCaseUserAuthCollection
             _repositorySession.GetRepository().Upsert(user);
             _repositorySession.GetRepository().Flush().GetAwaiter().GetResult();
 
-            return OperationResult<AuthenticateToken>.Unauthorized(new MensagemErro("RefreshToken", "Refresh token invalido ou expirado."));
+            return OperationResult<AuthenticateResponse>.Unauthorized(new MensagemErro("RefreshToken", "Refresh token invalido ou expirado."));
         }
 
         return GenerateAndPersistTokens(user);
     }
 
-    private OperationResult<AuthenticateToken> GenerateAndPersistTokens(UserAuth user)
+    private OperationResult<AuthenticateResponse> GenerateAndPersistTokens(UserAuth user)
     {
-        var token = _token.Generate(user);
+        var expiresIn = _token.GetAccessTokenLifetime();
+        var expiresAtUtc = DateTime.UtcNow.Add(expiresIn);
+        var token = _token.Generate(user, expiresAtUtc);
         var refreshToken = _token.GenerateRefreshToken();
 
         user.SetRefreshToken(refreshToken);
         _repositorySession.GetRepository().Upsert(user);
         _repositorySession.GetRepository().Flush().GetAwaiter().GetResult();
 
-        return OperationResult<AuthenticateToken>.Ok(new AuthenticateToken(token, refreshToken));
+        return OperationResult<AuthenticateResponse>.Ok(new AuthenticateResponse(token, refreshToken));
     }
 }

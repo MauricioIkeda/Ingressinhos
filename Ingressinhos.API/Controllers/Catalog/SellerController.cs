@@ -11,8 +11,11 @@ namespace Ingressinhos.API.Controllers.Catalog;
 [Route("api/sellers")]
 public class SellerController : ApiCrud<Seller, SellerDto>
 {
+    private readonly IUseCaseSellerCollection _useCaseCollection;
+
     public SellerController(IUseCaseSellerCollection useCaseCollection) : base(useCaseCollection)
     {
+        _useCaseCollection = useCaseCollection;
     }
 
     [HttpGet]
@@ -43,10 +46,27 @@ public class SellerController : ApiCrud<Seller, SellerDto>
         return UpdateResult(command);
     }
 
-    [Authorize(Policy = "AdminOnly")]
     [HttpDelete("{id:long}")]
-    public IActionResult Delete(long id)
+    [Authorize(Policy = "SellerOrAdmin")]
+    public IActionResult Deactivate(long id)
     {
-        return DeleteResult(id);
+        return ExecuteCustom(_useCaseCollection.Deactivate(id));
+    }
+
+    [Authorize(Policy = "AdminOnly")]
+    [HttpPatch("{id:long}/recover")]
+    public IActionResult Recover(long id)
+    {
+        return ExecuteCustom(_useCaseCollection.Recover(id));
+    }
+
+    private IActionResult ExecuteCustom(Generic.Domain.Entities.OperationResult result)
+    {
+        if (!result.Success)
+        {
+            return StatusCode(result.StatusCode, result.Errors);
+        }
+
+        return StatusCode(result.StatusCode);
     }
 }

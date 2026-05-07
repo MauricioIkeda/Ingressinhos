@@ -40,6 +40,11 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
                 return OperationResult.NotFound(new MensagemErro("Id", "Vendedor nao encontrado."));
             }
 
+            if (!sellerEntity.Active)
+            {
+                return OperationResult.UnprocessableEntity(new MensagemErro("Seller", "Nao e possivel editar um vendedor desativado."));
+            }
+
             if (seller.Name != sellerEntity.Name)
             {
                 sellerEntity.ChangeName(seller.Name);

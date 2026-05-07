@@ -9,11 +9,11 @@ using Generic.Infrastructure.Interfaces;
 
 namespace Auth.Application.Authorization.UserAccess.UseCases;
 
-public class CreateUserAuthUseCase : IUseCaseCreateUserAuth
+public class CreateUserAuth : IUseCaseCreateUserAuth
 {
     private readonly IRepositorySession _repositorySession;
 
-    public CreateUserAuthUseCase(IRepositorySession repositorySession)
+    public CreateUserAuth(IRepositorySession repositorySession)
     {
         _repositorySession = repositorySession;
     }

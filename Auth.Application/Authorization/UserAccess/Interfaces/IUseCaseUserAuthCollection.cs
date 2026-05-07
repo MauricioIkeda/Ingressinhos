@@ -5,6 +5,6 @@ namespace Auth.Application.Authorization.UserAccess.Interfaces;
 
 public interface IUseCaseUserAuthCollection
 {
-    OperationResult<AuthenticateToken> Execute(string email, string password);
-    OperationResult<AuthenticateToken> Refresh(string token, string refreshToken);
+    OperationResult<AuthenticateResponse> Execute(string email, string password);
+    OperationResult<AuthenticateResponse> Refresh(string token, string refreshToken);
 }

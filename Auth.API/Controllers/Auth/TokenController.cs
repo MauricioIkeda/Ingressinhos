@@ -27,7 +27,7 @@ public class TokenController : ControllerBase
     }
 
     [HttpPost("refresh")]
-    public IActionResult RefreshToken([FromBody] AuthenticateToken request)
+    public IActionResult RefreshToken([FromBody] RefreshTokenRequest request)
     {
         var result = _authUseCase.Refresh(request?.Token, request?.RefreshToken);
 

@@ -6,11 +6,11 @@ using Generic.Infrastructure.Interfaces;
 
 namespace Auth.Application.Authorization.UserAccess.UseCases;
 
-public class UseCaseUserAccessQuery : IUseCaseUserAccessQuery
+public class UserAccessQuery : IUseCaseUserAccessQuery
 {
     private readonly IRepositorySession _repositorySession;
 
-    public UseCaseUserAccessQuery(IRepositorySession repositorySession)
+    public UserAccessQuery(IRepositorySession repositorySession)
     {
         _repositorySession = repositorySession;
     }

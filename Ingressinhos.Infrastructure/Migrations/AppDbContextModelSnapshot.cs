@@ -34,6 +34,9 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseSequence(b.Property<long>("Id"));
 
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 

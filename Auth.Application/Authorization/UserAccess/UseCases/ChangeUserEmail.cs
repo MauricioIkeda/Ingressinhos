@@ -6,11 +6,11 @@ using Generic.Infrastructure.Interfaces;
 
 namespace Auth.Application.Authorization.UserAccess.UseCases;
 
-public class ChangeUserEmailUseCase : IUseCaseChangeUserEmail
+public class ChangeUserEmail : IUseCaseChangeUserEmail
 {
     private readonly IRepositorySession _repositorySession;
 
-    public ChangeUserEmailUseCase(IRepositorySession repositorySession)
+    public ChangeUserEmail(IRepositorySession repositorySession)
     {
         _repositorySession = repositorySession;
     }

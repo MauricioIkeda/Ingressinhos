@@ -29,7 +29,7 @@ public class OrderItemInclude : IUseCaseCommand<OrderItemDto>
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var client = repositoryQuery.Query<Client>(c => c.UserId == _currentUserContext.UserId).FirstOrDefault();
+            var client = repositoryQuery.Query<Client>(c => c.UserId == _currentUserContext.UserId && c.Active).FirstOrDefault();
             if (client is null)
             {
                 return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua conta."));
