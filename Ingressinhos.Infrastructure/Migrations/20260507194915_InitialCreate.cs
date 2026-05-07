@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ingressinhos.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Inicial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -23,6 +23,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                     UserId = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: false),
+                    Active = table.Column<bool>(type: "boolean", nullable: false),
                     Cpf_Numero = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -57,6 +58,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                     UserId = table.Column<string>(type: "text", nullable: true),
                     Name = table.Column<string>(type: "text", nullable: true),
                     Email = table.Column<string>(type: "text", nullable: false),
+                    Active = table.Column<bool>(type: "boolean", nullable: false),
                     TradingName = table.Column<string>(type: "text", nullable: true),
                     Cnpj_Numero = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -156,13 +158,13 @@ namespace Ingressinhos.Infrastructure.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     OrderId = table.Column<long>(type: "bigint", nullable: false),
-                    Method = table.Column<string>(type: "text", nullable: true),
+                    Method = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
-                    GatewayTransactionId = table.Column<string>(type: "text", nullable: true),
+                    GatewayTransactionId = table.Column<string>(type: "text", nullable: false),
                     RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ApprovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     RefusedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Amount_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
+                    Amount_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -221,12 +223,12 @@ namespace Ingressinhos.Infrastructure.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PaymentTransactionId = table.Column<long>(type: "bigint", nullable: false),
-                    Reason = table.Column<string>(type: "text", nullable: true),
+                    Reason = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     RejectedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Amount_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
+                    Amount_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -251,6 +253,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                     TicketId = table.Column<long>(type: "bigint", nullable: false),
                     TicketName = table.Column<string>(type: "text", nullable: true),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
+                    Category = table.Column<int>(type: "integer", nullable: false),
                     UnitPrice_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -273,40 +276,6 @@ namespace Ingressinhos.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PublishedTickets",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    TicketId = table.Column<long>(type: "bigint", nullable: false),
-                    SeatId = table.Column<long>(type: "bigint", nullable: true),
-                    Category = table.Column<int>(type: "integer", nullable: false),
-                    SeatAvailabilityStatus = table.Column<int>(type: "integer", nullable: false),
-                    PublishedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ReservedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    OccupiedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UnitPrice_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PublishedTickets", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PublishedTickets_Seats_SeatId",
-                        column: x => x.SeatId,
-                        principalTable: "Seats",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_PublishedTickets_Tickets_TicketId",
-                        column: x => x.TicketId,
-                        principalTable: "Tickets",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "IssuedTickets",
                 columns: table => new
                 {
@@ -315,6 +284,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                     OrderItemId = table.Column<long>(type: "bigint", nullable: false),
                     ClientId = table.Column<long>(type: "bigint", nullable: false),
                     EventId = table.Column<long>(type: "bigint", nullable: false),
+                    SeatCode = table.Column<string>(type: "text", nullable: true),
+                    CategoryTicket = table.Column<int>(type: "integer", nullable: false),
                     AccessCode = table.Column<string>(type: "text", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     IssuedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -392,16 +363,6 @@ namespace Ingressinhos.Infrastructure.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PublishedTickets_SeatId",
-                table: "PublishedTickets",
-                column: "SeatId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PublishedTickets_TicketId",
-                table: "PublishedTickets",
-                column: "TicketId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Refunds_PaymentTransactionId",
                 table: "Refunds",
                 column: "PaymentTransactionId");
@@ -429,16 +390,13 @@ namespace Ingressinhos.Infrastructure.Migrations
                 name: "IssuedTickets");
 
             migrationBuilder.DropTable(
-                name: "PublishedTickets");
-
-            migrationBuilder.DropTable(
                 name: "Refunds");
 
             migrationBuilder.DropTable(
-                name: "OrderItems");
+                name: "Seats");
 
             migrationBuilder.DropTable(
-                name: "Seats");
+                name: "OrderItems");
 
             migrationBuilder.DropTable(
                 name: "PaymentTransactions");
