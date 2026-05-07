@@ -73,6 +73,50 @@ public sealed class RequestAuth : IRequestAuth
         }
     }
 
+    public async Task<OperationResult> DeactivateUser(string userId)
+    {
+        const string propertyName = "Conta";
+
+        try
+        {
+            var safeUserId = Uri.EscapeDataString(userId ?? string.Empty);
+            using var response = await _httpClient.DeleteAsync($"api/auth/users/{safeUserId}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return await CreateFailureResultAsync(response, propertyName, "Nao foi possivel desativar a conta agora.");
+            }
+
+            return OperationResult.Ok();
+        }
+        catch
+        {
+            return OperationResult.FatalError(new MensagemErro(propertyName, "Nao conseguimos falar com o servico de conta agora."));
+        }
+    }
+
+    public async Task<OperationResult> ActivateUser(string userId)
+    {
+        const string propertyName = "Conta";
+
+        try
+        {
+            var safeUserId = Uri.EscapeDataString(userId ?? string.Empty);
+            using var response = await _httpClient.PutAsync($"api/auth/users/{safeUserId}/activate", content: null);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return await CreateFailureResultAsync(response, propertyName, "Nao foi possivel recuperar a conta agora.");
+            }
+
+            return OperationResult.Ok();
+        }
+        catch
+        {
+            return OperationResult.FatalError(new MensagemErro(propertyName, "Nao conseguimos falar com o servico de conta agora."));
+        }
+    }
+
     private static async Task<OperationResult> CreateFailureResultAsync(HttpResponseMessage response, string propertyName, string fallback)
     {
         var errors = await GetErrorsAsync(response, propertyName, fallback);

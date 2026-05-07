@@ -2,8 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Generic.Domain.Entities;
 
-public class BaseEntity
-    : ValidatableObject
+public class BaseEntity : ValidatableObject
 {
     [Key]
     public long Id { get; protected set; }

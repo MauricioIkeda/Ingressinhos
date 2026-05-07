@@ -7,6 +7,7 @@ public abstract class User : BaseEntity
     public string UserId { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public Email Email { get; private set; } = new(string.Empty);
+    public bool Active { get; private set; } = true;
     
     protected User() { }
 
@@ -56,5 +57,17 @@ public abstract class User : BaseEntity
         }
 
         Email = emailValue;
+    }
+
+    public void Deactivate()
+    {
+        ClearErrors();
+        Active = false;
+    }
+
+    public void Activate()
+    {
+        ClearErrors();
+        Active = true;
     }
 }

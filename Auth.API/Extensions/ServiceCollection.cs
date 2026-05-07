@@ -37,10 +37,12 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddAuthApplicationUseCases(this IServiceCollection services)
     {
-        services.AddScoped<IUseCaseUserAccessQuery, UseCaseUserAccessQuery>();
-        services.AddScoped<IUseCaseUserAuthCollection, AuthenticateUserUseCase>();
-        services.AddScoped<IUseCaseCreateUserAuth, CreateUserAuthUseCase>();
-        services.AddScoped<IUseCaseChangeUserEmail, ChangeUserEmailUseCase>();
+        services.AddScoped<IUseCaseUserAccessQuery, UserAccessQuery>();
+        services.AddScoped<IUseCaseUserAuthCollection, AuthenticateUser>();
+        services.AddScoped<IUseCaseCreateUserAuth, CreateUserAuth>();
+        services.AddScoped<IUseCaseChangeUserEmail, ChangeUserEmail>();
+        services.AddScoped<IUseCaseDesactiveUser, DesactiveUser>();
+        services.AddScoped<IUseCaseActivateUser, ActivateUser>();
         services.AddScoped<IToken>(sp =>
         {
             var config = sp.GetRequiredService<IConfiguration>();

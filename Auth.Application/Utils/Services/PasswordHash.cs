@@ -15,10 +15,12 @@ public static class PasswordHash
             return string.Empty;
         }
 
-        var salt = RandomNumberGenerator.GetBytes(SaltSize);
-        var key = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, HashAlgorithmName.SHA256, KeySize);
+        var salt = RandomNumberGenerator.GetBytes(SaltSize);  // Salt aleatorio para a mesma senha gerar hashes diferentes, evitar ataques de rainbow tables
+        var key = Rfc2898DeriveBytes.Pbkdf2(password, salt, Iterations, HashAlgorithmName.SHA256, KeySize); // Gerar a hash usando PBKDF2 com HMAC-SHA256, o número de iterações e o tamanho da chave definidos
 
-        return $"{Iterations}.{Convert.ToBase64String(salt)}.{Convert.ToBase64String(key)}";
+        return $"{Iterations}.{Convert.ToBase64String(salt)}.{Convert.ToBase64String(key)}"; // Armazenar o número de iterações, o salt e a hash em um formato legível.
+                                                                                             // Salt salvo somente para verificar a senha posteriormente.
+                                                                                             // O número de iterações é salvo para permitir ajustes futuros sem invalidar hashes antigos.
     }
 
     public static bool Verify(string password, string passwordHash)
@@ -28,7 +30,8 @@ public static class PasswordHash
             return false;
         }
 
-        var parts = passwordHash.Split('.', 3);
+        var parts = passwordHash.Split('.', 3); // Dividir a string hash em partes: iterações, salt e hash.
+                                                // O número máximo de divisões é 3 para garantir que o salt e a hash possam conter pontos.
         if (parts.Length != 3)
         {
             return false;
@@ -51,7 +54,7 @@ public static class PasswordHash
             return false;
         }
 
-        var keyToCheck = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, key.Length);
-        return CryptographicOperations.FixedTimeEquals(keyToCheck, key);
+        var keyToCheck = Rfc2898DeriveBytes.Pbkdf2(password, salt, iterations, HashAlgorithmName.SHA256, key.Length); // Gerar a hash da senha fornecida usando o mesmo salt e número de iterações para comparação.
+        return CryptographicOperations.FixedTimeEquals(keyToCheck, key); // Comparar as hashes usando uma comparação de tempo fixo para evitar ataques de timing.
     }
 }

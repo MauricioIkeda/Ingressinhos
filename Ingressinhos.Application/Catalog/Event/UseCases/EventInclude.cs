@@ -29,7 +29,7 @@ public class EventInclude : IUseCaseCommand<EventDto>
         try
         {
             IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var seller = repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId).FirstOrDefault();
+            var seller = repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
             if (seller is null)
             {
                 return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));

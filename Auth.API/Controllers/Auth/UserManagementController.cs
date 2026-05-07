@@ -1,4 +1,4 @@
-using Auth.Application.Authorization.UserAccess.Dtos;
+﻿using Auth.Application.Authorization.UserAccess.Dtos;
 using Auth.Application.Authorization.UserAccess.Interfaces;
 using Generic.Application.Dtos;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +11,19 @@ public class UserManagementController : ControllerBase
 {
     private readonly IUseCaseCreateUserAuth _createUserAuth;
     private readonly IUseCaseChangeUserEmail _changeUserEmail;
+    private readonly IUseCaseDesactiveUser _deactivateUser;
+    private readonly IUseCaseActivateUser _activateUser;
 
-    public UserManagementController(IUseCaseCreateUserAuth createUserAuth, IUseCaseChangeUserEmail changeUserEmail)
+    public UserManagementController(
+        IUseCaseCreateUserAuth createUserAuth,
+        IUseCaseChangeUserEmail changeUserEmail,
+        IUseCaseDesactiveUser deactivateUser,
+        IUseCaseActivateUser activateUser)
     {
         _createUserAuth = createUserAuth;
         _changeUserEmail = changeUserEmail;
+        _deactivateUser = deactivateUser;
+        _activateUser = activateUser;
     }
 
     [HttpPost]
@@ -43,4 +51,28 @@ public class UserManagementController : ControllerBase
 
         return StatusCode(result.StatusCode, new ChangeEmailResponse(true));
     }
+
+    [HttpDelete("{userId}")] // Desativar usuário, não excluir
+    public IActionResult DeactivateUser(string userId)
+    {
+        var result = _deactivateUser.Execute(userId);
+        if (!result.Success)
+        {
+            return StatusCode(result.StatusCode, result.Errors);
+        }
+        return StatusCode(result.StatusCode);
+    }
+
+    [HttpPut("{userId}/activate")]
+    public IActionResult ActivateUser(string userId)
+    {
+        var result = _activateUser.Execute(userId);
+        if (!result.Success)
+        {
+            return StatusCode(result.StatusCode, result.Errors);
+        }
+
+        return StatusCode(result.StatusCode);
+    }
 }
+

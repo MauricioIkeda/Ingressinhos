@@ -58,10 +58,14 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<SellerInclude>();
         services.AddScoped<SellerUpdate>();
+        services.AddScoped<SellerDeactivate>();
+        services.AddScoped<SellerRecover>();
         services.AddScoped<IUseCaseSellerCollection, UseCaseSellerCollection>();
 
         services.AddScoped<ClientInclude>();
         services.AddScoped<ClientUpdate>();
+        services.AddScoped<ClientDeactivate>();
+        services.AddScoped<ClientRecover>();
         services.AddScoped<IUseCaseClientCollection, UseCaseClientCollection>();
 
         services.AddScoped<OrderInclude>();
