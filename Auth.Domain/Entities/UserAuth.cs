@@ -107,7 +107,7 @@ public class UserAuth : BaseEntity
         ClearErrors();
         RefreshToken = refreshToken;
         TokenIssuedAt = DateTime.UtcNow;
-        RefreshTokenExpiration = DateTime.UtcNow.AddDays(1);
+        RefreshTokenExpiration = DateTime.UtcNow.AddDays(2);
     }
 
     public void ClearRefreshToken()

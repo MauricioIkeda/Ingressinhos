@@ -92,9 +92,13 @@ public class AppDbContext : DbContext
             .HasForeignKey(order => order.ClientId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Order>()
+            .Navigation(order => order.Items)
+            .AutoInclude();
+
         modelBuilder.Entity<OrderItem>()
             .HasOne<Order>()
-            .WithMany()
+            .WithMany(order => order.Items)
             .HasForeignKey(orderItem => orderItem.OrderId)
             .OnDelete(DeleteBehavior.Cascade);
 

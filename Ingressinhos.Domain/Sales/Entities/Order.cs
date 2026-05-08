@@ -8,9 +8,12 @@ public class Order : BaseEntity
     public long ClientId { get; private set; }
     public decimal TotalAmount { get; private set; }
     public OrderStatus Status { get; private set; }
+    public IReadOnlyCollection<OrderItem> Items => _items;
     public DateTime OrderedAt { get; private set; }
     public DateTime? PaidAt { get; private set; }
     public DateTime? CancelledAt { get; private set; }
+
+    private readonly List<OrderItem> _items = [];
 
     protected Order()
     {
@@ -27,7 +30,7 @@ public class Order : BaseEntity
             ClientId = clientId;
         }
 
-        Status = OrderStatus.PendingPayment;
+        Status = OrderStatus.Cart;
         OrderedAt = DateTime.UtcNow;
         TotalAmount = 0;
     }
@@ -36,9 +39,9 @@ public class Order : BaseEntity
     {
         ClearErrors();
 
-        if (Status != OrderStatus.PendingPayment)
+        if (Status != OrderStatus.Cart)
         {
-            AddError("Pedido", "Nao e possivel alterar itens de um pedido finalizado.");
+            AddError("Pedido", "Nao e possivel alterar itens de um pedido fora do carrinho.");
             return;
         }
 
@@ -55,6 +58,25 @@ public class Order : BaseEntity
         }
 
         TotalAmount += unitPrice * quantity;
+    }
+
+    public void MoveToPendingPayment()
+    {
+        ClearErrors();
+
+        if (Status != OrderStatus.Cart)
+        {
+            AddError("Pedido", "Somente pedidos em carrinho podem seguir para pagamento.");
+            return;
+        }
+
+        if (TotalAmount <= 0)
+        {
+            AddError("Pedido", "Nao e possivel seguir para pagamento com carrinho vazio.");
+            return;
+        }
+
+        Status = OrderStatus.PendingPayment;
     }
 
     public void ConfirmPayment()
@@ -78,6 +100,12 @@ public class Order : BaseEntity
         if (Status == OrderStatus.Cancelled)
         {
             AddError("Pedido", "Este pedido ja esta cancelado.");
+            return;
+        }
+
+        if (Status == OrderStatus.Paid)
+        {
+            AddError("Pedido", "Nao e possivel cancelar um pedido ja pago.");
             return;
         }
 

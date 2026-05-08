@@ -9,5 +9,5 @@ public interface IUseCasePaymentTransactionCollection : IUseCaseQueryCollection<
 {
     OperationResult<PaymentTransactionDto> Request(RequestPaymentDto command);
     OperationResult<IEnumerable<PaymentTransactionDto>> GetByOrder(long orderId);
-    OperationResult<PaymentTransactionDto> CheckStatus(long paymentTransactionId);
+    OperationResult<PaymentTransactionDto> CheckStatus(long orderId);
 }

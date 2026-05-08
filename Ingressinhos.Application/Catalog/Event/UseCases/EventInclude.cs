@@ -43,15 +43,14 @@ public class EventInclude : IUseCaseCommand<EventDto>
             var hasConflictingEvent = repositoryQuery.Query<Event>(
                 existingEvent => existingEvent.LocationId == eventDto.LocationId &&
                                  eventDto.StartTime < existingEvent.EndTime &&
-                                 eventDto.EndTime > existingEvent.StartTime)
-                .Any();
+                                 eventDto.EndTime > existingEvent.StartTime).Any();
 
             if (hasConflictingEvent)
             {
                 return OperationResult.UnprocessableEntity(new MensagemErro("Agenda", "Ja existe um evento para esse local no periodo informado."));
             }
 
-            var utcNow = DateTime.UtcNow;
+            var utcNow = DateTime.Now;
 
             var eventEntity = new Event(seller.Id, eventDto.Name, eventDto.StartTime, eventDto.EndTime, eventDto.LocationId, eventDto.HasSeats)
             {

@@ -21,6 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddIngressinhosDatabase(configuration);
         services.AddIngressinhosApplicationUseCases();
         services.AddIngressinhosAuthClient(configuration);
+        services.AddIngressinhosPaymentClient(configuration);
         return services;
     }
 
@@ -94,6 +95,22 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<IRequestAuth, RequestAuth>(client =>
         {
             client.BaseAddress = new Uri(authApiBaseUrl);
+        });
+
+        return services;
+    }
+
+    public static IServiceCollection AddIngressinhosPaymentClient(this IServiceCollection services, IConfiguration configuration)
+    {
+        var paymentApiBaseUrl = configuration["PaymentApi:BaseUrl"];
+        if (string.IsNullOrWhiteSpace(paymentApiBaseUrl))
+        {
+            throw new InvalidOperationException("PaymentApi:BaseUrl nao foi configurado. Ex.: http://localhost:5000");
+        }
+
+        services.AddHttpClient<IRequestPayment, RequestPayment>(client =>
+        {
+            client.BaseAddress = new Uri(paymentApiBaseUrl);
         });
 
         return services;
