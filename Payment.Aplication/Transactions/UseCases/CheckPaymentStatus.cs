@@ -19,20 +19,24 @@ public class CheckPaymentStatus : IUseCaseCheckPaymentStatus
         _paymentProcessor = paymentProcessor;
     }
 
-    public OperationResult<PaymentTransactionDto> Execute(long paymentTransactionId)
+    public OperationResult<PaymentTransactionDto> Execute(long orderId)
     {
-        if (paymentTransactionId <= 0)
+        if (orderId <= 0)
         {
-            return OperationResult<PaymentTransactionDto>.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador da transacao."));
+            return OperationResult<PaymentTransactionDto>.UnprocessableEntity(new MensagemErro("Pedido", "Deve ser informado o identificador do pedido."));
         }
 
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var transaction = repositoryQuery.Return<PaymentTransaction>(paymentTransactionId);
+            var transaction = repositoryQuery.Query<PaymentTransaction>(payment => payment.OrderId == orderId)
+                .OrderByDescending(payment => payment.RequestedAt)
+                .ThenByDescending(payment => payment.Id)
+                .FirstOrDefault();
+
             if (transaction is null)
             {
-                return OperationResult<PaymentTransactionDto>.NotFound(new MensagemErro("Pagamento", "Transacao de pagamento nao encontrada."));
+                return OperationResult<PaymentTransactionDto>.NotFound(new MensagemErro("Pagamento", "Nenhuma transacao de pagamento foi encontrada para o pedido informado."));
             }
 
             if (transaction.Status == PaymentStatus.Requested)

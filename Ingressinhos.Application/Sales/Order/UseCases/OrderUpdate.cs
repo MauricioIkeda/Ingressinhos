@@ -42,6 +42,13 @@ public class OrderUpdate : IUseCaseCommand<OrderDto>
             {
                 switch (orderDto.Status)
                 {
+                    case OrderStatus.PendingPayment:
+                        orderEntity.MoveToPendingPayment();
+                        if (!orderEntity.IsValid)
+                        {
+                            return orderEntity.ToUnprocessableEntityResult();
+                        }
+                        break;
                     case OrderStatus.Paid:
                         orderEntity.ConfirmPayment();
                         if (!orderEntity.IsValid)
@@ -57,7 +64,7 @@ public class OrderUpdate : IUseCaseCommand<OrderDto>
                         }
                         break;
                     default:
-                        return OperationResult.UnprocessableEntity(new MensagemErro("Status", "Nao e possivel retornar o pedido para pendente."));
+                        return OperationResult.UnprocessableEntity(new MensagemErro("Status", "Nao e possivel alterar o pedido para o status informado."));
                 }
             }
 

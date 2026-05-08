@@ -53,10 +53,10 @@ public class PaymentTransactionController : ApiQuery<PaymentTransaction>
         return StatusCode(result.StatusCode, result.Data);
     }
 
-    [HttpPost("{paymentTransactionId:long}/status/check")]
-    public IActionResult CheckStatus(long paymentTransactionId)
+    [HttpPost("order/{orderId:long}/status/check")]
+    public IActionResult CheckStatus(long orderId)
     {
-        var result = _useCaseCollection.CheckStatus(paymentTransactionId);
+        var result = _useCaseCollection.CheckStatus(orderId);
         if (!result.Success)
         {
             return StatusCode(result.StatusCode, result.Errors);

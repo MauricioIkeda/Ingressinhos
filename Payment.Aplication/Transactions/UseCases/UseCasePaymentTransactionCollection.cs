@@ -35,8 +35,8 @@ public class UseCasePaymentTransactionCollection : UseCaseQueryCollection<Paymen
         return _getPaymentsByOrder.Execute(orderId);
     }
 
-    public OperationResult<PaymentTransactionDto> CheckStatus(long paymentTransactionId)
+    public OperationResult<PaymentTransactionDto> CheckStatus(long orderId)
     {
-        return _checkPaymentStatus.Execute(paymentTransactionId);
+        return _checkPaymentStatus.Execute(orderId);
     }
 }

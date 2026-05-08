@@ -17,7 +17,8 @@ internal static class PaymentTransactionMapper
             GatewayTransactionId = transaction.GatewayTransactionId,
             RequestedAt = transaction.RequestedAt,
             ApprovedAt = transaction.ApprovedAt,
-            RefusedAt = transaction.RefusedAt
+            RefusedAt = transaction.RefusedAt,
+            CancelledAt = transaction.CancelledAt
         };
     }
 }

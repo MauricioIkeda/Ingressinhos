@@ -5,5 +5,5 @@ namespace Payment.Aplication.Transactions.Interfaces;
 
 public interface IUseCaseCheckPaymentStatus
 {
-    OperationResult<PaymentTransactionDto> Execute(long paymentTransactionId);
+    OperationResult<PaymentTransactionDto> Execute(long orderId);
 }

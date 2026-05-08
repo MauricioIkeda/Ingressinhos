@@ -29,16 +29,23 @@ public class RequestPayment : IUseCaseRequestPayment
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var existingTransaction = repositoryQuery.Query<PaymentTransaction>(payment =>
+            var existingApprovedTransaction = repositoryQuery.Query<PaymentTransaction>(payment =>
                 payment.OrderId == command.OrderId &&
-                (payment.Status == PaymentStatus.Requested || payment.Status == PaymentStatus.Approved))
+                payment.Status == PaymentStatus.Approved)
                 .FirstOrDefault();
 
-            if (existingTransaction is not null)
+            if (existingApprovedTransaction is not null)
             {
                 return OperationResult<PaymentTransactionDto>.UnprocessableEntity(
-                    new MensagemErro("Pagamento", "Ja existe uma cobranca ativa para o pedido informado."));
+                    new MensagemErro("Pagamento", "Ja existe um pagamento aprovado para o pedido informado."));
             }
+
+            var previousTransactions = repositoryQuery.Query<PaymentTransaction>(payment =>
+                    payment.OrderId == command.OrderId &&
+                    payment.Status != PaymentStatus.Approved &&
+                    payment.Status != PaymentStatus.Cancelled)
+                .OrderByDescending(payment => payment.RequestedAt)
+                .ToList();
 
             var transaction = new PaymentTransaction(command.OrderId, command.Amount, command.Method);
             if (!transaction.IsValid)
@@ -54,6 +61,17 @@ public class RequestPayment : IUseCaseRequestPayment
             }
 
             var repository = _repositorySession.GetRepository();
+            foreach (var previousTransaction in previousTransactions)
+            {
+                previousTransaction.Cancel();
+                if (!previousTransaction.IsValid)
+                {
+                    return OperationResult<PaymentTransactionDto>.UnprocessableEntity(previousTransaction.Errors);
+                }
+
+                repository.Upsert(previousTransaction);
+            }
+
             repository.Include(transaction);
             repository.Flush().GetAwaiter().GetResult();
 

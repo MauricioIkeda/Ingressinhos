@@ -2,7 +2,8 @@ namespace Ingressinhos.Domain.Sales.Enums;
 
 public enum OrderStatus
 {
-    PendingPayment = 1,
-    Paid = 2,
-    Cancelled = 3
+    Cart = 1,
+    PendingPayment = 2,
+    Paid = 3,
+    Cancelled = 4
 }

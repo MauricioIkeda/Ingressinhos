@@ -46,6 +46,12 @@ public class OrderItemInclude : IUseCaseCommand<OrderItemDto>
                 return OperationResult.Forbidden(new MensagemErro("Pedido", "Voce so pode adicionar itens em pedidos da sua conta."));
             }
 
+            order.AddItem(orderItemDto.UnitPrice, orderItemDto.Quantity);
+            if (!order.IsValid)
+            {
+                return order.ToUnprocessableEntityResult();
+            }
+
             var utcNow = DateTime.UtcNow;
 
             var orderItemEntity = new OrderItemDomain(
@@ -64,6 +70,8 @@ public class OrderItemInclude : IUseCaseCommand<OrderItemDto>
             }
 
             var repository = _repositorySession.GetRepository();
+            order.UpdatedAt = utcNow;
+            repository.Upsert(order);
             repository.Include(orderItemEntity);
             repository.Flush().GetAwaiter().GetResult();
             return OperationResult.Created();

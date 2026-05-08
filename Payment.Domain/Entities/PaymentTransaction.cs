@@ -14,6 +14,7 @@ public class PaymentTransaction : BaseEntity
     public DateTime RequestedAt { get; private set; }
     public DateTime? ApprovedAt { get; private set; }
     public DateTime? RefusedAt { get; private set; }
+    public DateTime? CancelledAt { get; private set; }
 
     protected PaymentTransaction()
     {
@@ -89,5 +90,25 @@ public class PaymentTransaction : BaseEntity
 
         Status = PaymentStatus.Refused;
         RefusedAt = DateTime.UtcNow;
+    }
+
+    public void Cancel()
+    {
+        ClearErrors();
+
+        if (Status == PaymentStatus.Approved)
+        {
+            AddError("Status", "Nao e possivel cancelar um pagamento ja aprovado");
+            return;
+        }
+
+        if (Status == PaymentStatus.Cancelled)
+        {
+            AddError("Status", "O pagamento informado ja esta cancelado");
+            return;
+        }
+
+        Status = PaymentStatus.Cancelled;
+        CancelledAt = DateTime.UtcNow;
     }
 }
