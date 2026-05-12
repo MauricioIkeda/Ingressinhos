@@ -10,17 +10,16 @@ namespace Auth.API.Controllers.Auth;
 public class UserManagementController : ControllerBase
 {
     private readonly IUseCaseCreateUserAuth _createUserAuth;
+    private readonly IUseCaseCreateAdminUserAuth _createAdminUserAuth;
     private readonly IUseCaseChangeUserEmail _changeUserEmail;
     private readonly IUseCaseDesactiveUser _deactivateUser;
     private readonly IUseCaseActivateUser _activateUser;
 
-    public UserManagementController(
-        IUseCaseCreateUserAuth createUserAuth,
-        IUseCaseChangeUserEmail changeUserEmail,
-        IUseCaseDesactiveUser deactivateUser,
-        IUseCaseActivateUser activateUser)
+    public UserManagementController( IUseCaseCreateUserAuth createUserAuth, IUseCaseCreateAdminUserAuth createAdminUserAuth,
+        IUseCaseChangeUserEmail changeUserEmail, IUseCaseDesactiveUser deactivateUser, IUseCaseActivateUser activateUser)
     {
         _createUserAuth = createUserAuth;
+        _createAdminUserAuth = createAdminUserAuth;
         _changeUserEmail = changeUserEmail;
         _deactivateUser = deactivateUser;
         _activateUser = activateUser;
@@ -30,6 +29,22 @@ public class UserManagementController : ControllerBase
     public IActionResult CreateUser([FromBody] CreateUserRequest request)
     {
         var result = _createUserAuth.Execute(new CreateUserRequest(request?.Name, request?.Email, request?.Password, request?.Role ?? 0));
+
+        if (!result.Success)
+        {
+            return StatusCode(result.StatusCode, result.Errors);
+        }
+
+        return StatusCode(result.StatusCode, new CreateUserResponse(result.Data));
+    }
+
+    [HttpPost("admins")]
+    public IActionResult CreateAdmin([FromBody] CreateAdminRequest request)
+    {
+        var result = _createAdminUserAuth.Execute(
+            new CreateAdminRequest(request?.Name, request?.Email, request?.Password),
+            User.Identity?.IsAuthenticated ?? false,
+            User.IsInRole("Admin"));
 
         if (!result.Success)
         {

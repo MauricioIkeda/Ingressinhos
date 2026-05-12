@@ -2,6 +2,7 @@
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
+using Generic.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,7 +61,7 @@ public class SellerController : ApiCrud<Seller, SellerDto>
         return ExecuteCustom(_useCaseCollection.Recover(id));
     }
 
-    private IActionResult ExecuteCustom(Generic.Domain.Entities.OperationResult result)
+    private IActionResult ExecuteCustom(OperationResult result)
     {
         if (!result.Success)
         {
