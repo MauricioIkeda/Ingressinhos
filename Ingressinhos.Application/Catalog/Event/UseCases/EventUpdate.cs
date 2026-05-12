@@ -85,6 +85,10 @@ public class EventUpdate : IUseCaseCommand<EventDto>
             if (eventDto.HasSeats != eventEntity.HasSeats)
             {
                 eventEntity.ChangeSeatMode(eventDto.HasSeats);
+                if (!eventEntity.IsValid)
+                {
+                    return eventEntity.ToUnprocessableEntityResult();
+                }
             }
 
             eventEntity.UpdatedAt = DateTime.UtcNow;

@@ -52,11 +52,19 @@ public class TicketUpdate : IUseCaseCommand<TicketDto>
             if (ticket.IsActive && ticketEntity.Status == CatalogTicketStatus.Inactive)
             {
                 ticketEntity.Enable();
+                if (!ticketEntity.IsValid)
+                {
+                    return ticketEntity.ToUnprocessableEntityResult();
+                }
             }
 
             if (!ticket.IsActive && ticketEntity.Status != CatalogTicketStatus.Inactive)
             {
                 ticketEntity.Disable();
+                if (!ticketEntity.IsValid)
+                {
+                    return ticketEntity.ToUnprocessableEntityResult();
+                }
             }
 
             ticketEntity.UpdatedAt = DateTime.UtcNow;

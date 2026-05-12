@@ -57,6 +57,11 @@ public class SellerDeactivate
             }
 
             sellerEntity.Deactivate();
+            if (!sellerEntity.IsValid)
+            {
+                return sellerEntity.ToUnprocessableEntityResult();
+            }
+
             sellerEntity.UpdatedAt = DateTime.UtcNow;
 
             var repository = _repositorySession.GetRepository();

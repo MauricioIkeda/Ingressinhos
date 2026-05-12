@@ -69,6 +69,10 @@ public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
                 }
 
                 locationEntity.ChangeSeatMode(locationDto.HasSeats);
+                if (!locationEntity.IsValid)
+                {
+                    return locationEntity.ToUnprocessableEntityResult();
+                }
             }
             
             _repositorySession.GetRepository().Merge(locationEntity);
