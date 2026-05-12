@@ -26,7 +26,7 @@ public class ClientController : ApiCrud<Client, ClientDto>
     }
 
     [HttpGet("{id:long}")]
-    [Authorize(Policy = "ClientOrAdmin")]
+    //[Authorize(Policy = "ClientOrAdmin")]
     public IActionResult GetById(long id)
     {
         return GetByIdResult(id);

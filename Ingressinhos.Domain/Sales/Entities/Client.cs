@@ -14,6 +14,11 @@ public class Client : User
 
     public Client(string name, string email, string cpf, string userId) : base(name, email, userId)
     {
-        Cpf = new CPF(cpf);
+        var cpfValue = new CPF(cpf);
+        CopyErrorsFrom(cpfValue);
+        if (cpfValue.IsValid)
+        {
+            Cpf = cpfValue;
+        }
     }
 }
