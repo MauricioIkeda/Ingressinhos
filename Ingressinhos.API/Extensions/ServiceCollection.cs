@@ -71,6 +71,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<OrderInclude>();
         services.AddScoped<OrderUpdate>();
+        services.AddScoped<IUseCaseConfirmOrderPayment, ConfirmOrderPayment>();
         services.AddScoped<IUseCaseOrderCollection, UseCaseOrderCollection>();
 
         services.AddScoped<OrderItemInclude>();
@@ -79,6 +80,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IssuedTicketInclude>();
         services.AddScoped<IssuedTicketUpdate>();
+        services.AddScoped<IUseCaseIssueTicketsFromOrder, IssueTicketsFromOrder>();
         services.AddScoped<IUseCaseIssuedTicketCollection, UseCaseIssuedTicketCollection>();
 
         return services;

@@ -32,6 +32,25 @@ public abstract class User : BaseEntity
         UserId = userId;
     }
 
+    public void AttachUserId(string userId)
+    {
+        ClearErrors();
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            AddError("Conta", "Nao foi possivel vincular a conta do usuario.");
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(UserId))
+        {
+            AddError("Conta", "A conta do usuario ja foi vinculada.");
+            return;
+        }
+
+        UserId = userId.Trim();
+    }
+
     public void ChangeName(string name)
     {
         ClearErrors();

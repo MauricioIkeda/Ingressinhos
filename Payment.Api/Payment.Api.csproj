@@ -21,6 +21,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Generic.Messaging\Generic.Messaging.csproj" />
       <ProjectReference Include="..\Generic.Api\Generic.Api.csproj" />
       <ProjectReference Include="..\Payment.Aplication\Payment.Aplication.csproj" />
       <ProjectReference Include="..\Payment.Infrastructure\Payment.Infrastructure.csproj" />

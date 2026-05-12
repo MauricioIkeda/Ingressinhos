@@ -52,7 +52,7 @@ public class EventInclude : IUseCaseCommand<EventDto>
 
             var utcNow = DateTime.Now;
 
-            var eventEntity = new Event(seller.Id, eventDto.Name, eventDto.StartTime, eventDto.EndTime, eventDto.LocationId, eventDto.HasSeats)
+            var eventEntity = new Event(seller.Id, eventDto.Name, eventDto.StartTime, eventDto.EndTime, eventDto.Description, eventDto.ImageUrl, eventDto.LocationId, eventDto.HasSeats)
             {
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow

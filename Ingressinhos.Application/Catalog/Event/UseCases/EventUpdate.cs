@@ -91,6 +91,24 @@ public class EventUpdate : IUseCaseCommand<EventDto>
                 }
             }
 
+            if (eventDto.Description != eventEntity.Description)
+            {
+                eventEntity.ChangeDescription(eventDto.Description);
+                if (!eventEntity.IsValid)
+                {
+                    return eventEntity.ToUnprocessableEntityResult();
+                }
+            }
+
+            if (eventDto.ImageUrl != eventEntity.ImageUrl)
+            {
+                eventEntity.ChangeImageUrl(eventDto.ImageUrl);
+                if (!eventEntity.IsValid)
+                {
+                    return eventEntity.ToUnprocessableEntityResult();
+                }
+            }
+
             eventEntity.UpdatedAt = DateTime.UtcNow;
 
             var repository = _repositorySession.GetRepository();

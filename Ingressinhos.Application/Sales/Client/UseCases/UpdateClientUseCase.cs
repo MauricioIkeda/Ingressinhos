@@ -30,6 +30,10 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
             return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado um Id valido."));
         }
         
+        string? userId = null;
+        string? previousEmail = null;
+        var authEmailChanged = false;
+
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
@@ -45,6 +49,8 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
                 return OperationResult.UnprocessableEntity(new MensagemErro("Client", "Nao e possivel editar um cliente desativado."));
             }
 
+            userId = clientEntity.UserId;
+
             if (clientDto.Name != clientEntity.Name)
             {
                 clientEntity.ChangeName(clientDto.Name);
@@ -56,6 +62,8 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
 
             if (clientDto.Email != clientEntity.Email.Endereco)
             {
+                previousEmail = clientEntity.Email.Endereco;
+
                 clientEntity.ChangeEmail(clientDto.Email);
                 if (!clientEntity.IsValid)
                 {
@@ -67,6 +75,8 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
                 {
                     return authResult;
                 }
+
+                authEmailChanged = true;
             }
 
             clientEntity.UpdatedAt = DateTime.UtcNow;
@@ -78,6 +88,11 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
         }
         catch (Exception ex)
         {
+            if (authEmailChanged && !string.IsNullOrWhiteSpace(previousEmail) && !string.IsNullOrWhiteSpace(userId))
+            {
+                _requestAuth.ChangeEmail(userId, previousEmail).GetAwaiter().GetResult();
+            }
+
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }

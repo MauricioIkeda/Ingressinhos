@@ -1,5 +1,8 @@
 using Generic.Infrastructure.Interfaces;
 using Generic.Infrastructure.Repositories;
+using Generic.Messaging.Interfaces;
+using Generic.Messaging.Options;
+using Generic.Messaging.Services;
 using Microsoft.EntityFrameworkCore;
 using Payment.Aplication.Refunds.Interfaces;
 using Payment.Aplication.Refunds.UseCases;
@@ -12,10 +15,12 @@ namespace Payment.Api.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddPaymentServices(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddPaymentServices(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
     {
         services.AddPaymentDatabase(configuration);
         services.AddPaymentUseCases();
+        services.AddSingleton(CreateFileMessageBusOptions(configuration, contentRootPath));
+        services.AddSingleton<IMessagePublisher, FileMessagePublisher>();
         services.AddScoped<IPaymentProcessor, RandomMockPaymentProcessor>();
         return services;
     }
@@ -43,6 +48,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUseCaseGetPaymentTransaction, GetPaymentTransaction>();
         services.AddScoped<IUseCaseGetPaymentsByOrder, GetPaymentsByOrder>();
         services.AddScoped<IUseCaseCheckPaymentStatus, CheckPaymentStatus>();
+        services.AddScoped<IUseCaseHandlePaymentNotification, HandlePaymentNotification>();
         services.AddScoped<IUseCasePaymentTransactionCollection, UseCasePaymentTransactionCollection>();
         services.AddScoped<IUseCaseRequestRefund, RequestRefund>();
         services.AddScoped<IUseCaseGetRefund, GetRefund>();
@@ -50,5 +56,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUseCaseCheckRefundStatus, CheckRefundStatus>();
         services.AddScoped<IUseCaseRefundCollection, UseCaseRefundCollection>();
         return services;
+    }
+
+    private static FileMessageBusOptions CreateFileMessageBusOptions(IConfiguration configuration, string contentRootPath)
+    {
+        var configuredBasePath = configuration["Messaging:BasePath"];
+        var basePath = string.IsNullOrWhiteSpace(configuredBasePath)
+            ? Path.GetFullPath(Path.Combine(contentRootPath, "..", "message-bus"))
+            : Path.GetFullPath(Path.IsPathRooted(configuredBasePath)
+                ? configuredBasePath
+                : Path.Combine(contentRootPath, configuredBasePath));
+
+        return new FileMessageBusOptions
+        {
+            BasePath = basePath
+        };
     }
 }
