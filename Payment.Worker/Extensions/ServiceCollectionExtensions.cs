@@ -1,0 +1,86 @@
+using Generic.Infrastructure.Interfaces;
+using Generic.Infrastructure.Repositories;
+using Generic.Messaging.Interfaces;
+using Generic.Messaging.Options;
+using Generic.Messaging.Services;
+using Microsoft.EntityFrameworkCore;
+using Payment.Aplication.Refunds.Interfaces;
+using Payment.Aplication.Refunds.UseCases;
+using Payment.Aplication.Transactions.Interfaces;
+using Payment.Aplication.Transactions.UseCases;
+using Payment.Infrastructure.Context;
+using Payment.Infrastructure.Services;
+using Payment.Worker.Options;
+
+namespace Payment.Worker.Extensions;
+
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddPaymentWorkerServices(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
+    {
+        services.AddPaymentDatabase(configuration);
+        services.AddPaymentUseCases();
+        services.AddSingleton(CreateFileMessageBusOptions(configuration, contentRootPath));
+        services.AddSingleton(CreatePaymentExpirationOptions(configuration));
+        services.AddSingleton<IMessagePublisher, FileMessagePublisher>();
+        services.AddScoped<IPaymentProcessor, RandomMockPaymentProcessor>();
+        return services;
+    }
+
+    private static IServiceCollection AddPaymentDatabase(this IServiceCollection services, IConfiguration configuration)
+    {
+        var connectionString = configuration.GetConnectionString("PaymentConnection")
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'PaymentConnection' nao foi configurada.");
+
+        services.AddDbContext<PaymentDbContext>(options => options.UseNpgsql(connectionString));
+        services.AddScoped<DbContext>(sp => sp.GetRequiredService<PaymentDbContext>());
+        services.AddScoped<IRepository>(sp => new RepositoryEF(sp.GetRequiredService<DbContext>()));
+        services.AddScoped<IRepositoryQuery>(sp => new RepositoryQueryEF(sp.GetRequiredService<DbContext>()));
+        services.AddScoped<IRepositorySession, RepositorySessionEF>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddPaymentUseCases(this IServiceCollection services)
+    {
+        services.AddScoped<IUseCaseRequestPayment, RequestPayment>();
+        services.AddScoped<IUseCaseGetPaymentTransaction, GetPaymentTransaction>();
+        services.AddScoped<IUseCaseGetPaymentsByOrder, GetPaymentsByOrder>();
+        services.AddScoped<IUseCaseCheckPaymentStatus, CheckPaymentStatus>();
+        services.AddScoped<IUseCaseHandlePaymentNotification, HandlePaymentNotification>();
+        services.AddScoped<IUseCasePaymentTransactionCollection, UseCasePaymentTransactionCollection>();
+        services.AddScoped<IUseCaseRequestRefund, RequestRefund>();
+        services.AddScoped<IUseCaseGetRefund, GetRefund>();
+        services.AddScoped<IUseCaseGetRefundsByPaymentTransaction, GetRefundsByPaymentTransaction>();
+        services.AddScoped<IUseCaseCheckRefundStatus, CheckRefundStatus>();
+        services.AddScoped<IUseCaseRefundCollection, UseCaseRefundCollection>();
+        return services;
+    }
+
+    private static FileMessageBusOptions CreateFileMessageBusOptions(IConfiguration configuration, string contentRootPath)
+    {
+        var configuredBasePath = configuration["Messaging:BasePath"];
+        var basePath = string.IsNullOrWhiteSpace(configuredBasePath)
+            ? Path.GetFullPath(Path.Combine(contentRootPath, "..", "message-bus"))
+            : Path.GetFullPath(Path.IsPathRooted(configuredBasePath)
+                ? configuredBasePath
+                : Path.Combine(contentRootPath, configuredBasePath));
+
+        return new FileMessageBusOptions
+        {
+            BasePath = basePath
+        };
+    }
+
+    private static PaymentExpirationOptions CreatePaymentExpirationOptions(IConfiguration configuration)
+    {
+        var rawMinutes = configuration["PaymentExpiration:CancelAfterMinutes"];
+        var cancelAfterMinutes = int.TryParse(rawMinutes, out var parsedMinutes) ? parsedMinutes : 30;
+
+        return new PaymentExpirationOptions
+        {
+            CancelAfterMinutes = cancelAfterMinutes
+        };
+    }
+}

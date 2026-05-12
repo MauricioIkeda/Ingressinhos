@@ -10,12 +10,14 @@ public class Event : BaseEntity
     public DateTime EndTime { get; private set; }
     public long LocationId { get; private set; }
     public bool HasSeats { get; private set; }
+    public string Description { get; private set; }
+    public string ImageUrl { get; private set; }
 
     protected Event()
     {
     }
 
-    public Event(long sellerId, string name, DateTime startTime, DateTime endTime, long locationId, bool hasSeats = true)
+    public Event(long sellerId, string name, DateTime startTime, DateTime endTime, string description, string imageUrl, long locationId, bool hasSeats = true)
     {
         if (string.IsNullOrEmpty(name))
         {
@@ -61,7 +63,8 @@ public class Event : BaseEntity
         {
             SellerId = sellerId;
         }
-        
+        ImageUrl = imageUrl;
+        Description = description;
         HasSeats = hasSeats;
     }
 
@@ -77,6 +80,18 @@ public class Event : BaseEntity
         
         Name = name;
     } 
+
+    public void ChangeDescription(string description)
+    {
+        ClearErrors();
+        Description = description;
+    }
+
+    public void ChangeImageUrl(string imageUrl)
+    {
+        ClearErrors();
+        ImageUrl = imageUrl;
+    }
 
     public void ChangeLocation(long locationId)
     {

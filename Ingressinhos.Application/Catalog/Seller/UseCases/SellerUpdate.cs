@@ -30,6 +30,10 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
             return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador do vendedor."));
         }
 
+        string? userId = null;
+        string? previousEmail = null;
+        var authEmailChanged = false;
+
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
@@ -45,6 +49,8 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
                 return OperationResult.UnprocessableEntity(new MensagemErro("Seller", "Nao e possivel editar um vendedor desativado."));
             }
 
+            userId = sellerEntity.UserId;
+
             if (seller.Name != sellerEntity.Name)
             {
                 sellerEntity.ChangeName(seller.Name);
@@ -56,6 +62,8 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
 
             if (seller.Email != sellerEntity.Email.Endereco)
             {
+                previousEmail = sellerEntity.Email.Endereco;
+
                 sellerEntity.ChangeEmail(seller.Email);
                 if (!sellerEntity.IsValid)
                 {
@@ -67,9 +75,16 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
                 {
                     return authResult;
                 }
+
+                authEmailChanged = true;
             }
 
             if (seller.Cnpj != sellerEntity.Cnpj.Numero)
+            {
+                return OperationResult.UnprocessableEntity(new MensagemErro("Cnpj", "Nao e permitido alterar o CNPJ do vendedor."));
+            }
+
+            if (seller.TradingName != sellerEntity.TradingName)
             {
                 sellerEntity.ChangeTradingName(seller.TradingName);
                 if (!sellerEntity.IsValid)
@@ -87,6 +102,11 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
         }
         catch (Exception ex)
         {
+            if (authEmailChanged && !string.IsNullOrWhiteSpace(previousEmail) && !string.IsNullOrWhiteSpace(userId))
+            {
+                _requestAuth.ChangeEmail(userId, previousEmail).GetAwaiter().GetResult();
+            }
+
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }

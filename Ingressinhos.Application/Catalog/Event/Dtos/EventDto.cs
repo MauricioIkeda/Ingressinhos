@@ -9,4 +9,6 @@ public class EventDto
     public DateTime EndTime { get; set; }
     public long LocationId { get; set; }
     public bool HasSeats { get; set; }
+    public string Description { get; set; }
+    public string ImageUrl { get; set; }
 }

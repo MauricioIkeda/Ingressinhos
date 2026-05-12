@@ -24,21 +24,14 @@ public class ClientInclude : IUseCaseCommand<ClientDto>
         {
             return OperationResult.UnprocessableEntity(new MensagemErro("Client", "Deve informar o cliente."));
         }
-        
+
+        string? createdUserId = null;
+
         try
         {
             var utcNow = DateTime.UtcNow;
 
-            var authResult = _requestAuth.CreateUser(clientDto.Name, clientDto.Email, clientDto.Password, 2)
-                .GetAwaiter().GetResult();
-            if (!authResult.Success)
-            {
-                return authResult;
-            }
-
-            string userId = authResult.Data;
-
-            var clientEntity = new ClientDomain(clientDto.Name, clientDto.Email, clientDto.Cpf, userId)
+            var clientEntity = new ClientDomain(clientDto.Name, clientDto.Email, clientDto.Cpf, string.Empty)
             {
                 CreatedAt = utcNow,
                 UpdatedAt = utcNow
@@ -47,7 +40,23 @@ public class ClientInclude : IUseCaseCommand<ClientDto>
             {
                 return clientEntity.ToUnprocessableEntityResult();
             }
-            
+
+            var authResult = _requestAuth.CreateUser(clientDto.Name, clientDto.Email, clientDto.Password, 2)
+                .GetAwaiter().GetResult();
+            if (!authResult.Success)
+            {
+                return authResult;
+            }
+
+            createdUserId = authResult.Data;
+
+            clientEntity.AttachUserId(createdUserId);
+            if (!clientEntity.IsValid)
+            {
+                _requestAuth.DeactivateUser(createdUserId).GetAwaiter().GetResult();
+                return clientEntity.ToUnprocessableEntityResult();
+            }
+
             var repository = _repositorySession.GetRepository();
             repository.Include(clientEntity);
             repository.Flush().GetAwaiter().GetResult();
@@ -55,6 +64,11 @@ public class ClientInclude : IUseCaseCommand<ClientDto>
         }
         catch (Exception ex)
         {
+            if (!string.IsNullOrWhiteSpace(createdUserId))
+            {
+                _requestAuth.DeactivateUser(createdUserId).GetAwaiter().GetResult();
+            }
+
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }

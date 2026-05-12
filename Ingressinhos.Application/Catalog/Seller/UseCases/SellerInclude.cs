@@ -25,8 +25,22 @@ public class SellerInclude : IUseCaseCommand<SellerDto>
             return OperationResult.UnprocessableEntity(new MensagemErro("Seller", "Deve ser informado o vendedor."));
         }
 
+        string? createdUserId = null;
+
         try
         {
+            var utcNow = DateTime.UtcNow;
+
+            var sellerEntity = new Seller(seller.Name, seller.Email, seller.Cnpj, seller.TradingName, string.Empty)
+            {
+                CreatedAt = utcNow,
+                UpdatedAt = utcNow
+            };
+            if (!sellerEntity.IsValid)
+            {
+                return sellerEntity.ToUnprocessableEntityResult();
+            }
+
             var authResult = _requestAuth.CreateUser(seller.Name, seller.Email, seller.Password, 1)
                 .GetAwaiter().GetResult();
             if (!authResult.Success)
@@ -34,17 +48,12 @@ public class SellerInclude : IUseCaseCommand<SellerDto>
                 return authResult;
             }
 
-            string userId = authResult.Data;
+            createdUserId = authResult.Data;
 
-            var utcNow = DateTime.UtcNow;
-
-            var sellerEntity = new Seller(seller.Name, seller.Email, seller.Cnpj, seller.TradingName, userId)
-            {
-                CreatedAt = utcNow,
-                UpdatedAt = utcNow
-            };
+            sellerEntity.AttachUserId(createdUserId);
             if (!sellerEntity.IsValid)
             {
+                _requestAuth.DeactivateUser(createdUserId).GetAwaiter().GetResult();
                 return sellerEntity.ToUnprocessableEntityResult();
             }
 
@@ -55,6 +64,11 @@ public class SellerInclude : IUseCaseCommand<SellerDto>
         }
         catch (Exception ex)
         {
+            if (!string.IsNullOrWhiteSpace(createdUserId))
+            {
+                _requestAuth.DeactivateUser(createdUserId).GetAwaiter().GetResult();
+            }
+
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }

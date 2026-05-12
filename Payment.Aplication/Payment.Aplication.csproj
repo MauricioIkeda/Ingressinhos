@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Generic.Messaging\Generic.Messaging.csproj" />
       <ProjectReference Include="..\Generic.Application\Generic.Application.csproj" />
       <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />
       <ProjectReference Include="..\Payment.Domain\Payment.Domain.csproj" />

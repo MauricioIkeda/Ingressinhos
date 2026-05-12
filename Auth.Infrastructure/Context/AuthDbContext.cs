@@ -24,9 +24,11 @@ public class AuthDbContext : DbContext
                 endereco => new Email(endereco))
             .IsRequired();
 
-
         modelBuilder.Entity<UserAuth>()
             .HasIndex(x => x.UserId)
+            .IsUnique();
+        modelBuilder.Entity<UserAuth>()
+            .HasIndex(u => u.Email)
             .IsUnique();
     }
 }

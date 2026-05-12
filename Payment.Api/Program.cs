@@ -9,7 +9,7 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "Payment API", Version = "v1" });
 });
-builder.Services.AddPaymentServices(builder.Configuration);
+builder.Services.AddPaymentServices(builder.Configuration, builder.Environment.ContentRootPath);
 
 var app = builder.Build();
 
