@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ingressinhos.API.Controllers.Catalog;
 
 [ApiController]
-[Route("api/locations")]
-public class LocationController : ApiCrud<Location, LocationDto>
+[Route("api/[controller]")]
+public class LocationsController : ApiCrud<Location, LocationDto>
 {
-    public LocationController(IUseCaseLocationCollection useCaseCollection) : base(useCaseCollection)
+    public LocationsController(IUseCaseLocationCollection useCaseCollection) : base(useCaseCollection)
     {
     }
 

@@ -41,4 +41,14 @@ public abstract class ApiQuery<TEntity> : ControllerBase
 
         return StatusCode(result.StatusCode, result.Data);
     }
+
+    protected IActionResult ExecuteCustom(OperationResult result)
+    {
+        if (!result.Success)
+        {
+            return StatusCode(result.StatusCode, result.Errors);
+        }
+
+        return StatusCode(result.StatusCode);
+    }
 }

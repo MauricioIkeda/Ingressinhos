@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ingressinhos.API.Controllers.Catalog;
 
 [ApiController]
-[Route("api/events")]
-public class EventController : ApiCrud<Event, EventDto>
+[Route("api/[controller]")]
+public class EventsController : ApiCrud<Event, EventDto>
 {
-    public EventController(IUseCaseEventCollection useCaseCollection) : base(useCaseCollection)
+    public EventsController(IUseCaseEventCollection useCaseCollection) : base(useCaseCollection)
     {
     }
 
