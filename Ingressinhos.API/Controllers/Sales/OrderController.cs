@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ingressinhos.API.Controllers.Sales;
 
 [ApiController]
-[Route("api/orders")]
-public class OrderController : ApiCrud<Order, OrderDto>
+[Route("api/[controller]")]
+public class OrdersController : ApiCrud<Order, OrderDto>
 {
-    public OrderController(IUseCaseOrderCollection useCaseCollection) : base(useCaseCollection)
+    public OrdersController(IUseCaseOrderCollection useCaseCollection) : base(useCaseCollection)
     {
     }
 

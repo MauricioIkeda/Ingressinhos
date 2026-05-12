@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ingressinhos.API.Controllers.Catalog;
 
 [ApiController]
-[Route("api/sellers")]
-public class SellerController : ApiCrud<Seller, SellerDto>
+[Route("api/[controller]")]
+public class SellersController : ApiCrud<Seller, SellerDto>
 {
     private readonly IUseCaseSellerCollection _useCaseCollection;
 
-    public SellerController(IUseCaseSellerCollection useCaseCollection) : base(useCaseCollection)
+    public SellersController(IUseCaseSellerCollection useCaseCollection) : base(useCaseCollection)
     {
         _useCaseCollection = useCaseCollection;
     }
@@ -59,15 +59,5 @@ public class SellerController : ApiCrud<Seller, SellerDto>
     public IActionResult Recover(long id)
     {
         return ExecuteCustom(_useCaseCollection.Recover(id));
-    }
-
-    private IActionResult ExecuteCustom(OperationResult result)
-    {
-        if (!result.Success)
-        {
-            return StatusCode(result.StatusCode, result.Errors);
-        }
-
-        return StatusCode(result.StatusCode);
     }
 }

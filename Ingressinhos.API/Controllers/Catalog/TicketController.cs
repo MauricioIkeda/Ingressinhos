@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ingressinhos.API.Controllers.Catalog;
 
 [ApiController]
-[Route("api/tickets")]
-public class TicketController : ApiCrud<Ticket, TicketDto>
+[Route("api/[controller]")]
+public class TicketsController : ApiCrud<Ticket, TicketDto>
 {
-    public TicketController(IUseCaseTicketCollection useCaseCollection) : base(useCaseCollection)
+    public TicketsController(IUseCaseTicketCollection useCaseCollection) : base(useCaseCollection)
     {
     }
 

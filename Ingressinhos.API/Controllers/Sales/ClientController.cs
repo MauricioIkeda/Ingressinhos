@@ -9,12 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Ingressinhos.API.Controllers.Sales;
 
 [ApiController]
-[Route("api/clients")]
-public class ClientController : ApiCrud<Client, ClientDto>
+[Route("api/[controller]")]
+public class ClientsController : ApiCrud<Client, ClientDto>
 {
     private readonly IUseCaseClientCollection _useCaseCollection;
 
-    public ClientController(IUseCaseClientCollection useCaseCollection) : base(useCaseCollection)
+    public ClientsController(IUseCaseClientCollection useCaseCollection) : base(useCaseCollection)
     {
         _useCaseCollection = useCaseCollection;
     }
@@ -65,15 +65,5 @@ public class ClientController : ApiCrud<Client, ClientDto>
     public IActionResult Recover(long id)
     {
         return ExecuteCustom(_useCaseCollection.Recover(id));
-    }
-
-    private IActionResult ExecuteCustom(OperationResult result)
-    {
-        if (!result.Success)
-        {
-            return StatusCode(result.StatusCode, result.Errors);
-        }
-
-        return StatusCode(result.StatusCode);
     }
 }
