@@ -57,6 +57,11 @@ public class ClientRecover
             }
 
             clientEntity.Activate();
+            if (!clientEntity.IsValid)
+            {
+                return clientEntity.ToUnprocessableEntityResult();
+            }
+
             clientEntity.UpdatedAt = DateTime.UtcNow;
 
             var repository = _repositorySession.GetRepository();

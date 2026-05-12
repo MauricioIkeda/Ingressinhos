@@ -75,6 +75,10 @@ public class TicketInclude : IUseCaseCommand<TicketDto>
             if (!ticket.IsActive)
             {
                 ticketEntity.Disable();
+                if (!ticketEntity.IsValid)
+                {
+                    return ticketEntity.ToUnprocessableEntityResult();
+                }
             }
 
             var repository = _repositorySession.GetRepository();

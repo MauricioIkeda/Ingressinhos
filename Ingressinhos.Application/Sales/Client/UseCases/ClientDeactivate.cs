@@ -57,6 +57,11 @@ public class ClientDeactivate
             }
 
             clientEntity.Deactivate();
+            if (!clientEntity.IsValid)
+            {
+                return clientEntity.ToUnprocessableEntityResult();
+            }
+
             clientEntity.UpdatedAt = DateTime.UtcNow;
 
             var repository = _repositorySession.GetRepository();
