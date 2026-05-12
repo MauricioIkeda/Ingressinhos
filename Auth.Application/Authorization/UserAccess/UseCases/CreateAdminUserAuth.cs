@@ -1,28 +1,28 @@
+using Auth.Application.Authorization.UserAccess.Dtos;
 using Auth.Application.Authorization.UserAccess.Interfaces;
 using Auth.Application.Utils.Services;
 using Auth.Domain.Entities;
 using Auth.Domain.Enums;
-using Generic.Application.Dtos;
 using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
 using Generic.Infrastructure.Interfaces;
 
 namespace Auth.Application.Authorization.UserAccess.UseCases;
 
-public class CreateUserAuth : IUseCaseCreateUserAuth // Usado apenas para criar usuarios de ingressinhos, admin tem seu proprio
+public class CreateAdminUserAuth : IUseCaseCreateAdminUserAuth  // Apenas para criar o admin
 {
     private readonly IRepositorySession _repositorySession;
 
-    public CreateUserAuth(IRepositorySession repositorySession)
+    public CreateAdminUserAuth(IRepositorySession repositorySession)
     {
         _repositorySession = repositorySession;
     }
 
-    public OperationResult<string> Execute(CreateUserRequest command)
+    public OperationResult<string> Execute(CreateAdminRequest command, bool isAuthenticated, bool isAdmin)
     {
         if (command == null)
         {
-            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Requisicao", "Envie os dados do usuario."));
+            return OperationResult<string>.UnprocessableEntity(new MensagemErro("Requisicao", "Envie os dados do administrador."));
         }
 
         if (string.IsNullOrWhiteSpace(command.Password))
@@ -32,20 +32,27 @@ public class CreateUserAuth : IUseCaseCreateUserAuth // Usado apenas para criar 
 
         try
         {
-            var role = (RoleUser)command.Role;
+            var repositoryQuery = _repositorySession.GetRepositoryQuery();
+            var hasAnyAdmin = repositoryQuery.Query<UserAuth>(u => u.Role == RoleUser.Admin).Any();  // Se não tiver admin cria, se tiver exige autenticação, forma bucha, mas vai ser assim
 
-            if (role != RoleUser.Seller && role != RoleUser.Client)
+            if (hasAnyAdmin)
             {
-                return OperationResult<string>.UnprocessableEntity(new MensagemErro("Perfil", "Informe um perfil de acesso valido."));
+                if (!isAuthenticated)
+                {
+                    return OperationResult<string>.Unauthorized(new MensagemErro("Administrador", "Autentique-se para criar um novo administrador."));
+                }
+
+                if (!isAdmin)
+                {
+                    return OperationResult<string>.Forbidden(new MensagemErro("Administrador", "Somente administradores podem criar novos administradores."));
+                }
             }
 
-            Email email = new Email(command.Email);
+            var email = new Email(command.Email);
             if (!email.IsValid)
             {
                 return email.ToUnprocessableEntityResult<string>();
             }
-
-            var repositoryQuery = _repositorySession.GetRepositoryQuery();
 
             var emailInUse = repositoryQuery.Query<UserAuth>(u => u.Email == email).Any();
             if (emailInUse)
@@ -54,7 +61,7 @@ public class CreateUserAuth : IUseCaseCreateUserAuth // Usado apenas para criar 
             }
 
             var passwordHash = PasswordHash.Hash(command.Password);
-            var user = new UserAuth(command.Name, command.Email, role, passwordHash);
+            var user = new UserAuth(command.Name, command.Email, RoleUser.Admin, passwordHash);
             if (!user.IsValid)
             {
                 return user.ToUnprocessableEntityResult<string>();

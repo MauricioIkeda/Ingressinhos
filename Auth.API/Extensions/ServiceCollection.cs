@@ -40,6 +40,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUseCaseUserAccessQuery, UserAccessQuery>();
         services.AddScoped<IUseCaseUserAuthCollection, AuthenticateUser>();
         services.AddScoped<IUseCaseCreateUserAuth, CreateUserAuth>();
+        services.AddScoped<IUseCaseCreateAdminUserAuth, CreateAdminUserAuth>();
         services.AddScoped<IUseCaseChangeUserEmail, ChangeUserEmail>();
         services.AddScoped<IUseCaseDesactiveUser, DesactiveUser>();
         services.AddScoped<IUseCaseActivateUser, ActivateUser>();

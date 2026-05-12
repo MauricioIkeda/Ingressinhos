@@ -2,6 +2,7 @@ using Generic.Api.Controllers;
 using Ingressinhos.Application.Sales.Dtos;
 using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Sales.Entities;
+using Generic.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,7 +27,7 @@ public class ClientController : ApiCrud<Client, ClientDto>
     }
 
     [HttpGet("{id:long}")]
-    //[Authorize(Policy = "ClientOrAdmin")]
+    [Authorize(Policy = "ClientOrAdmin")]
     public IActionResult GetById(long id)
     {
         return GetByIdResult(id);
@@ -53,6 +54,12 @@ public class ClientController : ApiCrud<Client, ClientDto>
         return ExecuteCustom(_useCaseCollection.Deactivate(id));
     }
 
+    [HttpDelete("{id:long}/hard")]  // excluir esse endpoint quando finalizar
+    public IActionResult HardDelete(long id)
+    {
+        return ExecuteCustom(_useCaseCollection.Delete(id));
+    }
+
     [HttpPatch("{id:long}/recover")]
     [Authorize(Policy = "AdminOnly")]
     public IActionResult Recover(long id)
@@ -60,7 +67,7 @@ public class ClientController : ApiCrud<Client, ClientDto>
         return ExecuteCustom(_useCaseCollection.Recover(id));
     }
 
-    private IActionResult ExecuteCustom(Generic.Domain.Entities.OperationResult result)
+    private IActionResult ExecuteCustom(OperationResult result)
     {
         if (!result.Success)
         {
