@@ -24,6 +24,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Generic.Api\Generic.Api.csproj" />
 		<ProjectReference Include="..\Ingressinhos.Application\Ingressinhos.Application.csproj" />
+		<ProjectReference Include="..\Ingressinhos.Domain\Ingressinhos.Domain.csproj" />
 		<ProjectReference Include="..\Ingressinhos.Infrastructure\Ingressinhos.Infrastructure.csproj" />
 	</ItemGroup>
 

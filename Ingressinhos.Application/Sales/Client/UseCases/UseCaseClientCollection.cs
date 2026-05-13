@@ -11,17 +11,20 @@ public class UseCaseClientCollection : UseCaseCrudCollection<ClientDomain, Clien
 {
     private readonly ClientDeactivate _clientDeactivate;
     private readonly ClientRecover _clientRecover;
+    private readonly ClientGetByToken _clientGetByToken;
 
     public UseCaseClientCollection(
         IRepositorySession repositorySession,
         ClientUpdate update,
         ClientInclude include,
         ClientDeactivate clientDeactivate,
-        ClientRecover clientRecover)
+        ClientRecover clientRecover,
+        ClientGetByToken clientGetByToken)
         : base(include, update, new UseCaseGetOdata<ClientDomain>(), new UseCaseGet<ClientDomain>(), new UseCaseDelete<ClientDomain>(), repositorySession)
     {
         _clientDeactivate = clientDeactivate;
         _clientRecover = clientRecover;
+        _clientGetByToken = clientGetByToken;
     }
 
     public OperationResult Deactivate(long id)
@@ -32,5 +35,10 @@ public class UseCaseClientCollection : UseCaseCrudCollection<ClientDomain, Clien
     public OperationResult Recover(long id)
     {
         return _clientRecover.Execute(id);
+    }
+
+    public OperationResult<ClientGet> GetByToken()
+    {
+        return _clientGetByToken.Execute();
     }
 }

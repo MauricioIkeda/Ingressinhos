@@ -2,7 +2,6 @@
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
-using Generic.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -59,5 +58,16 @@ public class SellersController : ApiCrud<Seller, SellerDto>
     public IActionResult Recover(long id)
     {
         return ExecuteCustom(_useCaseCollection.Recover(id));
+    }
+
+    [Authorize(Policy = "SellerOrAdmin")]
+    [HttpGet("me")]
+    public IActionResult GetByToken()
+    {
+        var result = _useCaseCollection.GetByToken();
+        if (result.Success)
+            return Ok(result.Data);
+        else
+            return BadRequest(result.Errors);
     }
 }

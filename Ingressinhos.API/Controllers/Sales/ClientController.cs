@@ -2,7 +2,6 @@ using Generic.Api.Controllers;
 using Ingressinhos.Application.Sales.Dtos;
 using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Sales.Entities;
-using Generic.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -65,5 +64,16 @@ public class ClientsController : ApiCrud<Client, ClientDto>
     public IActionResult Recover(long id)
     {
         return ExecuteCustom(_useCaseCollection.Recover(id));
+    }
+
+    [Authorize(Policy = "ClientOrAdmin")]
+    [HttpGet("me")]
+    public IActionResult GetByToken()
+    {
+        var result = _useCaseCollection.GetByToken();
+        if (result.Success)
+            return Ok(result.Data);
+        else
+            return BadRequest(result.Errors);
     }
 }

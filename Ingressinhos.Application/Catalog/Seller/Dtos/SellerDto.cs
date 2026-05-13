@@ -9,3 +9,5 @@ public class SellerDto
     public string Password { get; set; } // somente para inclusão
     public string TradingName { get; set; }
 }
+
+public record SellerGet( long SellerId, string Name, string Email, string Cnpj, string TradingName );

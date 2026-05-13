@@ -35,6 +35,8 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<DbContext>(provider => provider.GetRequiredService<AppDbContext>());
         services.AddScoped<IRepositorySession, RepositorySessionEF>();
+        services.AddScoped<IRepositoryQuery, RepositoryQueryEF>();
+        services.AddScoped<IRepository, RepositoryEF>();
 
         return services;
     }
@@ -61,12 +63,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SellerUpdate>();
         services.AddScoped<SellerDeactivate>();
         services.AddScoped<SellerRecover>();
+        services.AddScoped<SellerGetByToken>();
         services.AddScoped<IUseCaseSellerCollection, UseCaseSellerCollection>();
 
         services.AddScoped<ClientInclude>();
         services.AddScoped<ClientUpdate>();
         services.AddScoped<ClientDeactivate>();
         services.AddScoped<ClientRecover>();
+        services.AddScoped<ClientGetByToken>();
         services.AddScoped<IUseCaseClientCollection, UseCaseClientCollection>();
 
         services.AddScoped<OrderInclude>();
