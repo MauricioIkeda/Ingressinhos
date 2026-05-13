@@ -9,4 +9,5 @@ public interface IUseCaseClientCollection : IUseCaseCrudCollection<ClientDomain,
 {
     OperationResult Deactivate(long id);
     OperationResult Recover(long id);
+    OperationResult<ClientGet> GetByToken();
 }

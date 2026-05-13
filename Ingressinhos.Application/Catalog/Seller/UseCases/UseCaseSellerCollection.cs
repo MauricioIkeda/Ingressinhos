@@ -11,17 +11,14 @@ public class UseCaseSellerCollection : UseCaseCrudCollection<Seller, SellerDto>,
 {
     private readonly SellerDeactivate _sellerDeactivate;
     private readonly SellerRecover _sellerRecover;
+    private readonly SellerGetByToken _sellerGetByToken;
 
-    public UseCaseSellerCollection(
-        IRepositorySession repositorySession,
-        SellerUpdate update,
-        SellerInclude sellerInclude,
-        SellerDeactivate sellerDeactivate,
-        SellerRecover sellerRecover)
+    public UseCaseSellerCollection( IRepositorySession repositorySession, SellerUpdate update, SellerInclude sellerInclude, SellerDeactivate sellerDeactivate, SellerRecover sellerRecover, SellerGetByToken sellerGetByToken)
         : base(sellerInclude, update, new UseCaseGetOdata<Seller>(), new UseCaseGet<Seller>(), new UseCaseDelete<Seller>(), repositorySession)
     {
         _sellerDeactivate = sellerDeactivate;
         _sellerRecover = sellerRecover;
+        _sellerGetByToken = sellerGetByToken;
     }
 
     public OperationResult Deactivate(long id)
@@ -32,5 +29,10 @@ public class UseCaseSellerCollection : UseCaseCrudCollection<Seller, SellerDto>,
     public OperationResult Recover(long id)
     {
         return _sellerRecover.Execute(id);
+    }
+
+    public OperationResult<SellerGet> GetByToken()
+    {
+        return _sellerGetByToken.Execute();
     }
 }

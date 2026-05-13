@@ -9,5 +9,6 @@ namespace Ingressinhos.Application.Catalog.Interfaces
     {
         OperationResult Deactivate(long id);
         OperationResult Recover(long id);
+        OperationResult<SellerGet> GetByToken(); // Obtém o SellerDto do usuário autenticado com base no token de autenticação
     }
 }
