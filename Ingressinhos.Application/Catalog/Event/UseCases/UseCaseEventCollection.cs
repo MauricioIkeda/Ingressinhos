@@ -9,7 +9,7 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 public class UseCaseEventCollection : UseCaseCrudCollection<Event, EventDto>, IUseCaseEventCollection
 {
     public UseCaseEventCollection(IRepositorySession repositorySession, EventUpdate update, EventInclude include)
-        : base(include, update, new UseCaseGetOdata<Event>(), new UseCaseGet<Event>(), new UseCaseDelete<Event>(), repositorySession)
+        : base(include, update, new UseCaseGetOdata<Event>(), new UseCaseGetId<Event>(), new UseCaseDelete<Event>(), repositorySession)
     {
     }
 }

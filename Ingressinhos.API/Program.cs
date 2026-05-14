@@ -1,13 +1,15 @@
 using Generic.Api.Extensions;
 using Ingressinhos.API.Extensions;
+using Microsoft.AspNetCore.OData;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers(options =>
 {
-    options.AddSlugifiedRoutes(); // Converte as rotas para kebab-case, fica bontinho é mais facil ler
-});
+    options.AddSlugifiedRoutes();
+})
+.AddOData(options => options.EnableQueryFeatures().AddRouteComponents("odata", ODataExtensions.GetIngressinhosEdmModel())); // configura o OData
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

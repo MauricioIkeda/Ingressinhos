@@ -19,11 +19,11 @@ public class RequestPayment : IUseCaseRequestPayment
         _paymentProcessor = paymentProcessor;
     }
 
-    public OperationResult<PaymentTransactionDto> Execute(RequestPaymentDto command)
+    public OperationResult<PaymentCheckoutDto> Execute(RequestPaymentDto command)
     {
         if (command is null)
         {
-            return OperationResult<PaymentTransactionDto>.UnprocessableEntity(new MensagemErro("Pagamento", "Envie os dados da solicitacao de pagamento."));
+            return OperationResult<PaymentCheckoutDto>.UnprocessableEntity(new MensagemErro("Pagamento", "Envie os dados da solicitacao de pagamento."));
         }
 
         try
@@ -36,7 +36,7 @@ public class RequestPayment : IUseCaseRequestPayment
 
             if (existingApprovedTransaction is not null)
             {
-                return OperationResult<PaymentTransactionDto>.UnprocessableEntity(
+                return OperationResult<PaymentCheckoutDto>.UnprocessableEntity(
                     new MensagemErro("Pagamento", "Ja existe um pagamento aprovado para o pedido informado."));
             }
 
@@ -50,14 +50,14 @@ public class RequestPayment : IUseCaseRequestPayment
             var transaction = new PaymentTransaction(command.OrderId, command.Amount, command.Method);
             if (!transaction.IsValid)
             {
-                return OperationResult<PaymentTransactionDto>.UnprocessableEntity(transaction.Errors);
+                return OperationResult<PaymentCheckoutDto>.UnprocessableEntity(transaction.Errors);
             }
 
             var processorResult = _paymentProcessor.RequestPayment(transaction);
             transaction.AttachGatewayId(processorResult.GatewayTransactionId);
             if (!transaction.IsValid)
             {
-                return OperationResult<PaymentTransactionDto>.UnprocessableEntity(transaction.Errors);
+                return OperationResult<PaymentCheckoutDto>.UnprocessableEntity(transaction.Errors);
             }
 
             var repository = _repositorySession.GetRepository();
@@ -66,7 +66,7 @@ public class RequestPayment : IUseCaseRequestPayment
                 previousTransaction.Cancel();
                 if (!previousTransaction.IsValid)
                 {
-                    return OperationResult<PaymentTransactionDto>.UnprocessableEntity(previousTransaction.Errors);
+                    return OperationResult<PaymentCheckoutDto>.UnprocessableEntity(previousTransaction.Errors);
                 }
 
                 repository.Upsert(previousTransaction);
@@ -75,11 +75,11 @@ public class RequestPayment : IUseCaseRequestPayment
             repository.Include(transaction);
             repository.Flush().GetAwaiter().GetResult();
 
-            return OperationResult<PaymentTransactionDto>.Created(transaction.ToDto());
+            return OperationResult<PaymentCheckoutDto>.Created(transaction.ToCheckoutDto());
         }
         catch (Exception ex)
         {
-            return OperationResult<PaymentTransactionDto>.UnprocessableEntity(MensagemErro.Geral(ex.Message));
+            return OperationResult<PaymentCheckoutDto>.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
 }

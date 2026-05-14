@@ -15,7 +15,7 @@ public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCol
         IUseCaseCommand<TCommand> include,
         IUseCaseCommand<TCommand> update,
         UseCaseGetOdata<TEntity> useCaseGetOdata,
-        IUseCaseGet<TEntity> useCaseGetById,
+        IUseCaseGetId<TEntity> useCaseGetById,
         IUseCaseDelete<TEntity> useCaseDelete,
         IRepositorySession repositorySession)
         : base(useCaseGetOdata, useCaseGetById, repositorySession)

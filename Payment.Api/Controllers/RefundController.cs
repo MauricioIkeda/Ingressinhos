@@ -1,5 +1,6 @@
 using Generic.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Payment.Aplication.Refunds.Dtos;
 using Payment.Aplication.Refunds.Interfaces;
 using Payment.Domain.Entities;
@@ -18,21 +19,15 @@ public class RefundController : ApiQuery<Refund>
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public IActionResult GetOData(ODataQueryOptions<Refund> query)
     {
-        return QueryAllResult();
+        return OData(query);
     }
 
     [HttpPost]
     public IActionResult RequestRefund([FromBody] RequestRefundDto request)
     {
-        var result = _useCaseCollection.Request(request);
-        if (!result.Success)
-        {
-            return StatusCode(result.StatusCode, result.Errors);
-        }
-
-        return StatusCode(result.StatusCode, result.Data);
+        return ExecuteCustomData(_useCaseCollection.Request(request));
     }
 
     [HttpGet("{refundId:long}")]
@@ -44,24 +39,12 @@ public class RefundController : ApiQuery<Refund>
     [HttpGet("payment/{paymentTransactionId:long}")]
     public IActionResult GetByPaymentTransaction(long paymentTransactionId)
     {
-        var result = _useCaseCollection.GetByPaymentTransaction(paymentTransactionId);
-        if (!result.Success)
-        {
-            return StatusCode(result.StatusCode, result.Errors);
-        }
-
-        return StatusCode(result.StatusCode, result.Data);
+        return ExecuteCustomData(_useCaseCollection.GetByPaymentTransaction(paymentTransactionId));
     }
 
     [HttpPost("{refundId:long}/status/check")]
     public IActionResult CheckStatus(long refundId)
     {
-        var result = _useCaseCollection.CheckStatus(refundId);
-        if (!result.Success)
-        {
-            return StatusCode(result.StatusCode, result.Errors);
-        }
-
-        return StatusCode(result.StatusCode, result.Data);
+        return ExecuteCustomData(_useCaseCollection.CheckStatus(refundId));
     }
 }

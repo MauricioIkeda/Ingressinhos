@@ -20,7 +20,7 @@ public class UseCaseClientCollection : UseCaseCrudCollection<ClientDomain, Clien
         ClientDeactivate clientDeactivate,
         ClientRecover clientRecover,
         ClientGetByToken clientGetByToken)
-        : base(include, update, new UseCaseGetOdata<ClientDomain>(), new UseCaseGet<ClientDomain>(), new UseCaseDelete<ClientDomain>(), repositorySession)
+        : base(include, update, new UseCaseGetOdata<ClientDomain>(), new UseCaseGetId<ClientDomain>(), new UseCaseDelete<ClientDomain>(), repositorySession)
     {
         _clientDeactivate = clientDeactivate;
         _clientRecover = clientRecover;

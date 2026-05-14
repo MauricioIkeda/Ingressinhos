@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUseCaseGetPaymentsByOrder, GetPaymentsByOrder>();
         services.AddScoped<IUseCaseCheckPaymentStatus, CheckPaymentStatus>();
         services.AddScoped<IUseCaseHandlePaymentNotification, HandlePaymentNotification>();
+        services.AddScoped<IUseCaseSimulatePaymentWebhook, SimulatePaymentWebhook>();
         services.AddScoped<IUseCasePaymentTransactionCollection, UseCasePaymentTransactionCollection>();
         services.AddScoped<IUseCaseRequestRefund, RequestRefund>();
         services.AddScoped<IUseCaseGetRefund, GetRefund>();

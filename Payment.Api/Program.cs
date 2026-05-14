@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.OData;
 using Payment.Api.Extensions;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddOData(options => options.EnableQueryFeatures().AddRouteComponents("odata", ODataExtensions.GetPaymentEdmModel())); // Configura o OData para usar o modelo EDM definido em ODataExtensions
+    
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

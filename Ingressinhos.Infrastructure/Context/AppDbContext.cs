@@ -94,7 +94,7 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Order>()
             .Navigation(order => order.Items)
-            .AutoInclude(false);
+            .AutoInclude();
 
         modelBuilder.Entity<OrderItem>()
             .HasOne<Order>()

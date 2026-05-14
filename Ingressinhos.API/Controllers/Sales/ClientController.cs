@@ -4,6 +4,7 @@ using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace Ingressinhos.API.Controllers.Sales;
 
@@ -20,13 +21,13 @@ public class ClientsController : ApiCrud<Client, ClientDto>
 
     [HttpGet]
     [Authorize(Policy = "AdminOnly")]
-    public IActionResult GetAll()
+    public IActionResult GetOData(ODataQueryOptions<Client> query)
     {
-        return QueryAllResult();
+        return OData(query);
     }
 
     [HttpGet("{id:long}")]
-    [Authorize(Policy = "ClientOrAdmin")]
+    [Authorize]
     public IActionResult GetById(long id)
     {
         return GetByIdResult(id);
@@ -66,7 +67,7 @@ public class ClientsController : ApiCrud<Client, ClientDto>
         return ExecuteCustom(_useCaseCollection.Recover(id));
     }
 
-    [Authorize(Policy = "ClientOrAdmin")]
+    [Authorize(Policy = "OnlyClient")]
     [HttpGet("me")]
     public IActionResult GetByToken()
     {

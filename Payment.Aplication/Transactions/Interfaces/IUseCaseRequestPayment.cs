@@ -5,5 +5,5 @@ namespace Payment.Aplication.Transactions.Interfaces;
 
 public interface IUseCaseRequestPayment
 {
-    OperationResult<PaymentTransactionDto> Execute(RequestPaymentDto command);
+    OperationResult<PaymentCheckoutDto> Execute(RequestPaymentDto command);
 }

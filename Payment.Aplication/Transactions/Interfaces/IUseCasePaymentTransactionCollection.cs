@@ -7,7 +7,7 @@ namespace Payment.Aplication.Transactions.Interfaces;
 
 public interface IUseCasePaymentTransactionCollection : IUseCaseQueryCollection<PaymentTransaction>
 {
-    OperationResult<PaymentTransactionDto> Request(RequestPaymentDto command);
+    OperationResult<PaymentCheckoutDto> Request(RequestPaymentDto command);
     OperationResult<IEnumerable<PaymentTransactionDto>> GetByOrder(long orderId);
     OperationResult<PaymentTransactionDto> CheckStatus(long orderId);
 }

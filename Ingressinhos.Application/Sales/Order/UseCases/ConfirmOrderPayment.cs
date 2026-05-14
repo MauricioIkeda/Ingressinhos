@@ -38,7 +38,6 @@ public class ConfirmOrderPayment : IUseCaseConfirmOrderPayment
                 return OperationResult.Ok();
             }
 
-            // A mudanca de status continua protegida pela regra de dominio do Order.
             order.ConfirmPayment();
             if (!order.IsValid)
             {

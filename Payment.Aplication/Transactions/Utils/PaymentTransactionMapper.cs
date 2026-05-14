@@ -21,4 +21,21 @@ internal static class PaymentTransactionMapper
             CancelledAt = transaction.CancelledAt
         };
     }
+
+    public static PaymentCheckoutDto ToCheckoutDto(this PaymentTransaction transaction)
+    {
+        var mockCheckout = MockPaymentCheckoutFactory.Create(transaction);
+
+        return new PaymentCheckoutDto(
+            transaction.Id,
+            new OrderPaymentSummaryDto(
+                transaction.OrderId,
+                transaction.Amount.Value,
+                transaction.Method,
+                transaction.Status),
+            new MockQrCodeDto(
+                mockCheckout.QrCodePayload,
+                mockCheckout.QrCodeImageDataUri,
+                mockCheckout.WebhookSimulationUrl));
+    }
 }

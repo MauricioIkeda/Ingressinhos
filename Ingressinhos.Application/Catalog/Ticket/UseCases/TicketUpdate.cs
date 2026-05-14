@@ -1,4 +1,5 @@
 using Generic.Application.Crud.Interface;
+using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
@@ -10,10 +11,12 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 public class TicketUpdate : IUseCaseCommand<TicketDto>
 {
     private readonly IRepositorySession _repositorySession;
+    private readonly ICurrentUserContext _currentUserContext;
 
-    public TicketUpdate(IRepositorySession repositorySession)
+    public TicketUpdate(IRepositorySession repositorySession, ICurrentUserContext currentUserContext)
     {
         _repositorySession = repositorySession;
+        _currentUserContext = currentUserContext;
     }
 
     public OperationResult Execute(TicketDto ticket)
@@ -36,6 +39,20 @@ public class TicketUpdate : IUseCaseCommand<TicketDto>
             if (ticketEntity is null)
             {
                 return OperationResult.NotFound(new MensagemErro("Id", "Ingresso nao encontrado."));
+            }
+
+            if (_currentUserContext.Role != "Admin")
+            {
+                var seller = repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
+                if (seller is null)
+                {
+                    return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));
+                }
+
+                if (ticketEntity.SellerId != seller.Id)
+                {
+                    return OperationResult.Forbidden(new MensagemErro("Ingresso", "Voce so pode alterar ingressos da sua propria loja."));
+                }
             }
 
             if (ticket.BasePrice != ticketEntity.BasePrice.Value ||

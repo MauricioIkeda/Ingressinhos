@@ -41,6 +41,15 @@ public static class AuthSecurityExtensions
         // Authorization Policies
         services.AddAuthorization(options =>
         {
+            options.AddPolicy("Authenticated", policy =>
+                policy.RequireAuthenticatedUser());
+                
+            options.AddPolicy("OnlyClient", policy =>
+                policy.RequireRole("Client"));
+
+            options.AddPolicy("OnlySeller", policy =>
+                policy.RequireRole("Seller"));
+
             options.AddPolicy("ClientOrAdmin", policy =>
                 policy.RequireRole("Client", "Admin"));
 

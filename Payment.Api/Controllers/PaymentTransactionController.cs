@@ -1,5 +1,6 @@
 using Generic.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 using Payment.Aplication.Transactions.Dtos;
 using Payment.Aplication.Transactions.Interfaces;
 using Payment.Domain.Entities;
@@ -11,28 +12,26 @@ namespace Payment.Api.Controllers;
 public class PaymentTransactionController : ApiQuery<PaymentTransaction>
 {
     private readonly IUseCasePaymentTransactionCollection _useCaseCollection;
+    private readonly IUseCaseSimulatePaymentWebhook _simulatePaymentWebhook;
 
-    public PaymentTransactionController(IUseCasePaymentTransactionCollection useCaseCollection) : base(useCaseCollection)
+    public PaymentTransactionController(
+        IUseCasePaymentTransactionCollection useCaseCollection,
+        IUseCaseSimulatePaymentWebhook simulatePaymentWebhook) : base(useCaseCollection)
     {
         _useCaseCollection = useCaseCollection;
+        _simulatePaymentWebhook = simulatePaymentWebhook;
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public IActionResult GetOData(ODataQueryOptions<PaymentTransaction> query)
     {
-        return QueryAllResult();
+        return OData(query);
     }
 
     [HttpPost]
     public IActionResult RequestPayment([FromBody] RequestPaymentDto request)
     {
-        var result = _useCaseCollection.Request(request);
-        if (!result.Success)
-        {
-            return StatusCode(result.StatusCode, result.Errors);
-        }
-
-        return StatusCode(result.StatusCode, result.Data);
+        return ExecuteCustomData(_useCaseCollection.Request(request));
     }
 
     [HttpGet("{paymentTransactionId:long}")]
@@ -44,24 +43,24 @@ public class PaymentTransactionController : ApiQuery<PaymentTransaction>
     [HttpGet("order/{orderId:long}")]
     public IActionResult GetByOrder(long orderId)
     {
-        var result = _useCaseCollection.GetByOrder(orderId);
-        if (!result.Success)
-        {
-            return StatusCode(result.StatusCode, result.Errors);
-        }
-
-        return StatusCode(result.StatusCode, result.Data);
+        return ExecuteCustomData(_useCaseCollection.GetByOrder(orderId));
     }
 
     [HttpPost("order/{orderId:long}/status/check")]
     public IActionResult CheckStatus(long orderId)
     {
-        var result = _useCaseCollection.CheckStatus(orderId);
+        return ExecuteCustomData(_useCaseCollection.CheckStatus(orderId));
+    }
+
+    [HttpPost("{paymentTransactionId:long}/simulate-webhook")]
+    public IActionResult SimulateWebhook(long paymentTransactionId, [FromBody] SimulatePaymentWebhookDto request)
+    {
+        var result = _simulatePaymentWebhook.Execute(paymentTransactionId, request);
         if (!result.Success)
         {
             return StatusCode(result.StatusCode, result.Errors);
         }
 
-        return StatusCode(result.StatusCode, result.Data);
+        return StatusCode(result.StatusCode);
     }
 }

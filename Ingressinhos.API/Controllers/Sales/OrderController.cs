@@ -4,22 +4,26 @@ using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace Ingressinhos.API.Controllers.Sales;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OrdersController : ApiCrud<Order, OrderDto>
+public class OrdersController : ApiQuery<Order>
 {
+    private readonly IUseCaseOrderCollection _useCaseCollection;
+
     public OrdersController(IUseCaseOrderCollection useCaseCollection) : base(useCaseCollection)
     {
+        _useCaseCollection = useCaseCollection;
     }
 
     [HttpGet]
     [Authorize(Policy = "AdminOnly")]
-    public IActionResult GetAll()
+    public IActionResult GetOData(ODataQueryOptions<Order> query)
     {
-        return QueryAllResult();
+        return OData(query);
     }
 
     [HttpGet("{id:long}")]
@@ -31,22 +35,29 @@ public class OrdersController : ApiCrud<Order, OrderDto>
 
     [HttpPost]
     [Authorize(Policy = "ClientOrAdmin")]
-    public IActionResult Include([FromBody] OrderDto command)
+    public IActionResult Include([FromBody] CreateOrderRequest command)
     {
-        return IncludeResult(command);
+        return ExecuteCustom(_useCaseCollection.Create(command));
+    }
+
+    [HttpPatch("{id:long}/close")]
+    [Authorize(Policy = "ClientOrAdmin")]
+    public IActionResult Close(long id)
+    {
+        return ExecuteCustomData(_useCaseCollection.Close(id));
     }
 
     [HttpPut]
-    [Authorize(Policy = "AdminOnly")]
-    public IActionResult Update([FromBody] OrderDto command)
+    [Authorize(Policy = "ClientOrAdmin")]
+    public IActionResult Update([FromBody] UpdateOrderItemsRequest command)
     {
-        return UpdateResult(command);
+        return ExecuteCustom(_useCaseCollection.UpdateItems(command));
     }
 
     [HttpDelete("{id:long}")]
     [Authorize(Policy = "AdminOnly")]
     public IActionResult Delete(long id)
     {
-        return DeleteResult(id);
+        return ExecuteCustom(_useCaseCollection.Delete(id));
     }
 }

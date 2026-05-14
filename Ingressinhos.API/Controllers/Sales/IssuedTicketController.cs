@@ -4,6 +4,7 @@ using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace Ingressinhos.API.Controllers.Sales;
 
@@ -17,9 +18,9 @@ public class IssuedTicketsController : ApiCrud<IssuedTicket, IssuedTicketDto>
 
     [HttpGet]
     [Authorize(Policy = "AdminOnly")]
-    public IActionResult GetAll()
+    public IActionResult GetOData(ODataQueryOptions<IssuedTicket> query)
     {
-        return QueryAllResult();
+        return OData(query);
     }
 
     [HttpGet("{id:long}")]

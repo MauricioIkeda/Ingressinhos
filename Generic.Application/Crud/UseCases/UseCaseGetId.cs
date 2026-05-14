@@ -4,7 +4,7 @@ using Generic.Infrastructure.Interfaces;
 
 namespace Generic.Application.Crud.UseCases;
 
-public class UseCaseGet<TEntity> : IUseCaseGet<TEntity>
+public class UseCaseGetId<TEntity> : IUseCaseGetId<TEntity>
     where TEntity : BaseEntity
 {
     public OperationResult<TEntity> Execute(long entityId, IRepositoryQuery repositoryQuery)

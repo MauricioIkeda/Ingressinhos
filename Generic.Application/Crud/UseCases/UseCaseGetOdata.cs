@@ -1,16 +1,19 @@
-﻿using Generic.Domain.Entities;
-using Generic.Infrastructure.Interfaces;
 using System.Linq.Expressions;
+using Generic.Domain.Entities;
+using Generic.Infrastructure.Interfaces;
 
 namespace Generic.Application.Crud.UseCases;
 
-public class UseCaseGetOdata<TEntity>
+public class UseCaseGetOdata<TEntity> 
     where TEntity : BaseEntity
 {
-
-    public virtual IQueryable<TEntity> Execute(Expression<Func<TEntity, bool>> where, IRepositoryQuery repositoryQuery)
+    public virtual List<TEntity> Execute(Expression<Func<TEntity, bool>> where, IRepositoryQuery repositoryQuery)
     {
+        return repositoryQuery.Query<TEntity>().Where(where).ToList();
+    }
 
-            return repositoryQuery.Query<TEntity>().Where(where);
+    public virtual List<TOutput> Execute<TOutput>(Func<IQueryable<TEntity>, IQueryable<TOutput>> transaction, IRepositoryQuery repositoryQuery)
+    {
+        return transaction(repositoryQuery.Query<TEntity>()).ToList();
     }
 }

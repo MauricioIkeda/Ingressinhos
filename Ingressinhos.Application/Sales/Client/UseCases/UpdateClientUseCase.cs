@@ -11,11 +11,13 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
 {
     private readonly IRepositorySession _repositorySession;
     private readonly IRequestAuth _requestAuth;
+    private readonly ICurrentUserContext _currentUserContext;
 
-    public ClientUpdate(IRepositorySession repositorySession, IRequestAuth requestAuth)
+    public ClientUpdate(IRepositorySession repositorySession, IRequestAuth requestAuth, ICurrentUserContext currentUserContext)
     {
         _repositorySession = repositorySession;
         _requestAuth = requestAuth;
+        _currentUserContext = currentUserContext;
     }
 
     public OperationResult Execute(ClientDto clientDto)
@@ -25,7 +27,7 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
             return OperationResult.UnprocessableEntity(new MensagemErro("Client", "Deve ser informado o cliente."));
         }
 
-        if (clientDto.ClientId <= 0)
+        if (_currentUserContext.Role == "Admin" && clientDto.ClientId <= 0)
         {
             return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado um Id valido."));
         }
@@ -37,11 +39,13 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var clientEntity = repositoryQuery.Return<ClientDomain>(clientDto.ClientId);
+            var clientEntity = ResolveTargetClient(clientDto.ClientId, repositoryQuery);
 
             if (clientEntity is null)
             {
-                return OperationResult.NotFound(new MensagemErro("Id", "Cliente nao encontrado."));
+                return _currentUserContext.Role == "Admin"
+                    ? OperationResult.NotFound(new MensagemErro("Id", "Cliente nao encontrado."))
+                    : OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua conta."));
             }
 
             if (!clientEntity.Active)
@@ -95,5 +99,15 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
 
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
+    }
+
+    private ClientDomain? ResolveTargetClient(long clientId, IRepositoryQuery repositoryQuery)
+    {
+        if (_currentUserContext.Role == "Admin")
+        {
+            return repositoryQuery.Return<ClientDomain>(clientId);
+        }
+
+        return repositoryQuery.Query<ClientDomain>(c => c.UserId == _currentUserContext.UserId).FirstOrDefault();
     }
 }
