@@ -18,14 +18,14 @@ public class UseCasePaymentTransactionCollection : UseCaseQueryCollection<Paymen
         IUseCaseRequestPayment requestPayment,
         IUseCaseGetPaymentsByOrder getPaymentsByOrder,
         IUseCaseCheckPaymentStatus checkPaymentStatus)
-        : base(new UseCaseGetOdata<PaymentTransaction>(), new UseCaseGet<PaymentTransaction>(), repositorySession)
+        : base(new UseCaseGetOdata<PaymentTransaction>(), new UseCaseGetId<PaymentTransaction>(), repositorySession)
     {
         _requestPayment = requestPayment;
         _getPaymentsByOrder = getPaymentsByOrder;
         _checkPaymentStatus = checkPaymentStatus;
     }
 
-    public OperationResult<PaymentTransactionDto> Request(RequestPaymentDto command)
+    public OperationResult<PaymentCheckoutDto> Request(RequestPaymentDto command)
     {
         return _requestPayment.Execute(command);
     }

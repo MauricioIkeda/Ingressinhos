@@ -1,5 +1,7 @@
 using Generic.Application.Utils.Interface;
 using Generic.Application.Utils.Services;
+using Generic.Application.Crud.Interface;
+using Generic.Application.Crud.UseCases;
 using Generic.Infrastructure.Interfaces;
 using Generic.Infrastructure.Repositories;
 using Ingressinhos.Application.Catalog.Interfaces;
@@ -73,13 +75,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ClientGetByToken>();
         services.AddScoped<IUseCaseClientCollection, UseCaseClientCollection>();
 
-        services.AddScoped<OrderInclude>();
-        services.AddScoped<OrderUpdate>();
+        services.AddScoped<CreateOrder>();
+        services.AddScoped<UpdateOrderItems>();
+        services.AddScoped<IUseCaseCloseOrder, CloseOrder>();
+        services.AddScoped<IUseCaseDelete<Ingressinhos.Domain.Sales.Entities.Order>, UseCaseDelete<Ingressinhos.Domain.Sales.Entities.Order>>();
         services.AddScoped<IUseCaseConfirmOrderPayment, ConfirmOrderPayment>();
         services.AddScoped<IUseCaseOrderCollection, UseCaseOrderCollection>();
 
-        services.AddScoped<OrderItemInclude>();
-        services.AddScoped<OrderItemUpdate>();
         services.AddScoped<IUseCaseOrderItemCollection, UseCaseOrderItemCollection>();
 
         services.AddScoped<IssuedTicketInclude>();

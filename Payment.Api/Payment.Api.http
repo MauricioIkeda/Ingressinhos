@@ -1,6 +1,21 @@
 @Payment.Api_HostAddress = http://localhost:5071
 
-GET {{Payment.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{Payment.Api_HostAddress}}/api/payments/transactions
+Content-Type: application/json
+
+{
+  "orderId": 1,
+  "amount": 149.90,
+  "method": "pix"
+}
+
+###
+
+POST {{Payment.Api_HostAddress}}/api/payments/transactions/1/simulate-webhook
+Content-Type: application/json
+
+{
+  "status": "approved"
+}
 
 ###

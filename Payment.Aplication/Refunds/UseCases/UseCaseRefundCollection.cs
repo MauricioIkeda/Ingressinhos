@@ -18,7 +18,7 @@ public class UseCaseRefundCollection : UseCaseQueryCollection<Refund>, IUseCaseR
         IUseCaseRequestRefund requestRefund,
         IUseCaseGetRefundsByPaymentTransaction getRefundsByPaymentTransaction,
         IUseCaseCheckRefundStatus checkRefundStatus)
-        : base(new UseCaseGetOdata<Refund>(), new UseCaseGet<Refund>(), repositorySession)
+        : base(new UseCaseGetOdata<Refund>(), new UseCaseGetId<Refund>(), repositorySession)
     {
         _requestRefund = requestRefund;
         _getRefundsByPaymentTransaction = getRefundsByPaymentTransaction;

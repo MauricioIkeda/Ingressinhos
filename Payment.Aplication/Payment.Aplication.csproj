@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="QRCoder" Version="1.6.0" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\Generic.Messaging\Generic.Messaging.csproj" />
       <ProjectReference Include="..\Generic.Application\Generic.Application.csproj" />
       <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />

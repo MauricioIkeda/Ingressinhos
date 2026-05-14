@@ -1,4 +1,5 @@
 using Generic.Application.Crud.Interface;
+using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Dtos;
@@ -10,10 +11,12 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 public class EventUpdate : IUseCaseCommand<EventDto>
 {
     private readonly IRepositorySession _repositorySession;
+    private readonly ICurrentUserContext _currentUserContext;
 
-    public EventUpdate(IRepositorySession repositorySession)
+    public EventUpdate(IRepositorySession repositorySession, ICurrentUserContext currentUserContext)
     {
         _repositorySession = repositorySession;
+        _currentUserContext = currentUserContext;
     }
 
     public OperationResult Execute(EventDto eventDto)
@@ -36,6 +39,20 @@ public class EventUpdate : IUseCaseCommand<EventDto>
             if (eventEntity is null)
             {
                 return OperationResult.NotFound(new MensagemErro("Id", "Evento nao encontrado."));
+            }
+
+            if (_currentUserContext.Role != "Admin")
+            {
+                var seller = repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
+                if (seller is null)
+                {
+                    return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));
+                }
+
+                if (eventEntity.SellerId != seller.Id)
+                {
+                    return OperationResult.Forbidden(new MensagemErro("Evento", "Voce so pode alterar eventos da sua propria loja."));
+                }
             }
 
             if (repositoryQuery.Return<LocationDomain>(eventDto.LocationId) is null)

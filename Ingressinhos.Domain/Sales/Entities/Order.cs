@@ -60,6 +60,20 @@ public class Order : BaseEntity
         TotalAmount += unitPrice * quantity;
     }
 
+    public void ResetItems()
+    {
+        ClearErrors();
+
+        if (Status != OrderStatus.Cart)
+        {
+            AddError("Pedido", "Nao e possivel alterar itens de um pedido fora do carrinho.");
+            return;
+        }
+
+        TotalAmount = 0;
+        _items.Clear();
+    }
+
     public void MoveToPendingPayment()
     {
         ClearErrors();

@@ -4,6 +4,7 @@ using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace Ingressinhos.API.Controllers.Catalog;
 
@@ -20,13 +21,13 @@ public class SellersController : ApiCrud<Seller, SellerDto>
 
     [HttpGet]
     [Authorize(Policy = "AdminOnly")]
-    public IActionResult GetAll()
+    public IActionResult GetOData(ODataQueryOptions<Seller> query)
     {
-        return QueryAllResult();
+        return OData(query);
     }
 
     [HttpGet("{id:long}")]
-    [Authorize(Policy = "SellerOrAdmin")]
+    [Authorize]
     public IActionResult GetById(long id)
     {
         return GetByIdResult(id);
@@ -60,7 +61,7 @@ public class SellersController : ApiCrud<Seller, SellerDto>
         return ExecuteCustom(_useCaseCollection.Recover(id));
     }
 
-    [Authorize(Policy = "SellerOrAdmin")]
+    [Authorize(Policy = "OnlySeller")]
     [HttpGet("me")]
     public IActionResult GetByToken()
     {

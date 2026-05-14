@@ -4,6 +4,7 @@ using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace Ingressinhos.API.Controllers.Catalog;
 
@@ -16,9 +17,9 @@ public class TicketsController : ApiCrud<Ticket, TicketDto>
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public IActionResult GetOData(ODataQueryOptions<Ticket> query)
     {
-        return QueryAllResult();
+        return OData(query);
     }
 
     [HttpGet("{id:long}")]

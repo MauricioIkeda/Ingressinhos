@@ -3,7 +3,7 @@ using Generic.Infrastructure.Interfaces;
 
 namespace Generic.Application.Crud.Interface;
 
-public interface IUseCaseGet<TEntity>
+public interface IUseCaseGetId<TEntity>
     where TEntity : BaseEntity
 {
     OperationResult<TEntity> Execute(long entityId, IRepositoryQuery repositoryQuery);

@@ -4,6 +4,7 @@ using Ingressinhos.Application.Catalog.Location.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace Ingressinhos.API.Controllers.Catalog;
 
@@ -17,9 +18,9 @@ public class LocationsController : ApiCrud<Location, LocationDto>
 
     [HttpGet]
     [Authorize(Policy = "AdminOnly")]
-    public IActionResult GetAll()
+    public IActionResult GetOData(ODataQueryOptions<Location> query)
     {
-        return QueryAllResult();
+        return OData(query);
     }
 
     [HttpGet("{id:long}")]

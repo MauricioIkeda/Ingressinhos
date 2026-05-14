@@ -17,26 +17,16 @@ public abstract class ApiCrud<TEntity, TCommand> : ApiQuery<TEntity>
 
     protected IActionResult IncludeResult(TCommand command)
     {
-        return ExecuteCommand(_crudCollection.Include(command));
+        return ExecuteCustom(_crudCollection.Include(command));
     }
 
     protected IActionResult UpdateResult(TCommand command)
     {
-        return ExecuteCommand(_crudCollection.Update(command));
+        return ExecuteCustom(_crudCollection.Update(command));
     }
 
     protected IActionResult DeleteResult(long id)
     {
-        return ExecuteCommand(_crudCollection.Delete(id));
-    }
-
-    private IActionResult ExecuteCommand(OperationResult result)
-    {
-        if (!result.Success)
-        {
-            return StatusCode(result.StatusCode, result.Errors);
-        }
-
-        return StatusCode(result.StatusCode);
+        return ExecuteCustom(_crudCollection.Delete(id));
     }
 }

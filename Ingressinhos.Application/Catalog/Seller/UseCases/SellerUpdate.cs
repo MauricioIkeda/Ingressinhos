@@ -11,11 +11,13 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
 {
     private readonly IRepositorySession _repositorySession;
     private readonly IRequestAuth _requestAuth;
+    private readonly ICurrentUserContext _currentUserContext;
 
-    public SellerUpdate(IRepositorySession repositorySession, IRequestAuth requestAuth)
+    public SellerUpdate(IRepositorySession repositorySession, IRequestAuth requestAuth, ICurrentUserContext currentUserContext)
     {
         _repositorySession = repositorySession;
         _requestAuth = requestAuth;
+        _currentUserContext = currentUserContext;
     }
 
     public OperationResult Execute(SellerDto seller)
@@ -25,7 +27,7 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
             return OperationResult.UnprocessableEntity(new MensagemErro("Seller", "Deve ser informado o vendedor."));
         }
 
-        if (seller.SellerId <= 0)
+        if (_currentUserContext.Role == "Admin" && seller.SellerId <= 0)
         {
             return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador do vendedor."));
         }
@@ -37,11 +39,13 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var sellerEntity = repositoryQuery.Return<Seller>(seller.SellerId);
+            var sellerEntity = ResolveTargetSeller(seller.SellerId, repositoryQuery);
 
             if (sellerEntity is null)
             {
-                return OperationResult.NotFound(new MensagemErro("Id", "Vendedor nao encontrado."));
+                return _currentUserContext.Role == "Admin"
+                    ? OperationResult.NotFound(new MensagemErro("Id", "Vendedor nao encontrado."))
+                    : OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua conta."));
             }
 
             if (!sellerEntity.Active)
@@ -109,5 +113,15 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
 
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
+    }
+
+    private Seller? ResolveTargetSeller(long sellerId, IRepositoryQuery repositoryQuery)
+    {
+        if (_currentUserContext.Role == "Admin")
+        {
+            return repositoryQuery.Return<Seller>(sellerId);
+        }
+
+        return repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId).FirstOrDefault();
     }
 }

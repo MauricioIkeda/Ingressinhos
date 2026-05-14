@@ -15,7 +15,7 @@ public sealed class RequestPayment : IRequestPayment
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
     }
 
-    public async Task<OperationResult<PaymentTransactionApiDto>> CreatePayment(long orderId, decimal amount, string method)
+    public async Task<OperationResult<PaymentCheckoutApiDto>> CreatePayment(long orderId, decimal amount, string method)
     {
         const string propertyName = "Pagamento";
 
@@ -32,20 +32,20 @@ public sealed class RequestPayment : IRequestPayment
 
             if (!response.IsSuccessStatusCode)
             {
-                return await CreateFailureResultAsync<PaymentTransactionApiDto>(response, propertyName, "Nao foi possivel solicitar o pagamento agora.");
+                return await CreateFailureResultAsync<PaymentCheckoutApiDto>(response, propertyName, "Nao foi possivel solicitar o pagamento agora.");
             }
 
-            var payload = await response.Content.ReadFromJsonAsync<PaymentTransactionApiDto>();
+            var payload = await response.Content.ReadFromJsonAsync<PaymentCheckoutApiDto>();
             if (payload is null)
             {
-                return OperationResult<PaymentTransactionApiDto>.FatalError(new MensagemErro(propertyName, "Nao conseguimos concluir a solicitacao do pagamento agora."));
+                return OperationResult<PaymentCheckoutApiDto>.FatalError(new MensagemErro(propertyName, "Nao conseguimos concluir a solicitacao do pagamento agora."));
             }
 
-            return OperationResult<PaymentTransactionApiDto>.Created(payload);
+            return OperationResult<PaymentCheckoutApiDto>.Created(payload);
         }
         catch
         {
-            return OperationResult<PaymentTransactionApiDto>.FatalError(new MensagemErro(propertyName, "Nao conseguimos falar com o servico de pagamento agora."));
+            return OperationResult<PaymentCheckoutApiDto>.FatalError(new MensagemErro(propertyName, "Nao conseguimos falar com o servico de pagamento agora."));
         }
     }
 
