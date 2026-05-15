@@ -4,7 +4,8 @@ using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
+using Microsoft.OData.Edm;
+using Ingressinhos.API.Extensions;
 
 namespace Ingressinhos.API.Controllers.Sales;
 
@@ -12,6 +13,7 @@ namespace Ingressinhos.API.Controllers.Sales;
 [Route("api/[controller]")]
 public class ClientsController : ApiCrud<Client, ClientDto>
 {
+    private static readonly IEdmModel ClientQueryEdmModel = ODataExtensions.GetClientQueryEdmModel();
     private readonly IUseCaseClientCollection _useCaseCollection;
 
     public ClientsController(IUseCaseClientCollection useCaseCollection) : base(useCaseCollection)
@@ -21,9 +23,14 @@ public class ClientsController : ApiCrud<Client, ClientDto>
 
     [HttpGet]
     [Authorize(Policy = "AdminOnly")]
-    public IActionResult GetOData(ODataQueryOptions<Client> query)
+    public IActionResult GetOData()
     {
-        return OData(query);
+        return OData(
+            CreateQueryOptions<ClientQueryItem>(
+                ClientQueryEdmModel,
+                ("Cpf/Numero", "Cpf"),
+                ("Email/Endereco", "Email")),
+            query => _useCaseCollection.GetQueryItems(query));
     }
 
     [HttpGet("{id:long}")]

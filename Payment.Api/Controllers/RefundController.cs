@@ -1,6 +1,7 @@
 using Generic.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
+using Microsoft.OData.Edm;
+using Payment.Api.Extensions;
 using Payment.Aplication.Refunds.Dtos;
 using Payment.Aplication.Refunds.Interfaces;
 using Payment.Domain.Entities;
@@ -11,6 +12,7 @@ namespace Payment.Api.Controllers;
 [Route("api/payments/refunds")]
 public class RefundController : ApiQuery<Refund>
 {
+    private static readonly IEdmModel RefundQueryEdmModel = ODataExtensions.GetRefundQueryEdmModel();
     private readonly IUseCaseRefundCollection _useCaseCollection;
 
     public RefundController(IUseCaseRefundCollection useCaseCollection) : base(useCaseCollection)
@@ -19,9 +21,13 @@ public class RefundController : ApiQuery<Refund>
     }
 
     [HttpGet]
-    public IActionResult GetOData(ODataQueryOptions<Refund> query)
+    public IActionResult GetOData()
     {
-        return OData(query);
+        return OData(
+            CreateQueryOptions<RefundQueryItem>(
+                RefundQueryEdmModel,
+                ("Amount/Value", "Amount")),
+            query => _useCaseCollection.GetQueryItems(query));
     }
 
     [HttpPost]

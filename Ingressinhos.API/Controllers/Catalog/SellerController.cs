@@ -1,10 +1,11 @@
 ﻿using Generic.Api.Controllers;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Catalog.Interfaces;
+using Ingressinhos.API.Extensions;
 using Ingressinhos.Domain.Catalog.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
+using Microsoft.OData.Edm;
 
 namespace Ingressinhos.API.Controllers.Catalog;
 
@@ -12,6 +13,7 @@ namespace Ingressinhos.API.Controllers.Catalog;
 [Route("api/[controller]")]
 public class SellersController : ApiCrud<Seller, SellerDto>
 {
+    private static readonly IEdmModel SellerQueryEdmModel = ODataExtensions.GetSellerQueryEdmModel();
     private readonly IUseCaseSellerCollection _useCaseCollection;
 
     public SellersController(IUseCaseSellerCollection useCaseCollection) : base(useCaseCollection)
@@ -21,9 +23,13 @@ public class SellersController : ApiCrud<Seller, SellerDto>
 
     [HttpGet]
     [Authorize(Policy = "AdminOnly")]
-    public IActionResult GetOData(ODataQueryOptions<Seller> query)
+    public IActionResult GetOData()
     {
-        return OData(query);
+        return OData( CreateQueryOptions<SellerQueryItem>(
+                SellerQueryEdmModel,
+                ("Cnpj/Numero", "Cnpj"), // estamos fazendo isso para porque
+                ("Email/Endereco", "Email")),
+            query => _useCaseCollection.GetQueryItems(query));
     }
 
     [HttpGet("{id:long}")]

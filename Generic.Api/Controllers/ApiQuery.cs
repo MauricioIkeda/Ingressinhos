@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using Generic.Api.Dtos;
 using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.OData.Query.Wrapper;
 
 namespace Generic.Api.Controllers;
 
-public abstract class ApiQuery<TEntity> : ControllerBase
+public abstract partial class ApiQuery<TEntity> : ControllerBase
     where TEntity : BaseEntity
 {
     private readonly IUseCaseQueryCollection<TEntity> _queryCollection;
     protected readonly ODataQuerySettings DefaultOdataSettings;
+    // No fluxo com $expand, algumas opcoes sao consumidas no primeiro passo e nao devem ser reaplicadas depois.
     protected AllowedQueryOptions CustomIgnore { get; set; } = AllowedQueryOptions.Filter | AllowedQueryOptions.Top | AllowedQueryOptions.Skip;
 
     protected ApiQuery(IUseCaseQueryCollection<TEntity> queryCollection)
@@ -22,16 +23,6 @@ public abstract class ApiQuery<TEntity> : ControllerBase
         {
             HandleNullPropagation = HandleNullPropagationOption.False
         };
-    }
-
-    protected IActionResult QueryAllResult()
-    {
-        return QueryResult(_ => true);
-    }
-
-    protected IActionResult QueryResult(System.Linq.Expressions.Expression<Func<TEntity, bool>> where)
-    {
-        return ExecuteCustomData(_queryCollection.Get(where));
     }
 
     protected IActionResult OData(ODataQueryOptions<TEntity> queryOptions)
@@ -73,6 +64,7 @@ public abstract class ApiQuery<TEntity> : ControllerBase
 
     protected virtual ResultOData<object> GetResultOData(List<object> result, long? count)
     {
+        // OData pode devolver wrappers internos quando ha $select/$expand; aqui normalizamos para objetos simples.
         var results = result?.Select(UnwrapSelectExpandWrapper).ToList() ?? [];
         return new ResultOData<object>(count ?? results.Count, results);
     }
@@ -88,6 +80,9 @@ public abstract class ApiQuery<TEntity> : ControllerBase
 
         if (hasExpand)
         {
+            // Com $expand fazemos em duas etapas:
+            // 1. aplicamos a consulta para descobrir quais entidades entraram no resultado;
+            // 2. buscamos novamente a partir dos ids para montar o payload final com os relacionamentos.
             var ids = ApplyTo<TEntity>(query, AllowedQueryOptions.Expand | AllowedQueryOptions.Select)
                 .Select(entity => entity.Id)
                 .ToArray();
@@ -128,6 +123,8 @@ public abstract class ApiQuery<TEntity> : ControllerBase
 
     private object UnwrapSelectExpandWrapper(object item)
     {
+        // OData usa ISelectExpandWrapper para representar projecoes dinamicas.
+        // Convertendo recursivamente para dicionarios/listas simples, a serializacao fica previsivel.
         if (item is ISelectExpandWrapper selectExpandWrapper)
         {
             IDictionary<string, object> dictionary = selectExpandWrapper.ToDictionary();
@@ -169,3 +166,4 @@ public abstract class ApiQuery<TEntity> : ControllerBase
         return item;
     }
 }
+

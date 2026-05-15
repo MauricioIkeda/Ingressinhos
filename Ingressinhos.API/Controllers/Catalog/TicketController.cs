@@ -1,10 +1,11 @@
 using Generic.Api.Controllers;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Catalog.Interfaces;
+using Ingressinhos.API.Extensions;
 using Ingressinhos.Domain.Catalog.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
+using Microsoft.OData.Edm;
 
 namespace Ingressinhos.API.Controllers.Catalog;
 
@@ -12,14 +13,24 @@ namespace Ingressinhos.API.Controllers.Catalog;
 [Route("api/[controller]")]
 public class TicketsController : ApiCrud<Ticket, TicketDto>
 {
+    private static readonly IEdmModel TicketQueryEdmModel = ODataExtensions.GetTicketQueryEdmModel();
+    private readonly IUseCaseTicketCollection _useCaseCollection;
+
     public TicketsController(IUseCaseTicketCollection useCaseCollection) : base(useCaseCollection)
     {
+        _useCaseCollection = useCaseCollection;
     }
 
     [HttpGet]
-    public IActionResult GetOData(ODataQueryOptions<Ticket> query)
+    public IActionResult GetOData()
     {
-        return OData(query);
+        return OData(
+            CreateQueryOptions<TicketQueryItem>(
+                TicketQueryEdmModel,
+                ("BasePrice/Value", "BasePrice"),
+                ("PremiumPrice/Value", "PremiumPrice"),
+                ("VIPPrice/Value", "VIPPrice")),
+            query => _useCaseCollection.GetQueryItems(query));
     }
 
     [HttpGet("{id:long}")]

@@ -59,6 +59,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<TicketInclude>();
         services.AddScoped<TicketUpdate>();
+        services.AddScoped<TicketGetOdata>();
         services.AddScoped<IUseCaseTicketCollection, UseCaseTicketCollection>();
 
         services.AddScoped<SellerInclude>();
@@ -66,6 +67,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SellerDeactivate>();
         services.AddScoped<SellerRecover>();
         services.AddScoped<SellerGetByToken>();
+        services.AddScoped<SellerGetOdata>();
         services.AddScoped<IUseCaseSellerCollection, UseCaseSellerCollection>();
 
         services.AddScoped<ClientInclude>();
@@ -73,6 +75,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ClientDeactivate>();
         services.AddScoped<ClientRecover>();
         services.AddScoped<ClientGetByToken>();
+        services.AddScoped<ClientGetOdata>();
         services.AddScoped<IUseCaseClientCollection, UseCaseClientCollection>();
 
         services.AddScoped<CreateOrder>();
@@ -82,6 +85,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUseCaseConfirmOrderPayment, ConfirmOrderPayment>();
         services.AddScoped<IUseCaseOrderCollection, UseCaseOrderCollection>();
 
+        services.AddScoped<OrderItemGetOdata>();
         services.AddScoped<IUseCaseOrderItemCollection, UseCaseOrderItemCollection>();
 
         services.AddScoped<IssuedTicketInclude>();

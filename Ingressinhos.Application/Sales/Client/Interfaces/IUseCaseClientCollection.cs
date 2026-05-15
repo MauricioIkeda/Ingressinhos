@@ -10,4 +10,5 @@ public interface IUseCaseClientCollection : IUseCaseCrudCollection<ClientDomain,
     OperationResult Deactivate(long id);
     OperationResult Recover(long id);
     OperationResult<ClientGet> GetByToken();
+    OperationResult<List<TOutput>> GetQueryItems<TOutput>(Func<IQueryable<ClientQueryItem>, IQueryable<TOutput>> transaction);
 }

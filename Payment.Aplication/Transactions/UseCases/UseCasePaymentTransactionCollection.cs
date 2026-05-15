@@ -12,17 +12,20 @@ public class UseCasePaymentTransactionCollection : UseCaseQueryCollection<Paymen
     private readonly IUseCaseRequestPayment _requestPayment;
     private readonly IUseCaseGetPaymentsByOrder _getPaymentsByOrder;
     private readonly IUseCaseCheckPaymentStatus _checkPaymentStatus;
+    private readonly PaymentTransactionGetOdata _paymentTransactionGetOdata;
 
     public UseCasePaymentTransactionCollection(
         IRepositorySession repositorySession,
         IUseCaseRequestPayment requestPayment,
         IUseCaseGetPaymentsByOrder getPaymentsByOrder,
-        IUseCaseCheckPaymentStatus checkPaymentStatus)
+        IUseCaseCheckPaymentStatus checkPaymentStatus,
+        PaymentTransactionGetOdata paymentTransactionGetOdata)
         : base(new UseCaseGetOdata<PaymentTransaction>(), new UseCaseGetId<PaymentTransaction>(), repositorySession)
     {
         _requestPayment = requestPayment;
         _getPaymentsByOrder = getPaymentsByOrder;
         _checkPaymentStatus = checkPaymentStatus;
+        _paymentTransactionGetOdata = paymentTransactionGetOdata;
     }
 
     public OperationResult<PaymentCheckoutDto> Request(RequestPaymentDto command)
@@ -38,5 +41,10 @@ public class UseCasePaymentTransactionCollection : UseCaseQueryCollection<Paymen
     public OperationResult<PaymentTransactionDto> CheckStatus(long orderId)
     {
         return _checkPaymentStatus.Execute(orderId);
+    }
+
+    public OperationResult<List<TOutput>> GetQueryItems<TOutput>(Func<IQueryable<PaymentTransactionQueryItem>, IQueryable<TOutput>> transaction)
+    {
+        return _paymentTransactionGetOdata.Execute(transaction);
     }
 }
