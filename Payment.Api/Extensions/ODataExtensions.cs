@@ -2,6 +2,8 @@ using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
 using Microsoft.OData.Edm;
 using Microsoft.OData.ModelBuilder;
+using Payment.Aplication.Refunds.Dtos;
+using Payment.Aplication.Transactions.Dtos;
 using Payment.Domain.Entities;
 
 namespace Payment.Api.Extensions;
@@ -18,7 +20,24 @@ public static class ODataExtensions
         AddEntitySet<Refund>(builder, "Refunds");
 
         builder.EntityType<PaymentTransaction>().ComplexProperty(payment => payment.Amount);
+        builder.EntityType<Refund>().ComplexProperty(refund => refund.Amount);
 
+        return builder.GetEdmModel();
+    }
+
+    public static IEdmModel GetPaymentTransactionQueryEdmModel()
+    {
+        var builder = new ODataConventionModelBuilder();
+        builder.EntitySet<PaymentTransactionQueryItem>("PaymentTransactions");
+        builder.EntityType<PaymentTransactionQueryItem>().HasKey(payment => payment.Id);
+        return builder.GetEdmModel();
+    }
+
+    public static IEdmModel GetRefundQueryEdmModel()
+    {
+        var builder = new ODataConventionModelBuilder();
+        builder.EntitySet<RefundQueryItem>("Refunds");
+        builder.EntityType<RefundQueryItem>().HasKey(refund => refund.Id);
         return builder.GetEdmModel();
     }
 

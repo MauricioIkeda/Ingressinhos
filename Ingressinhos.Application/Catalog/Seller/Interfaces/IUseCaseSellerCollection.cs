@@ -1,14 +1,14 @@
-using Generic.Application.Crud.Interface;
+ï»¿using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 
-namespace Ingressinhos.Application.Catalog.Interfaces
+namespace Ingressinhos.Application.Catalog.Interfaces;
+
+public interface IUseCaseSellerCollection : IUseCaseCrudCollection<Seller, SellerDto>
 {
-    public interface IUseCaseSellerCollection : IUseCaseCrudCollection<Seller, SellerDto>
-    {
-        OperationResult Deactivate(long id);
-        OperationResult Recover(long id);
-        OperationResult<SellerGet> GetByToken(); // Obtém o SellerDto do usuário autenticado com base no token de autenticação
-    }
+    OperationResult Deactivate(long id);
+    OperationResult Recover(long id);
+    OperationResult<SellerGet> GetByToken();
+    OperationResult<List<TOutput>> GetQueryItems<TOutput>(Func<IQueryable<SellerQueryItem>, IQueryable<TOutput>> transaction);
 }

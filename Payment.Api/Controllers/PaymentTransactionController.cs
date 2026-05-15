@@ -1,6 +1,7 @@
 using Generic.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.OData.Query;
+using Microsoft.OData.Edm;
+using Payment.Api.Extensions;
 using Payment.Aplication.Transactions.Dtos;
 using Payment.Aplication.Transactions.Interfaces;
 using Payment.Domain.Entities;
@@ -11,6 +12,7 @@ namespace Payment.Api.Controllers;
 [Route("api/payments/transactions")]
 public class PaymentTransactionController : ApiQuery<PaymentTransaction>
 {
+    private static readonly IEdmModel PaymentTransactionQueryEdmModel = ODataExtensions.GetPaymentTransactionQueryEdmModel();
     private readonly IUseCasePaymentTransactionCollection _useCaseCollection;
     private readonly IUseCaseSimulatePaymentWebhook _simulatePaymentWebhook;
 
@@ -23,9 +25,13 @@ public class PaymentTransactionController : ApiQuery<PaymentTransaction>
     }
 
     [HttpGet]
-    public IActionResult GetOData(ODataQueryOptions<PaymentTransaction> query)
+    public IActionResult GetOData()
     {
-        return OData(query);
+        return OData(
+            CreateQueryOptions<PaymentTransactionQueryItem>(
+                PaymentTransactionQueryEdmModel,
+                ("Amount/Value", "Amount")),
+            query => _useCaseCollection.GetQueryItems(query));
     }
 
     [HttpPost]

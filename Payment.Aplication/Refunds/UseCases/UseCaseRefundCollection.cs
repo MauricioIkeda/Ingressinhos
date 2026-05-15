@@ -12,17 +12,20 @@ public class UseCaseRefundCollection : UseCaseQueryCollection<Refund>, IUseCaseR
     private readonly IUseCaseRequestRefund _requestRefund;
     private readonly IUseCaseGetRefundsByPaymentTransaction _getRefundsByPaymentTransaction;
     private readonly IUseCaseCheckRefundStatus _checkRefundStatus;
+    private readonly RefundGetOdata _refundGetOdata;
 
     public UseCaseRefundCollection(
         IRepositorySession repositorySession,
         IUseCaseRequestRefund requestRefund,
         IUseCaseGetRefundsByPaymentTransaction getRefundsByPaymentTransaction,
-        IUseCaseCheckRefundStatus checkRefundStatus)
+        IUseCaseCheckRefundStatus checkRefundStatus,
+        RefundGetOdata refundGetOdata)
         : base(new UseCaseGetOdata<Refund>(), new UseCaseGetId<Refund>(), repositorySession)
     {
         _requestRefund = requestRefund;
         _getRefundsByPaymentTransaction = getRefundsByPaymentTransaction;
         _checkRefundStatus = checkRefundStatus;
+        _refundGetOdata = refundGetOdata;
     }
 
     public OperationResult<RefundDto> Request(RequestRefundDto command)
@@ -38,5 +41,10 @@ public class UseCaseRefundCollection : UseCaseQueryCollection<Refund>, IUseCaseR
     public OperationResult<RefundDto> CheckStatus(long refundId)
     {
         return _checkRefundStatus.Execute(refundId);
+    }
+
+    public OperationResult<List<TOutput>> GetQueryItems<TOutput>(Func<IQueryable<RefundQueryItem>, IQueryable<TOutput>> transaction)
+    {
+        return _refundGetOdata.Execute(transaction);
     }
 }

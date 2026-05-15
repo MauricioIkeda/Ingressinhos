@@ -10,4 +10,5 @@ public interface IUseCasePaymentTransactionCollection : IUseCaseQueryCollection<
     OperationResult<PaymentCheckoutDto> Request(RequestPaymentDto command);
     OperationResult<IEnumerable<PaymentTransactionDto>> GetByOrder(long orderId);
     OperationResult<PaymentTransactionDto> CheckStatus(long orderId);
+    OperationResult<List<TOutput>> GetQueryItems<TOutput>(Func<IQueryable<PaymentTransactionQueryItem>, IQueryable<TOutput>> transaction);
 }

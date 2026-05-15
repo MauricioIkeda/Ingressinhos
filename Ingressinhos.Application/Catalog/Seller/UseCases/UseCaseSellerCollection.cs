@@ -12,13 +12,22 @@ public class UseCaseSellerCollection : UseCaseCrudCollection<Seller, SellerDto>,
     private readonly SellerDeactivate _sellerDeactivate;
     private readonly SellerRecover _sellerRecover;
     private readonly SellerGetByToken _sellerGetByToken;
+    private readonly SellerGetOdata _sellerGetOdata;
 
-    public UseCaseSellerCollection( IRepositorySession repositorySession, SellerUpdate update, SellerInclude sellerInclude, SellerDeactivate sellerDeactivate, SellerRecover sellerRecover, SellerGetByToken sellerGetByToken)
+    public UseCaseSellerCollection(
+        IRepositorySession repositorySession,
+        SellerUpdate update,
+        SellerInclude sellerInclude,
+        SellerDeactivate sellerDeactivate,
+        SellerRecover sellerRecover,
+        SellerGetByToken sellerGetByToken,
+        SellerGetOdata sellerGetOdata)
         : base(sellerInclude, update, new UseCaseGetOdata<Seller>(), new UseCaseGetId<Seller>(), new UseCaseDelete<Seller>(), repositorySession)
     {
         _sellerDeactivate = sellerDeactivate;
         _sellerRecover = sellerRecover;
         _sellerGetByToken = sellerGetByToken;
+        _sellerGetOdata = sellerGetOdata;
     }
 
     public OperationResult Deactivate(long id)
@@ -34,5 +43,10 @@ public class UseCaseSellerCollection : UseCaseCrudCollection<Seller, SellerDto>,
     public OperationResult<SellerGet> GetByToken()
     {
         return _sellerGetByToken.Execute();
+    }
+
+    public OperationResult<List<TOutput>> GetQueryItems<TOutput>(Func<IQueryable<SellerQueryItem>, IQueryable<TOutput>> transaction)
+    {
+        return _sellerGetOdata.Execute(transaction);
     }
 }
