@@ -50,7 +50,7 @@ public class EventInclude : IUseCaseCommand<EventDto>
                 return OperationResult.UnprocessableEntity(new MensagemErro("Agenda", "Ja existe um evento para esse local no periodo informado."));
             }
 
-            var utcNow = DateTime.Now;
+            var utcNow = DateTime.UtcNow;
 
             var eventEntity = new Event(seller.Id, eventDto.Name, eventDto.StartTime, eventDto.EndTime, eventDto.Description, eventDto.ImageUrl, eventDto.LocationId, eventDto.HasSeats)
             {

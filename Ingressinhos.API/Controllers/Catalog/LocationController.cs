@@ -24,14 +24,14 @@ public class LocationsController : ApiCrud<Location, LocationDto>
     }
 
     [HttpGet("{id:long}")]
-    [Authorize(Policy = "AdminOnly")]
+    //[Authorize(Policy = "AdminOnly")]
     public IActionResult GetById(long id)
     {
         return GetByIdResult(id);
     }
 
     [HttpPost]
-    [Authorize(Policy = "AdminOnly")]
+    //[Authorize(Policy = "AdminOnly")]
     public IActionResult Include([FromBody] LocationDto command)
     {
         return IncludeResult(command);

@@ -29,7 +29,7 @@ public class EventsController : ApiCrud<Event, EventDto>
     }
 
     [HttpPost]
-    [Authorize(Policy = "SellerOrAdmin")]
+    //[Authorize(Policy = "SellerOrAdmin")]
     public IActionResult Include([FromBody] EventDto command)
     {
         return IncludeResult(command);
