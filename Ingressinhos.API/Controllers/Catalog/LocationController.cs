@@ -17,7 +17,7 @@ public class LocationsController : ApiCrud<Location, LocationDto>
     }
 
     [HttpGet]
-    [Authorize(Policy = "AdminOnly")]
+    //[Authorize(Policy = "AdminOnly")]
     public IActionResult GetOData(ODataQueryOptions<Location> query)
     {
         return OData(query);
