@@ -1,5 +1,5 @@
-using System.Globalization;
 using System.Text;
+using Payment.Aplication.Transactions.Interfaces;
 using Payment.Domain.Entities;
 using QRCoder;
 
@@ -7,17 +7,16 @@ namespace Payment.Aplication.Transactions.Utils;
 
 internal static class MockPaymentCheckoutFactory
 {
-    public static MockPaymentCheckoutInfo Create(PaymentTransaction transaction)
+    public static MockPaymentCheckoutInfo Create(PaymentTransaction transaction, IMockCheckoutUrlBuilder mockCheckoutUrlBuilder)
     {
-        var payload = string.Create(
-            CultureInfo.InvariantCulture,
-            $"INGRESSINHOS|MOCK-PIX|ORDER:{transaction.OrderId}|TX:{transaction.GatewayTransactionId}|AMOUNT:{transaction.Amount.Value:0.00}|METHOD:{transaction.Method}");
+        var checkoutUrl = mockCheckoutUrlBuilder.BuildCheckoutPageUrl(transaction.Id);
+        var payload = checkoutUrl;
 
         return new MockPaymentCheckoutInfo
         {
             QrCodePayload = payload,
             QrCodeImageDataUri = BuildSvgDataUri(payload),
-            WebhookSimulationUrl = $"/api/payments/transactions/{transaction.Id}/simulate-webhook"
+            WebhookSimulationUrl = mockCheckoutUrlBuilder.BuildWebhookSimulationUrl(transaction.Id)
         };
     }
 

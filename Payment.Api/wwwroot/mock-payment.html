@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mock de Pagamento</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3efe7;
+      --surface: #fffdfa;
+      --ink: #171717;
+      --muted: #6a655d;
+      --line: #d9d1c4;
+      --ok: #1d7f49;
+      --warn: #b65a18;
+      --danger: #a12525;
+      --shadow: 0 18px 42px rgba(32, 24, 14, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(204, 174, 124, 0.35), transparent 36%),
+        linear-gradient(180deg, #faf6ee 0%, var(--bg) 100%);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .shell {
+      width: min(100%, 560px);
+      background: var(--surface);
+      border: 1px solid rgba(107, 92, 63, 0.15);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 28px 28px 18px;
+      background: linear-gradient(135deg, #21170f, #4c3824);
+      color: #f9f2e8;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.78;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-size: 28px;
+      line-height: 1.05;
+      margin: 0 0 8px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: rgba(249, 242, 232, 0.8);
+      line-height: 1.5;
+    }
+
+    .content {
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .value {
+      font-size: 18px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .value.small {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      background: #f0ece4;
+      color: #574d40;
+    }
+
+    .status.requested {
+      background: #fff0d7;
+      color: #9a5e00;
+    }
+
+    .status.approved {
+      background: #dff4e7;
+      color: var(--ok);
+    }
+
+    .status.refused,
+    .status.cancelled {
+      background: #fde4e1;
+      color: var(--danger);
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.14s ease, opacity 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .approve {
+      background: linear-gradient(135deg, #167843, #22a35e);
+      color: white;
+    }
+
+    .refuse {
+      background: linear-gradient(135deg, #912626, #c94141);
+      color: white;
+    }
+
+    .refresh {
+      background: #f3ede2;
+      color: #332719;
+    }
+
+    .message {
+      display: none;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .message.info {
+      display: block;
+      background: #f0ece4;
+      color: #574d40;
+    }
+
+    .message.success {
+      display: block;
+      background: #dff4e7;
+      color: var(--ok);
+    }
+
+    .message.error {
+      display: block;
+      background: #fde4e1;
+      color: var(--danger);
+    }
+
+    @media (max-width: 560px) {
+      .hero {
+        padding: 24px 20px 16px;
+      }
+
+      .content {
+        padding: 18px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">Ingressinhos</div>
+      <h1>Pagamento Mock no Celular</h1>
+      <p class="subtitle">Use esta tela para simular a resposta do gateway depois de escanear o QR Code.</p>
+    </section>
+
+    <section class="content">
+      <div id="message" class="message info">Carregando pagamento...</div>
+
+      <div class="panel">
+        <div class="label">Resumo</div>
+        <div class="grid">
+          <div>
+            <div class="label">Transacao</div>
+            <div id="transactionId" class="value">-</div>
+          </div>
+          <div>
+            <div class="label">Pedido</div>
+            <div id="orderId" class="value">-</div>
+          </div>
+          <div>
+            <div class="label">Valor</div>
+            <div id="amount" class="value">-</div>
+          </div>
+          <div>
+            <div class="label">Metodo</div>
+            <div id="method" class="value">-</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="label">Status atual</div>
+        <div id="statusBadge" class="status">Carregando...</div>
+        <div style="height: 12px;"></div>
+        <div class="label">Gateway</div>
+        <div id="gatewayTransactionId" class="value small">-</div>
+      </div>
+
+      <div class="actions">
+        <button id="approveButton" class="approve" type="button">Aprovar pagamento</button>
+        <button id="refuseButton" class="refuse" type="button">Recusar pagamento</button>
+        <button id="refreshButton" class="refresh" type="button">Atualizar status</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const paymentTransactionId = params.get("paymentTransactionId");
+
+    const messageEl = document.getElementById("message");
+    const approveButton = document.getElementById("approveButton");
+    const refuseButton = document.getElementById("refuseButton");
+    const refreshButton = document.getElementById("refreshButton");
+
+    const statusNames = {
+      1: "Solicitado",
+      2: "Aprovado",
+      3: "Recusado",
+      4: "Cancelado"
+    };
+
+    const statusClasses = {
+      1: "requested",
+      2: "approved",
+      3: "refused",
+      4: "cancelled"
+    };
+
+    approveButton.addEventListener("click", () => simulateWebhook("approved"));
+    refuseButton.addEventListener("click", () => simulateWebhook("refused"));
+    refreshButton.addEventListener("click", () => loadTransaction(true));
+
+    if (!paymentTransactionId) {
+      setMessage("Nao foi encontrado o identificador da transacao na URL.", "error");
+      toggleActionButtons(false, false);
+    } else {
+      document.getElementById("transactionId").textContent = "#" + paymentTransactionId;
+      loadTransaction(false);
+    }
+
+    async function loadTransaction(isManualRefresh) {
+      if (!paymentTransactionId) {
+        return;
+      }
+
+      if (!isManualRefresh) {
+        setMessage("Carregando pagamento...", "info");
+      }
+
+      toggleActionButtons(false, false);
+
+      try {
+        const response = await fetch(`/api/payments/transactions/${paymentTransactionId}`);
+        if (!response.ok) {
+          throw new Error(`Nao foi possivel carregar a transacao (${response.status}).`);
+        }
+
+        const data = await response.json();
+        renderTransaction(data);
+        const statusCode = Number(readValue(data, "status"));
+        const isRequested = statusCode === 1;
+        toggleActionButtons(true, isRequested);
+        setMessage(isRequested
+          ? "Pagamento aguardando sua simulacao."
+          : "Pagamento ja processado. Voce ainda pode atualizar o status.", isRequested ? "info" : "success");
+      } catch (error) {
+        setMessage(error.message || "Nao foi possivel consultar o pagamento.", "error");
+        toggleActionButtons(true, false);
+      }
+    }
+
+    async function simulateWebhook(status) {
+      if (!paymentTransactionId) {
+        return;
+      }
+
+      toggleActionButtons(false, false);
+      setMessage(status === "approved"
+        ? "Enviando simulacao de pagamento aprovado..."
+        : "Enviando simulacao de pagamento recusado...", "info");
+
+      try {
+        const response = await fetch(`/api/payments/transactions/${paymentTransactionId}/simulate-webhook`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ status })
+        });
+
+        if (!response.ok) {
+          const errorText = await extractError(response);
+          throw new Error(errorText);
+        }
+
+        await loadTransaction(true);
+        setMessage(status === "approved"
+          ? "Pagamento aprovado com sucesso."
+          : "Pagamento recusado com sucesso.", "success");
+      } catch (error) {
+        setMessage(error.message || "Nao foi possivel enviar a simulacao.", "error");
+        await loadTransaction(true);
+      }
+    }
+
+    async function extractError(response) {
+      try {
+        const payload = await response.json();
+        if (Array.isArray(payload) && payload.length > 0 && payload[0].mensagem) {
+          return payload[0].mensagem;
+        }
+
+        if (payload && payload.title) {
+          return payload.title;
+        }
+      } catch {
+      }
+
+      return `A simulacao falhou com status ${response.status}.`;
+    }
+
+    function renderTransaction(data) {
+      const transactionId = readValue(data, "id");
+      const orderId = readValue(data, "orderId");
+      const amount = readAmount(data);
+      const method = readValue(data, "method");
+      const status = Number(readValue(data, "status"));
+      const gatewayTransactionId = readValue(data, "gatewayTransactionId");
+
+      document.getElementById("transactionId").textContent = transactionId ? `#${transactionId}` : "-";
+      document.getElementById("orderId").textContent = orderId ? `#${orderId}` : "-";
+      document.getElementById("amount").textContent = formatMoney(amount);
+      document.getElementById("method").textContent = method || "-";
+      document.getElementById("gatewayTransactionId").textContent = gatewayTransactionId || "-";
+
+      const badge = document.getElementById("statusBadge");
+      badge.textContent = statusNames[status] || "Desconhecido";
+      badge.className = `status ${statusClasses[status] || ""}`.trim();
+    }
+
+    function readAmount(data) {
+      const amount = readValue(data, "amount");
+      if (typeof amount === "number") {
+        return amount;
+      }
+
+      if (amount && typeof amount === "object") {
+        return Number(readValue(amount, "value")) || 0;
+      }
+
+      return 0;
+    }
+
+    function readValue(source, key) {
+      if (!source || typeof source !== "object") {
+        return null;
+      }
+
+      if (key in source) {
+        return source[key];
+      }
+
+      const pascalKey = key.charAt(0).toUpperCase() + key.slice(1);
+      if (pascalKey in source) {
+        return source[pascalKey];
+      }
+
+      return null;
+    }
+
+    function formatMoney(value) {
+      return new Intl.NumberFormat("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      }).format(Number(value || 0));
+    }
+
+    function setMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = `message ${type}`;
+    }
+
+    function toggleActionButtons(enableRefresh, enableDecisionButtons) {
+      refreshButton.disabled = !enableRefresh;
+      approveButton.disabled = !enableDecisionButtons;
+      refuseButton.disabled = !enableDecisionButtons;
+    }
+  </script>
+</body>
+</html>

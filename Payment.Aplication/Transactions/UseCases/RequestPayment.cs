@@ -12,11 +12,16 @@ public class RequestPayment : IUseCaseRequestPayment
 {
     private readonly IRepositorySession _repositorySession;
     private readonly IPaymentProcessor _paymentProcessor;
+    private readonly IMockCheckoutUrlBuilder _mockCheckoutUrlBuilder;
 
-    public RequestPayment(IRepositorySession repositorySession, IPaymentProcessor paymentProcessor)
+    public RequestPayment(
+        IRepositorySession repositorySession,
+        IPaymentProcessor paymentProcessor,
+        IMockCheckoutUrlBuilder mockCheckoutUrlBuilder)
     {
         _repositorySession = repositorySession;
         _paymentProcessor = paymentProcessor;
+        _mockCheckoutUrlBuilder = mockCheckoutUrlBuilder;
     }
 
     public OperationResult<PaymentCheckoutDto> Execute(RequestPaymentDto command)
@@ -75,7 +80,7 @@ public class RequestPayment : IUseCaseRequestPayment
             repository.Include(transaction);
             repository.Flush().GetAwaiter().GetResult();
 
-            return OperationResult<PaymentCheckoutDto>.Created(transaction.ToCheckoutDto());
+            return OperationResult<PaymentCheckoutDto>.Created(transaction.ToCheckoutDto(_mockCheckoutUrlBuilder));
         }
         catch (Exception ex)
         {
