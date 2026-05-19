@@ -26,14 +26,26 @@ public class TicketInclude : IUseCaseCommand<TicketDto>
             return OperationResult.UnprocessableEntity(new MensagemErro("Ingresso", "Envie os dados do ingresso."));
         }
 
+        if (_currentUserContext.Role == "Admin" && ticket.SellerId <= 0)
+        {
+            return OperationResult.UnprocessableEntity(new MensagemErro("SellerId", "Deve ser informado o identificador do vendedor."));
+        }
+
         try
         {
             var utcNow = DateTime.UtcNow;
             IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var seller = repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
+            var seller = ResolveTargetSeller(ticket.SellerId, repositoryQuery);
             if (seller is null)
             {
-                return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));
+                return _currentUserContext.Role == "Admin"
+                    ? OperationResult.NotFound(new MensagemErro("Id", "Vendedor nao encontrado."))
+                    : OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));
+            }
+
+            if (!seller.Active)
+            {
+                return OperationResult.UnprocessableEntity(new MensagemErro("Seller", "Nao e possivel cadastrar ingresso para um vendedor desativado."));
             }
 
             var littleEvent = repositoryQuery.Return<Event>(ticket.EventId);
@@ -44,7 +56,9 @@ public class TicketInclude : IUseCaseCommand<TicketDto>
 
             if (littleEvent.SellerId != seller.Id)
             {
-                return OperationResult.Forbidden(new MensagemErro("Evento", "Voce so pode cadastrar ingressos em eventos da sua loja."));
+                return _currentUserContext.Role == "Admin"
+                    ? OperationResult.Forbidden(new MensagemErro("Evento", "O evento informado nao pertence ao vendedor selecionado."))
+                    : OperationResult.Forbidden(new MensagemErro("Evento", "Voce so pode cadastrar ingressos em eventos da sua loja."));
             }
             
             LocationDomain location = repositoryQuery.Return<LocationDomain>(littleEvent.LocationId);
@@ -90,5 +104,15 @@ public class TicketInclude : IUseCaseCommand<TicketDto>
         {
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
+    }
+
+    private Seller? ResolveTargetSeller(long sellerId, IRepositoryQuery repositoryQuery)
+    {
+        if (_currentUserContext.Role == "Admin")
+        {
+            return repositoryQuery.Return<Seller>(sellerId);
+        }
+
+        return repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
     }
 }
