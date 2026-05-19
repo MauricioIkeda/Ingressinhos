@@ -26,13 +26,25 @@ public class EventInclude : IUseCaseCommand<EventDto>
             return OperationResult.UnprocessableEntity(new MensagemErro("Evento", "Envie os dados do evento."));
         }
 
+        if (_currentUserContext.Role == "Admin" && eventDto.SellerId <= 0)
+        {
+            return OperationResult.UnprocessableEntity(new MensagemErro("SellerId", "Deve ser informado o identificador do vendedor."));
+        }
+
         try
         {
             IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var seller = repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
+            var seller = ResolveTargetSeller(eventDto.SellerId, repositoryQuery);
             if (seller is null)
             {
-                return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));
+                return _currentUserContext.Role == "Admin"
+                    ? OperationResult.NotFound(new MensagemErro("Id", "Vendedor nao encontrado."))
+                    : OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));
+            }
+
+            if (!seller.Active)
+            {
+                return OperationResult.UnprocessableEntity(new MensagemErro("Seller", "Nao e possivel cadastrar evento para um vendedor desativado."));
             }
 
             if (repositoryQuery.Return<LocationDomain>(eventDto.LocationId) is null)
@@ -71,5 +83,15 @@ public class EventInclude : IUseCaseCommand<EventDto>
         {
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
+    }
+
+    private Seller? ResolveTargetSeller(long sellerId, IRepositoryQuery repositoryQuery)
+    {
+        if (_currentUserContext.Role == "Admin")
+        {
+            return repositoryQuery.Return<Seller>(sellerId);
+        }
+
+        return repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
     }
 }
