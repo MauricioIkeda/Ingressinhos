@@ -17,11 +17,13 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddPaymentServices(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
     {
+        services.AddHttpContextAccessor();
         services.AddPaymentDatabase(configuration);
         services.AddPaymentUseCases();
         services.AddSingleton(CreateFileMessageBusOptions(configuration, contentRootPath));
         services.AddSingleton<IMessagePublisher, FileMessagePublisher>();
         services.AddScoped<IPaymentProcessor, RandomMockPaymentProcessor>();
+        services.AddScoped<IMockCheckoutUrlBuilder, MockCheckoutUrlBuilder>();
         return services;
     }
 

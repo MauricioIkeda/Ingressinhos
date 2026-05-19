@@ -1,4 +1,5 @@
 using Payment.Aplication.Transactions.Dtos;
+using Payment.Aplication.Transactions.Interfaces;
 using Payment.Domain.Entities;
 
 namespace Payment.Aplication.Transactions.Utils;
@@ -22,9 +23,9 @@ internal static class PaymentTransactionMapper
         };
     }
 
-    public static PaymentCheckoutDto ToCheckoutDto(this PaymentTransaction transaction)
+    public static PaymentCheckoutDto ToCheckoutDto(this PaymentTransaction transaction, IMockCheckoutUrlBuilder mockCheckoutUrlBuilder)
     {
-        var mockCheckout = MockPaymentCheckoutFactory.Create(transaction);
+        var mockCheckout = MockPaymentCheckoutFactory.Create(transaction, mockCheckoutUrlBuilder);
 
         return new PaymentCheckoutDto(
             transaction.Id,
