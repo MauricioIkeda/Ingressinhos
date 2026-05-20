@@ -1,6 +1,7 @@
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Interfaces;
+using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Sales.Enums;
 using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 
@@ -38,23 +39,68 @@ public class CancelOrderPayment : IUseCaseCancelOrderPayment
                 return OperationResult.Ok();
             }
 
+            if (order.Status == OrderStatus.Paid)
+            {
+                return OperationResult.UnprocessableEntity(new MensagemErro("Pedido", "Nao e possivel cancelar um pedido ja pago."));
+            }
+
+            if (order.Status != OrderStatus.PendingPayment)
+            {
+                return OperationResult.UnprocessableEntity(new MensagemErro("Pedido", "Somente pedidos pendentes de pagamento podem devolver reserva."));
+            }
+
+            var repository = _repositorySession.GetRepository();
+            using var transaction = _repositorySession.BeginTransaction();
+
+            var restoreResult = RestoreReservedTickets(order, repositoryQuery, repository);
+            if (!restoreResult.Success)
+            {
+                _repositorySession.RollbackTransaction();
+                return restoreResult;
+            }
+
             order.Cancel();
             if (!order.IsValid)
             {
+                _repositorySession.RollbackTransaction();
                 return order.ToUnprocessableEntityResult();
             }
 
             order.UpdatedAt = DateTime.UtcNow;
 
-            var repository = _repositorySession.GetRepository();
             repository.Upsert(order);
             repository.Flush().GetAwaiter().GetResult();
+            _repositorySession.CommitTransaction();
 
             return OperationResult.Ok();
         }
         catch (Exception ex)
         {
+            _repositorySession.RollbackTransaction();
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
+    }
+
+    // No momento fiz um "helper privado" aqui, talvez a gente utilize mensageria preciso ver se mantenho, ou faço uma forma mais clear
+    private static OperationResult RestoreReservedTickets(OrderDomain order, IRepositoryQuery repositoryQuery, IRepository repository)
+    {
+        foreach (var item in order.Items)
+        {
+            var ticket = repositoryQuery.Return<Ticket>(item.TicketId);
+            if (ticket is null)
+            {
+                return OperationResult.NotFound(new MensagemErro("Ingresso", $"Nao foi possivel localizar o ingresso do item {item.Id}."));
+            }
+
+            ticket.RestoreQuantity(item.Quantity);
+            if (!ticket.IsValid)
+            {
+                return ticket.ToUnprocessableEntityResult();
+            }
+
+            repository.Upsert(ticket);
+        }
+
+        return OperationResult.Ok();
     }
 }

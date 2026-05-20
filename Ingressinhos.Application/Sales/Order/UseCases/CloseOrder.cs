@@ -3,6 +3,7 @@ using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Interfaces;
+using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Sales.Entities;
 using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 
@@ -14,10 +15,7 @@ public class CloseOrder : IUseCaseCloseOrder
     private readonly ICurrentUserContext _currentUserContext;
     private readonly IRequestPayment _requestPayment;
 
-    public CloseOrder(
-        IRepositorySession repositorySession,
-        ICurrentUserContext currentUserContext,
-        IRequestPayment requestPayment)
+    public CloseOrder( IRepositorySession repositorySession, ICurrentUserContext currentUserContext, IRequestPayment requestPayment)
     {
         _repositorySession = repositorySession;
         _currentUserContext = currentUserContext;
@@ -54,18 +52,25 @@ public class CloseOrder : IUseCaseCloseOrder
                 }
             }
 
-            // precisamos validar se todos os itens do carrinho ainda estao disponiveis antes de fechar o pedido.
-            // preciso validar estoque/assentos dos itens do pedido antes de seguir para o pagamento.
+            var repository = _repositorySession.GetRepository();
+            using var transaction = _repositorySession.BeginTransaction();
+            var utcNow = DateTime.UtcNow;
+
             order.MoveToPendingPayment();
             if (!order.IsValid)
             {
+                _repositorySession.RollbackTransaction();
                 return OperationResult<PaymentCheckoutApiDto>.FromResult(order.ToUnprocessableEntityResult());
             }
 
-            order.UpdatedAt = DateTime.UtcNow;
+            order.UpdatedAt = utcNow;
 
-            var repository = _repositorySession.GetRepository();
-            using var transaction = _repositorySession.BeginTransaction();
+            var reserveResult = ReserveOrderTickets(order, repositoryQuery, repository, utcNow);
+            if (!reserveResult.Success)
+            {
+                _repositorySession.RollbackTransaction();
+                return OperationResult<PaymentCheckoutApiDto>.FromResult(reserveResult);
+            }
 
             repository.Upsert(order);
             repository.Flush().GetAwaiter().GetResult();
@@ -86,5 +91,28 @@ public class CloseOrder : IUseCaseCloseOrder
             _repositorySession.RollbackTransaction();
             return OperationResult<PaymentCheckoutApiDto>.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
+    }
+
+// No momento fiz um "helper privado" aqui, talvez a gente utilize mensageria preciso ver se mantenho, ou faço uma forma mais clear
+    private static OperationResult ReserveOrderTickets( OrderDomain order, IRepositoryQuery repositoryQuery, IRepository repository, DateTime utcNow)
+    {
+        foreach (var item in order.Items)
+        {
+            var ticket = repositoryQuery.Return<Ticket>(item.TicketId);
+            if (ticket is null)
+            {
+                return OperationResult.NotFound(new MensagemErro("Ingresso", $"Nao foi possivel localizar o ingresso do item {item.Id}."));
+            }
+
+            ticket.Reserve(item.Quantity, utcNow);
+            if (!ticket.IsValid)
+            {
+                return ticket.ToUnprocessableEntityResult();
+            }
+
+            repository.Upsert(ticket);
+        }
+
+        return OperationResult.Ok();
     }
 }
