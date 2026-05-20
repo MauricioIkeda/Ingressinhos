@@ -1,6 +1,7 @@
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Generic.Messaging.Contracts;
+using Generic.Messaging.Contracts.Payments;
 using Generic.Messaging.Interfaces;
 using Payment.Aplication.Transactions.Dtos;
 using Payment.Aplication.Transactions.Interfaces;
@@ -68,6 +69,7 @@ public class HandlePaymentNotification : IUseCaseHandlePaymentNotification
             }
 
             var approvedNow = false;
+            var cancelledNow = false;
 
             if (normalizedStatus == "approved")
             {
@@ -77,6 +79,7 @@ public class HandlePaymentNotification : IUseCaseHandlePaymentNotification
             else
             {
                 transaction.Refuse();
+                cancelledNow = transaction.IsValid;
             }
 
             if (!transaction.IsValid)
@@ -92,14 +95,24 @@ public class HandlePaymentNotification : IUseCaseHandlePaymentNotification
             {
                 _messagePublisher.Publish(
                     MessageQueues.PaymentApproved,
-                    new PaymentApprovedIntegrationEvent
-                    {
-                        PaymentTransactionId = transaction.Id,
-                        OrderId = transaction.OrderId,
-                        Amount = transaction.Amount.Value,
-                        Method = transaction.Method,
-                        ApprovedAtUtc = transaction.ApprovedAt ?? DateTime.UtcNow
-                    });
+                    new PaymentApprovedIntegrationEvent(
+                        transaction.Id,
+                        transaction.OrderId,
+                        transaction.Amount.Value,
+                        transaction.Method,
+                        transaction.ApprovedAt ?? DateTime.UtcNow));
+            }
+            else if (cancelledNow)
+            {
+                _messagePublisher.Publish(
+                    MessageQueues.PaymentCancelled,
+                    new PaymentCancelledIntegrationEvent(
+                        transaction.Id,
+                        transaction.OrderId,
+                        transaction.Amount.Value,
+                        transaction.Method,
+                        normalizedStatus,
+                        transaction.RefusedAt ?? DateTime.UtcNow));
             }
 
             return OperationResult.Ok();

@@ -83,6 +83,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUseCaseCloseOrder, CloseOrder>();
         services.AddScoped<IUseCaseDelete<Ingressinhos.Domain.Sales.Entities.Order>, UseCaseDelete<Ingressinhos.Domain.Sales.Entities.Order>>();
         services.AddScoped<IUseCaseConfirmOrderPayment, ConfirmOrderPayment>();
+        services.AddScoped<IUseCaseCancelOrderPayment, CancelOrderPayment>();
         services.AddScoped<IUseCaseOrderCollection, UseCaseOrderCollection>();
 
         services.AddScoped<OrderItemGetOdata>();

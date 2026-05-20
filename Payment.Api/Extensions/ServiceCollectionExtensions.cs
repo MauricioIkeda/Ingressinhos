@@ -20,8 +20,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddPaymentDatabase(configuration);
         services.AddPaymentUseCases();
-        services.AddSingleton(CreateFileMessageBusOptions(configuration, contentRootPath));
-        services.AddSingleton<IMessagePublisher, FileMessagePublisher>();
+        services.AddPaymentMessaging(configuration, contentRootPath);
         services.AddScoped<IPaymentProcessor, RandomMockPaymentProcessor>();
         services.AddScoped<IMockCheckoutUrlBuilder, MockCheckoutUrlBuilder>();
         return services;
@@ -61,6 +60,39 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RefundGetOdata>();
         services.AddScoped<IUseCaseRefundCollection, UseCaseRefundCollection>();
         return services;
+    }
+
+    private static IServiceCollection AddPaymentMessaging(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
+    {
+        var provider = configuration["Messaging:Provider"];
+        if (string.Equals(provider, "File", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton(CreateFileMessageBusOptions(configuration, contentRootPath));
+            services.AddSingleton<IMessagePublisher, FileMessagePublisher>();
+            return services;
+        }
+
+        services.AddSingleton(CreateRabbitMqOptions(configuration));
+        services.AddSingleton<IMessagePublisher, RabbitMqMessagePublisher>();
+        return services;
+    }
+
+    private static RabbitMqOptions CreateRabbitMqOptions(IConfiguration configuration)
+    {
+        var section = configuration.GetSection("Messaging:RabbitMq");
+        return new RabbitMqOptions
+        {
+            HostName = section["HostName"] ?? "localhost",
+            Port = int.TryParse(section["Port"], out var port) ? port : 5672,
+            UserName = section["UserName"] ?? "guest",
+            Password = section["Password"] ?? "guest",
+            VirtualHost = section["VirtualHost"] ?? "/",
+            RequeueOnFailure = bool.TryParse(section["RequeueOnFailure"], out var requeueOnFailure) && requeueOnFailure,
+            PrefetchCount = ushort.TryParse(section["PrefetchCount"], out var prefetchCount) ? prefetchCount : (ushort)10,
+            MaxMessagesPerBatch = int.TryParse(section["MaxMessagesPerBatch"], out var maxMessagesPerBatch)
+                ? maxMessagesPerBatch
+                : 50
+        };
     }
 
     private static FileMessageBusOptions CreateFileMessageBusOptions(IConfiguration configuration, string contentRootPath)

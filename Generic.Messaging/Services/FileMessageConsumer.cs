@@ -4,7 +4,7 @@ using Generic.Messaging.Options;
 
 namespace Generic.Messaging.Services;
 
-public sealed class FileMessageConsumer : IMessageConsumer
+public sealed class FileMessageConsumer : IMessageConsumer // mock
 {
     private readonly FileMessageBusOptions _options;
     private readonly JsonSerializerOptions _serializerOptions = new(JsonSerializerDefaults.Web);
