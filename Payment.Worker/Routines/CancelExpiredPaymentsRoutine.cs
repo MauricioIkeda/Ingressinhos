@@ -1,4 +1,7 @@
 using Generic.Infrastructure.Interfaces;
+using Generic.Messaging.Contracts;
+using Generic.Messaging.Contracts.Payments;
+using Generic.Messaging.Interfaces;
 using Generic.Worker.Interfaces;
 using Payment.Domain.Entities;
 using Payment.Domain.Enums;
@@ -11,15 +14,18 @@ public class CancelExpiredPaymentsRoutine : IWorkerRoutine
     private readonly ILogger<CancelExpiredPaymentsRoutine> _logger;
     private readonly IRepositorySession _repositorySession;
     private readonly PaymentExpirationOptions _options;
+    private readonly IMessagePublisher _messagePublisher;
 
     public CancelExpiredPaymentsRoutine(
         ILogger<CancelExpiredPaymentsRoutine> logger,
         IRepositorySession repositorySession,
-        PaymentExpirationOptions options)
+        PaymentExpirationOptions options,
+        IMessagePublisher messagePublisher)
     {
         _logger = logger;
         _repositorySession = repositorySession;
         _options = options;
+        _messagePublisher = messagePublisher;
     }
 
     public Task ExecuteAsync(CancellationToken cancellationToken)
@@ -49,6 +55,7 @@ public class CancelExpiredPaymentsRoutine : IWorkerRoutine
 
         var repository = _repositorySession.GetRepository();
         var cancelledCount = 0;
+        var cancelledEvents = new List<PaymentCancelledIntegrationEvent>();
 
         foreach (var transaction in expiredTransactions)
         {
@@ -69,6 +76,13 @@ public class CancelExpiredPaymentsRoutine : IWorkerRoutine
             }
 
             repository.Upsert(transaction);
+            cancelledEvents.Add(new PaymentCancelledIntegrationEvent(
+                transaction.Id,
+                transaction.OrderId,
+                transaction.Amount.Value,
+                transaction.Method,
+                "expired",
+                transaction.CancelledAt ?? DateTime.UtcNow));
             cancelledCount++;
         }
 
@@ -79,6 +93,11 @@ public class CancelExpiredPaymentsRoutine : IWorkerRoutine
         }
 
         repository.Flush().GetAwaiter().GetResult();
+
+        foreach (var cancelledEvent in cancelledEvents)
+        {
+            _messagePublisher.Publish(MessageQueues.PaymentCancelled, cancelledEvent);
+        }
 
         _logger.LogInformation(
             "{count} transacao(oes) expirada(s) foram canceladas com sucesso.",

@@ -8,10 +8,10 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddIngressinhosWorkerServices(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services
     .AddWorkerRuntime()
-    // O worker fica consultando a fila fake para processar pagamentos aprovados.
-    .AddScheduledRoutine<ConsumePaymentApprovedMessagesRoutine>(options =>
+    // O worker reage aos eventos de pagamento publicados pelo contexto Payment.
+    .AddScheduledRoutine<ConsumePaymentMessagesRoutine>(options =>
     {
-        options.Name = "consume-payment-approved";
+        options.Name = "consume-payment-messages";
         options.Interval = TimeSpan.FromSeconds(5);
         options.RunOnStartup = true;
     });

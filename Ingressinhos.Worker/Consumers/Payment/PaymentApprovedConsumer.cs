@@ -1,7 +1,7 @@
-using Generic.Messaging.Contracts;
+using Generic.Messaging.Contracts.Payments;
 using Ingressinhos.Application.Sales.Interfaces;
 
-namespace Ingressinhos.Worker.Consumers;
+namespace Ingressinhos.Worker.Consumers.Payment;
 
 public class PaymentApprovedConsumer
 {
