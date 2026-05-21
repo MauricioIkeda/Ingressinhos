@@ -11,6 +11,8 @@ public sealed class OrderItemQueryItem
     public int Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public SeatCategory Category { get; set; }
+    public long? SeatId { get; set; }
+    public string? SeatCode { get; set; }
     public decimal TotalPrice { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

@@ -2,6 +2,7 @@ using Generic.Application.Crud.Interface;
 using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
+using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 
@@ -39,7 +40,7 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var sellerEntity = ResolveTargetSeller(seller.SellerId, repositoryQuery);
+            var sellerEntity = CurrentUserEntityResolver.ResolveSeller(_currentUserContext, repositoryQuery, seller.SellerId, onlyActive: false);
 
             if (sellerEntity is null)
             {
@@ -115,13 +116,4 @@ public class SellerUpdate : IUseCaseCommand<SellerDto>
         }
     }
 
-    private Seller? ResolveTargetSeller(long sellerId, IRepositoryQuery repositoryQuery)
-    {
-        if (_currentUserContext.Role == "Admin")
-        {
-            return repositoryQuery.Return<Seller>(sellerId);
-        }
-
-        return repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId).FirstOrDefault();
-    }
 }

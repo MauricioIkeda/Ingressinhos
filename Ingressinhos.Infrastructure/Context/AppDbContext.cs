@@ -108,6 +108,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(orderItem => orderItem.TicketId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<OrderItem>()
+            .HasOne<Seat>()
+            .WithMany()
+            .HasForeignKey(orderItem => orderItem.SeatId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<IssuedTicket>()
             .HasOne<OrderItem>()
             .WithMany()

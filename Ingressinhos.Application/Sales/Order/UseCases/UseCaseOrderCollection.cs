@@ -14,6 +14,7 @@ public class UseCaseOrderCollection : UseCaseQueryCollection<OrderDomain>, IUseC
     private readonly CreateOrder _createOrder;
     private readonly UpdateOrderItems _updateOrderItems;
     private readonly IUseCaseCloseOrder _closeOrder;
+    private readonly IUseCaseImmediateOrder _immediateOrder;
     private readonly IUseCaseDelete<OrderDomain> _deleteOrder;
 
     public UseCaseOrderCollection(
@@ -21,12 +22,14 @@ public class UseCaseOrderCollection : UseCaseQueryCollection<OrderDomain>, IUseC
         CreateOrder createOrder,
         UpdateOrderItems updateOrderItems,
         IUseCaseCloseOrder closeOrder,
+        IUseCaseImmediateOrder immediateOrder,
         IUseCaseDelete<OrderDomain> deleteOrder)
         : base(new UseCaseGetOdata<OrderDomain>(), new UseCaseGetId<OrderDomain>(), repositorySession)
     {
         _createOrder = createOrder;
         _updateOrderItems = updateOrderItems;
         _closeOrder = closeOrder;
+        _immediateOrder = immediateOrder;
         _deleteOrder = deleteOrder;
     }
 
@@ -48,5 +51,10 @@ public class UseCaseOrderCollection : UseCaseQueryCollection<OrderDomain>, IUseC
     public OperationResult<PaymentCheckoutApiDto> Close(long orderId)
     {
         return _closeOrder.Execute(orderId);
+    }
+
+    public OperationResult<PaymentCheckoutApiDto> Immediate(CreateOrderRequest command)
+    {
+        return _immediateOrder.Execute(command);
     }
 }

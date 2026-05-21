@@ -4,4 +4,5 @@ public class OrderItemRequest
 {
     public long TicketId { get; set; }
     public int Quantity { get; set; }
+    public long? SeatId { get; set; }
 }

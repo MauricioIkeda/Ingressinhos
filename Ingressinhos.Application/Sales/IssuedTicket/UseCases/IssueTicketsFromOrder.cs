@@ -67,7 +67,7 @@ public class IssueTicketsFromOrder : IUseCaseIssueTicketsFromOrder
                 for (var i = 0; i < missingTickets; i++)
                 {
                     // Cada ingresso emitido recebe um codigo proprio para acesso/check-in futuro.
-                    var issuedTicket = new IssuedTicket(item.Id, client.Id, ticket.EventId, GenerateAccessCode())
+                    var issuedTicket = new IssuedTicket(item.Id, client.Id, ticket.EventId, GenerateAccessCode(), item.SeatCode, item.Category)
                     {
                         CreatedAt = utcNow,
                         UpdatedAt = utcNow

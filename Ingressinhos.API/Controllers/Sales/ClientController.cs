@@ -74,14 +74,10 @@ public class ClientsController : ApiCrud<Client, ClientDto>
         return ExecuteCustom(_useCaseCollection.Recover(id));
     }
 
-    [Authorize(Policy = "OnlyClient")]
+    [Authorize(Policy = "OnlyClient")] // somente para o corno do clientex e do front-end
     [HttpGet("me")]
     public IActionResult GetByToken()
     {
-        var result = _useCaseCollection.GetByToken();
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return BadRequest(result.Errors);
+        return ExecuteCustom(_useCaseCollection.GetByToken());
     }
 }

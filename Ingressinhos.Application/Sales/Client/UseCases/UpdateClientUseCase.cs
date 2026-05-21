@@ -2,6 +2,7 @@ using Generic.Application.Crud.Interface;
 using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
+using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Sales.Dtos;
 using ClientDomain = Ingressinhos.Domain.Sales.Entities.Client;
 
@@ -39,7 +40,7 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var clientEntity = ResolveTargetClient(clientDto.ClientId, repositoryQuery);
+            var clientEntity = CurrentUserEntityResolver.ResolveClient(_currentUserContext, repositoryQuery, clientDto.ClientId, onlyActive: false);
 
             if (clientEntity is null)
             {
@@ -99,15 +100,5 @@ public class ClientUpdate : IUseCaseCommand<ClientDto>
 
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
-    }
-
-    private ClientDomain? ResolveTargetClient(long clientId, IRepositoryQuery repositoryQuery)
-    {
-        if (_currentUserContext.Role == "Admin")
-        {
-            return repositoryQuery.Return<ClientDomain>(clientId);
-        }
-
-        return repositoryQuery.Query<ClientDomain>(c => c.UserId == _currentUserContext.UserId).FirstOrDefault();
     }
 }

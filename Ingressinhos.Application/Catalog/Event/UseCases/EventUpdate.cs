@@ -2,6 +2,7 @@ using Generic.Application.Crud.Interface;
 using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
+using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using LocationDomain = Ingressinhos.Domain.Catalog.Entities.Location;
@@ -46,7 +47,7 @@ public class EventUpdate : IUseCaseCommand<EventDto>
                 return OperationResult.NotFound(new MensagemErro("Id", "Evento nao encontrado."));
             }
 
-            var seller = ResolveTargetSeller(eventDto.SellerId, repositoryQuery);
+            var seller = CurrentUserEntityResolver.ResolveSeller(_currentUserContext, repositoryQuery, eventDto.SellerId);
             if (seller is null)
             {
                 return _currentUserContext.Role == "Admin"
@@ -150,13 +151,4 @@ public class EventUpdate : IUseCaseCommand<EventDto>
         }
     }
 
-    private Seller? ResolveTargetSeller(long sellerId, IRepositoryQuery repositoryQuery)
-    {
-        if (_currentUserContext.Role == "Admin")
-        {
-            return repositoryQuery.Return<Seller>(sellerId);
-        }
-
-        return repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
-    }
 }

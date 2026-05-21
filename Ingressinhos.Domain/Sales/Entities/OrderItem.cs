@@ -11,14 +11,16 @@ public class OrderItem : BaseEntity
     public string TicketName { get; private set; } = string.Empty;
     public int Quantity { get; private set; }
     public Price UnitPrice { get; private set; } = new(0);
-    public SeatCategory Category { get; private set; } // colocar no construtor
+    public SeatCategory Category { get; private set; }
+    public long? SeatId { get; private set; }
+    public string? SeatCode { get; private set; }
     public decimal TotalPrice => Quantity * UnitPrice.Value;
 
     protected OrderItem()
     {
     }
     
-    public OrderItem(long orderId, long ticketId, string ticketName, int quantity, decimal unitPrice)
+    public OrderItem(long orderId, long ticketId, string ticketName, int quantity, decimal unitPrice, SeatCategory category, long? seatId = null, string? seatCode = null)
     {
         if (orderId <= 0)
         {
@@ -61,6 +63,27 @@ public class OrderItem : BaseEntity
         if (price.IsValid)
         {
             UnitPrice = price;
+        }
+
+        Category = category;
+
+        if (seatId.HasValue)
+        {
+            if (seatId.Value <= 0)
+            {
+                AddError("SeatId", "Informe um assento valido para o item.");
+            }
+            else
+            {
+                SeatId = seatId.Value;
+            }
+
+            if (quantity != 1)
+            {
+                AddError("Quantidade", "Itens com assento marcado devem ter quantidade 1.");
+            }
+
+            SeatCode = string.IsNullOrWhiteSpace(seatCode) ? null : seatCode.Trim().ToUpperInvariant();
         }
     }
 }

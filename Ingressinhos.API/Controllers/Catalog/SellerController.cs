@@ -67,14 +67,10 @@ public class SellersController : ApiCrud<Seller, SellerDto>
         return ExecuteCustom(_useCaseCollection.Recover(id));
     }
 
-    [Authorize(Policy = "OnlySeller")]
+    [Authorize(Policy = "OnlySeller")] // Somente para o corno do vendedor
     [HttpGet("me")]
     public IActionResult GetByToken()
     {
-        var result = _useCaseCollection.GetByToken();
-        if (result.Success)
-            return Ok(result.Data);
-        else
-            return BadRequest(result.Errors);
+        return ExecuteCustom(_useCaseCollection.GetByToken());
     }
 }
