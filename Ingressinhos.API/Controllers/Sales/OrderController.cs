@@ -1,4 +1,4 @@
-using Generic.Api.Controllers;
+﻿using Generic.Api.Controllers;
 using Ingressinhos.Application.Sales.Dtos;
 using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Sales.Entities;
@@ -45,6 +45,13 @@ public class OrdersController : ApiQuery<Order>
     public IActionResult Close(long id)
     {
         return ExecuteCustomData(_useCaseCollection.Close(id));
+    }
+
+    [HttpPost("immediate")]
+    [Authorize(Policy = "ClientOrAdmin")]
+    public IActionResult Immediate([FromBody] CreateOrderRequest command)
+    {
+        return ExecuteCustomData(_useCaseCollection.Immediate(command));
     }
 
     [HttpPut]

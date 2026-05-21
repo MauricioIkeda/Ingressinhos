@@ -99,6 +99,25 @@ public class CancelOrderPayment : IUseCaseCancelOrderPayment
             }
 
             repository.Upsert(ticket);
+
+            if (!item.SeatId.HasValue)
+            {
+                continue;
+            }
+
+            var seat = repositoryQuery.Return<Seat>(item.SeatId.Value);
+            if (seat is null)
+            {
+                return OperationResult.NotFound(new MensagemErro("SeatId", $"Nao foi possivel localizar o assento do item {item.Id}."));
+            }
+
+            seat.Release();
+            if (!seat.IsValid)
+            {
+                return seat.ToUnprocessableEntityResult();
+            }
+
+            repository.Upsert(seat);
         }
 
         return OperationResult.Ok();

@@ -1,6 +1,7 @@
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Interfaces;
+using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Sales.Enums;
 using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 
@@ -47,6 +48,23 @@ public class ConfirmOrderPayment : IUseCaseConfirmOrderPayment
             order.UpdatedAt = DateTime.UtcNow;
 
             var repository = _repositorySession.GetRepository();
+            foreach (var item in order.Items.Where(item => item.SeatId.HasValue))
+            {
+                var seat = repositoryQuery.Return<Seat>(item.SeatId!.Value);
+                if (seat is null)
+                {
+                    return OperationResult.NotFound(new MensagemErro("SeatId", $"Assento do item {item.Id} nao encontrado."));
+                }
+
+                seat.Occupy();
+                if (!seat.IsValid)
+                {
+                    return seat.ToUnprocessableEntityResult();
+                }
+
+                repository.Upsert(seat);
+            }
+
             repository.Upsert(order);
             repository.Flush().GetAwaiter().GetResult();
 

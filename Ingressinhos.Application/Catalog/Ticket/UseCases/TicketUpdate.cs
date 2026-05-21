@@ -2,6 +2,7 @@ using Generic.Application.Crud.Interface;
 using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
+using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Catalog.Enums;
@@ -43,7 +44,7 @@ public class TicketUpdate : IUseCaseCommand<TicketDto>
 
             if (_currentUserContext.Role != "Admin")
             {
-                var seller = repositoryQuery.Query<Seller>(s => s.UserId == _currentUserContext.UserId && s.Active).FirstOrDefault();
+                var seller = CurrentUserEntityResolver.ResolveSeller(_currentUserContext, repositoryQuery);
                 if (seller is null)
                 {
                     return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua loja."));

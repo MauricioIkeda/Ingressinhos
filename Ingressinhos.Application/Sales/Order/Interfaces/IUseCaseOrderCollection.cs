@@ -12,4 +12,5 @@ public interface IUseCaseOrderCollection : IUseCaseQueryCollection<OrderDomain>
     OperationResult UpdateItems(UpdateOrderItemsRequest command);
     OperationResult Delete(long id);
     OperationResult<PaymentCheckoutApiDto> Close(long orderId);
+    OperationResult<PaymentCheckoutApiDto> Immediate(CreateOrderRequest command);
 }

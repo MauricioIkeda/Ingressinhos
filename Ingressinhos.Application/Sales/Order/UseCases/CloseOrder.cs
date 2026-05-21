@@ -2,8 +2,10 @@ using Generic.Application.Dtos;
 using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
+using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
+using Ingressinhos.Domain.Catalog.Enums;
 using Ingressinhos.Domain.Sales.Entities;
 using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 
@@ -15,7 +17,7 @@ public class CloseOrder : IUseCaseCloseOrder
     private readonly ICurrentUserContext _currentUserContext;
     private readonly IRequestPayment _requestPayment;
 
-    public CloseOrder( IRepositorySession repositorySession, ICurrentUserContext currentUserContext, IRequestPayment requestPayment)
+    public CloseOrder(IRepositorySession repositorySession, ICurrentUserContext currentUserContext, IRequestPayment requestPayment)
     {
         _repositorySession = repositorySession;
         _currentUserContext = currentUserContext;
@@ -38,18 +40,10 @@ public class CloseOrder : IUseCaseCloseOrder
                 return OperationResult<PaymentCheckoutApiDto>.NotFound(new MensagemErro("Pedido", "Pedido nao encontrado."));
             }
 
-            if (_currentUserContext.Role != "Admin")
+            var accessResult = EnsureOrderAccess(order, repositoryQuery);
+            if (!accessResult.Success)
             {
-                var client = repositoryQuery.Query<Client>(c => c.UserId == _currentUserContext.UserId && c.Active).FirstOrDefault();
-                if (client is null)
-                {
-                    return OperationResult<PaymentCheckoutApiDto>.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua conta."));
-                }
-
-                if (order.ClientId != client.Id)
-                {
-                    return OperationResult<PaymentCheckoutApiDto>.Forbidden(new MensagemErro("Pedido", "Voce so pode fechar pedidos da sua propria conta."));
-                }
+                return OperationResult<PaymentCheckoutApiDto>.FromResult(accessResult);
             }
 
             var repository = _repositorySession.GetRepository();
@@ -65,7 +59,7 @@ public class CloseOrder : IUseCaseCloseOrder
 
             order.UpdatedAt = utcNow;
 
-            var reserveResult = ReserveOrderTickets(order, repositoryQuery, repository, utcNow);
+            var reserveResult = ReserveOrderInventory(order, repositoryQuery, repository, utcNow);
             if (!reserveResult.Success)
             {
                 _repositorySession.RollbackTransaction();
@@ -75,7 +69,7 @@ public class CloseOrder : IUseCaseCloseOrder
             repository.Upsert(order);
             repository.Flush().GetAwaiter().GetResult();
 
-            var paymentResult = _requestPayment.CreatePayment(order.Id, order.TotalAmount, "pix").GetAwaiter().GetResult(); // "pix" como padrao
+            var paymentResult = RequestPayment(order);
             if (!paymentResult.Success)
             {
                 _repositorySession.RollbackTransaction();
@@ -93,8 +87,28 @@ public class CloseOrder : IUseCaseCloseOrder
         }
     }
 
-// No momento fiz um "helper privado" aqui, talvez a gente utilize mensageria preciso ver se mantenho, ou faço uma forma mais clear
-    private static OperationResult ReserveOrderTickets( OrderDomain order, IRepositoryQuery repositoryQuery, IRepository repository, DateTime utcNow)
+    internal OperationResult EnsureOrderAccess(OrderDomain order, IRepositoryQuery repositoryQuery)
+    {
+        if (_currentUserContext.Role == "Admin")
+        {
+            return OperationResult.Ok();
+        }
+
+        var client = CurrentUserEntityResolver.ResolveClient(_currentUserContext, repositoryQuery);
+        if (client is null)
+        {
+            return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua conta."));
+        }
+
+        if (order.ClientId != client.Id)
+        {
+            return OperationResult.Forbidden(new MensagemErro("Pedido", "Voce so pode fechar pedidos da sua propria conta."));
+        }
+
+        return OperationResult.Ok();
+    }
+
+    internal static OperationResult ReserveOrderInventory(OrderDomain order, IRepositoryQuery repositoryQuery, IRepository repository, DateTime utcNow)
     {
         foreach (var item in order.Items)
         {
@@ -111,8 +125,37 @@ public class CloseOrder : IUseCaseCloseOrder
             }
 
             repository.Upsert(ticket);
+
+            if (!item.SeatId.HasValue)
+            {
+                continue;
+            }
+
+            var seat = repositoryQuery.Return<Seat>(item.SeatId.Value);
+            if (seat is null)
+            {
+                return OperationResult.NotFound(new MensagemErro("SeatId", $"Nao foi possivel localizar o assento do item {item.Id}."));
+            }
+
+            if (seat.Status == SeatStatus.Reserved || seat.Status == SeatStatus.Occupied || seat.Status == SeatStatus.Blocked)
+            {
+                return OperationResult.UnprocessableEntity(new MensagemErro("SeatId", $"O assento {seat.Code} nao esta disponivel para reserva."));
+            }
+
+            seat.Reserve();
+            if (!seat.IsValid)
+            {
+                return seat.ToUnprocessableEntityResult();
+            }
+
+            repository.Upsert(seat);
         }
 
         return OperationResult.Ok();
+    }
+
+    internal OperationResult<PaymentCheckoutApiDto> RequestPayment(OrderDomain order)
+    {
+        return _requestPayment.CreatePayment(order.Id, order.TotalAmount, "pix").GetAwaiter().GetResult();
     }
 }

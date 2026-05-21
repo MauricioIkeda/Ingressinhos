@@ -23,6 +23,8 @@ public class OrderItemGetOdata : UseCaseGetQueryItems<OrderItemDomain, OrderItem
             Quantity = orderItem.Quantity,
             UnitPrice = orderItem.UnitPrice.Value,
             Category = orderItem.Category,
+            SeatId = orderItem.SeatId,
+            SeatCode = orderItem.SeatCode,
             TotalPrice = orderItem.TotalPrice,
             CreatedAt = orderItem.CreatedAt,
             UpdatedAt = orderItem.UpdatedAt

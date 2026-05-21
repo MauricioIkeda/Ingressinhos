@@ -1,11 +1,10 @@
 using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
+using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Sales.Dtos;
-using Ingressinhos.Domain.Catalog.Entities;
-using Ingressinhos.Domain.Sales.Entities;
+using Ingressinhos.Domain.Sales.Enums;
 using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
-using OrderItemDomain = Ingressinhos.Domain.Sales.Entities.OrderItem;
 
 namespace Ingressinhos.Application.Sales.UseCases;
 
@@ -35,7 +34,7 @@ public class CreateOrder
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var client = ResolveClient(command.ClientId, repositoryQuery);
+            var client = CurrentUserEntityResolver.ResolveClient(_currentUserContext, repositoryQuery, command.ClientId);
             if (client is null)
             {
                 return _currentUserContext.Role == "Admin"
@@ -44,116 +43,50 @@ public class CreateOrder
             }
 
             var utcNow = DateTime.UtcNow;
-            var orderEntity = new OrderDomain(client.Id)
-            {
-                CreatedAt = utcNow,
-                UpdatedAt = utcNow
-            };
-            if (!orderEntity.IsValid)
-            {
-                return orderEntity.ToUnprocessableEntityResult();
-            }
-
             var repository = _repositorySession.GetRepository();
             using var transaction = _repositorySession.BeginTransaction();
 
-            repository.Include(orderEntity);
-            repository.Flush().GetAwaiter().GetResult();
-
-            foreach (var item in command.Items)
+            // Cada cliente pode manter apenas um pedido em carrinho.
+            // Se ele ja existir, este fluxo reaproveita o pedido e substitui seus itens.
+            var orderEntity = repositoryQuery
+                .Query<OrderDomain>(order => order.ClientId == client.Id && order.Status == OrderStatus.Cart)
+                .OrderByDescending(order => order.Id)
+                .FirstOrDefault();
+            if (orderEntity is null)
             {
-                var buildResult = BuildOrderItem(orderEntity, item, repositoryQuery, utcNow);
-                if (!buildResult.Success)
+                orderEntity = new OrderDomain(client.Id)
                 {
-                    _repositorySession.RollbackTransaction();
-                    return buildResult;
+                    CreatedAt = utcNow,
+                    UpdatedAt = utcNow
+                };
+
+                if (!orderEntity.IsValid)
+                {
+                    return orderEntity.ToUnprocessableEntityResult();
                 }
 
-                repository.Include(buildResult.Data);
+                repository.Include(orderEntity);
+                repository.Flush().GetAwaiter().GetResult();
             }
 
-            repository.Upsert(orderEntity);
+            // O helper sincroniza o pedido inteiro com a lista recebida:
+            // remove os itens antigos e recria os OrderItems a partir do request atual.
+            var saveResult = OrderItemSyncHelper.Sync(orderEntity, command.Items, repository, repositoryQuery, utcNow);
+            if (!saveResult.Success)
+            {
+                _repositorySession.RollbackTransaction();
+                return saveResult;
+            }
+
             repository.Flush().GetAwaiter().GetResult();
             _repositorySession.CommitTransaction();
 
-            return OperationResult.Created();
+            return OperationResult.Ok();
         }
         catch (Exception ex)
         {
             _repositorySession.RollbackTransaction();
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
-    }
-
-    private Client? ResolveClient(long clientId, IRepositoryQuery repositoryQuery)
-    {
-        if (_currentUserContext.Role == "Admin")
-        {
-            if (clientId <= 0)
-            {
-                return null;
-            }
-
-            return repositoryQuery.Query<Client>(c => c.Id == clientId && c.Active).FirstOrDefault();
-        }
-
-        return repositoryQuery.Query<Client>(c => c.UserId == _currentUserContext.UserId && c.Active).FirstOrDefault();
-    }
-
-    internal static OperationResult<OrderItemDomain> BuildOrderItem(
-        OrderDomain order,
-        OrderItemRequest item,
-        IRepositoryQuery repositoryQuery,
-        DateTime utcNow)
-    {
-        if (item is null)
-        {
-            return OperationResult<OrderItemDomain>.UnprocessableEntity(new MensagemErro("Item", "Envie os dados do item do pedido."));
-        }
-
-        var ticket = repositoryQuery.Return<Ticket>(item.TicketId);
-        if (ticket is null)
-        {
-            return OperationResult<OrderItemDomain>.NotFound(new MensagemErro("Ingresso", "Ingresso informado nao foi encontrado."));
-        }
-
-        // Precisamos considerar categoria/assento quando essa escolha estiver modelada no carrinho.
-        var unitPrice = ticket.BasePrice.Value;
-        order.AddItem(unitPrice, item.Quantity);
-        if (!order.IsValid)
-        {
-            return OperationResult<OrderItemDomain>.FromResult(order.ToUnprocessableEntityResult());
-        }
-
-        var orderItemEntity = new OrderItemDomain(
-            order.Id,
-            ticket.Id,
-            ticket.Name,
-            item.Quantity,
-            unitPrice)
-        {
-            CreatedAt = utcNow,
-            UpdatedAt = utcNow
-        };
-
-        if (!orderItemEntity.IsValid)
-        {
-            return OperationResult<OrderItemDomain>.FromResult(orderItemEntity.ToUnprocessableEntityResult());
-        }
-
-        return OperationResult<OrderItemDomain>.Created(orderItemEntity);
-    }
-
-    internal static OperationResult ToOperationResult<T>(OperationResult<T> result)
-    {
-        return result.StatusCode switch
-        {
-            401 => OperationResult.Unauthorized(result.Errors.First()),
-            403 => OperationResult.Forbidden(result.Errors.First()),
-            404 => OperationResult.NotFound(result.Errors.First()),
-            422 => OperationResult.UnprocessableEntity(result.Errors),
-            500 => OperationResult.FatalError(result.Errors.First()),
-            _ => OperationResult.Fail(result.Errors)
-        };
     }
 }

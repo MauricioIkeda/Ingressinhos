@@ -1,6 +1,7 @@
 using Generic.Application.Utils.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
+using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Sales.Dtos;
 using ClientDomain = Ingressinhos.Domain.Sales.Entities.Client;
 
@@ -24,7 +25,7 @@ public class ClientGetByToken
             return OperationResult<ClientGet>.Unauthorized(new MensagemErro("Usuario", "Usuario nao autenticado."));
         }
 
-        var client = _query.Query<ClientDomain>(c => c.UserId == _currentUserContext.UserId && c.Active).FirstOrDefault();
+        var client = CurrentUserEntityResolver.ResolveClient(_currentUserContext, _query);
         if (client is null)
         {
             return OperationResult<ClientGet>.NotFound(new MensagemErro("Client", "Cliente nao encontrado"));

@@ -23,7 +23,7 @@ public class IssuedTicket : BaseEntity
     {
     }
 
-    public IssuedTicket(long orderItemId, long clientId, long eventId, string accessCode)
+    public IssuedTicket(long orderItemId, long clientId, long eventId, string accessCode, string? seatCode = null, SeatCategory categoryTicket = SeatCategory.Standard)
     {
         if (orderItemId <= 0)
         {
@@ -60,6 +60,9 @@ public class IssuedTicket : BaseEntity
         {
             AccessCode = accessCode.Trim();
         }
+
+        SeatCode = string.IsNullOrWhiteSpace(seatCode) ? null : seatCode.Trim().ToUpperInvariant();
+        CategoryTicket = categoryTicket;
 
         Status = IssuedTicketStatus.Issued;
         IssuedAt = DateTime.UtcNow;
