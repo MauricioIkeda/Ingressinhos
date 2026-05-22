@@ -1,0 +1,92 @@
+services:
+  # Banco principal do Ingressinhos.
+  # Recebe migrations, escrita da API e processamento do worker.
+  ingressinhos-postgres-primary:
+    image: bitnami/postgresql:latest
+    container_name: ingressinhos-postgres-primary
+    restart: unless-stopped
+    ports:
+      - "15432:5432"
+    environment:
+      ALLOW_EMPTY_PASSWORD: "no"
+      POSTGRESQL_PASSWORD: "1234"
+      POSTGRESQL_DATABASE: "IngressinhosDb"
+      POSTGRESQL_REPLICATION_MODE: "master"
+      POSTGRESQL_REPLICATION_USER: "replicator"
+      POSTGRESQL_REPLICATION_PASSWORD: "replicator123"
+    volumes:
+      - ingressinhos-postgres-primary-data:/bitnami/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres -d IngressinhosDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ingressinhos-postgres-network
+
+  # Replica somente leitura do Ingressinhos.
+  # Segue o primary por replicacao nativa do PostgreSQL.
+  ingressinhos-postgres-replica:
+    image: bitnami/postgresql:latest
+    container_name: ingressinhos-postgres-replica
+    restart: unless-stopped
+    depends_on:
+      ingressinhos-postgres-primary:
+        condition: service_healthy
+    ports:
+      - "15433:5432"
+    environment:
+      ALLOW_EMPTY_PASSWORD: "no"
+      POSTGRESQL_PASSWORD: "1234"
+      POSTGRESQL_REPLICATION_MODE: "slave"
+      POSTGRESQL_MASTER_HOST: "ingressinhos-postgres-primary"
+      POSTGRESQL_MASTER_PORT_NUMBER: "5432"
+      POSTGRESQL_REPLICATION_USER: "replicator"
+      POSTGRESQL_REPLICATION_PASSWORD: "replicator123"
+    volumes:
+      - ingressinhos-postgres-replica-data:/bitnami/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres -d IngressinhosDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - ingressinhos-postgres-network
+
+  # Banco compartilhado por Auth e Payment.
+  # Sobe em uma unica porta e cria os dois databases pelo script de init.
+  app-postgres:
+    image: bitnami/postgresql:latest
+    container_name: app-postgres
+    restart: unless-stopped
+    ports:
+      - "15434:5432"
+    environment:
+      ALLOW_EMPTY_PASSWORD: "no"
+      POSTGRESQL_PASSWORD: "1234"
+    volumes:
+      - app-postgres-data:/bitnami/postgresql
+      - ./docker/postgres/init-app-databases.sh:/docker-entrypoint-initdb.d/init-app-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ingressinhos-postgres-network
+
+volumes:
+  # Dados persistidos do primary do Ingressinhos.
+  ingressinhos-postgres-primary-data:
+  # Dados persistidos da replica do Ingressinhos.
+  ingressinhos-postgres-replica-data:
+  # Dados persistidos do banco compartilhado de Auth e Payment.
+  app-postgres-data:
+
+networks:
+  # Rede interna compartilhada entre os bancos do projeto.
+  ingressinhos-postgres-network:
+    name: ingressinhos-postgres-network

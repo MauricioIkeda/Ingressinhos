@@ -8,8 +8,8 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class UseCaseSeatCollection : UseCaseCrudCollection<Seat, SeatDto>, IUseCaseSeatCollection
 {
-    public UseCaseSeatCollection(IRepositorySession repositorySession, SeatUpdate update, SeatInclude include)
-        : base(include, update, new UseCaseGetOdata<Seat>(), new UseCaseGetId<Seat>(), new UseCaseDelete<Seat>(), repositorySession)
+    public UseCaseSeatCollection(IRepositorySession repositorySession, IReadRepositoryQuery readRepositoryQuery, SeatUpdate update, SeatInclude include)
+        : base(include, update, new UseCaseGetOdata<Seat>(), new UseCaseGetId<Seat>(), new UseCaseDelete<Seat>(), repositorySession, readRepositoryQuery)
     {
     }
 }

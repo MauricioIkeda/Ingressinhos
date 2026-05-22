@@ -8,6 +8,7 @@ namespace Ingressinhos.Application.Sales.Interfaces;
 
 public interface IUseCaseOrderCollection : IUseCaseQueryCollection<OrderDomain>
 {
+    OperationResult<OrderDomain> GetCurrentCart(long clientId = 0);
     OperationResult AddCartItem(AddCartItemRequest command);
     OperationResult RemoveCartItem(long orderItemId);
     OperationResult ResetCart(long clientId = 0);

@@ -16,13 +16,14 @@ public class UseCaseClientCollection : UseCaseCrudCollection<ClientDomain, Clien
 
     public UseCaseClientCollection(
         IRepositorySession repositorySession,
+        IReadRepositoryQuery readRepositoryQuery,
         ClientUpdate update,
         ClientInclude include,
         ClientDeactivate clientDeactivate,
         ClientRecover clientRecover,
         ClientGetByToken clientGetByToken,
         ClientGetOdata clientGetOdata)
-        : base(include, update, new UseCaseGetOdata<ClientDomain>(), new UseCaseGetId<ClientDomain>(), new UseCaseDelete<ClientDomain>(), repositorySession)
+        : base(include, update, new UseCaseGetOdata<ClientDomain>(), new UseCaseGetId<ClientDomain>(), new UseCaseDelete<ClientDomain>(), repositorySession, readRepositoryQuery)
     {
         _clientDeactivate = clientDeactivate;
         _clientRecover = clientRecover;

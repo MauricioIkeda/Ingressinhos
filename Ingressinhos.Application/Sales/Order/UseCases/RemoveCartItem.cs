@@ -54,17 +54,15 @@ public class RemoveCartItem
                     return OperationResult.Unauthorized(new MensagemErro("Perfil", "Nao foi possivel localizar o perfil da sua conta."));
                 }
 
-                order = repositoryQuery
-                    .Query<OrderDomain>(currentOrder => currentOrder.ClientId == client.Id && currentOrder.Status == OrderStatus.Cart)
-                    .OrderByDescending(currentOrder => currentOrder.Id)
-                    .FirstOrDefault();
+                order = repositoryQuery.Query<OrderDomain>(currentOrder => currentOrder.ClientId == client.Id && currentOrder.Status == OrderStatus.Cart)
+                    .OrderByDescending(currentOrder => currentOrder.Id).FirstOrDefault(); // pegando o carrinho do desgraçado, só um carrinho por vez
 
                 if (order is null)
                 {
                     return OperationResult.NotFound(new MensagemErro("Pedido", "Carrinho nao encontrado."));
                 }
 
-                orderItem = order.Items.FirstOrDefault(item => item.Id == orderItemId);
+                orderItem = order.Items.FirstOrDefault(item => item.Id == orderItemId); //Vê se o carrinho tem o item
                 if (orderItem is null)
                 {
                     return OperationResult.Forbidden(new MensagemErro("Item", "Este item nao pertence ao seu carrinho atual."));

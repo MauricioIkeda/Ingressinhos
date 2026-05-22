@@ -10,6 +10,7 @@ public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
 {
     private readonly UseCaseGetOdata<TEntity> _useCaseGetOdata;
     private readonly IUseCaseGetId<TEntity> _useCaseGetById;
+    private readonly IReadRepositoryQuery _readRepositoryQuery;
     protected readonly IRepositorySession _repositorySession;
 
     public UseCaseQueryCollection(UseCaseGetOdata<TEntity> useCaseGetOdata, IUseCaseGetId<TEntity> useCaseGetById, IRepositorySession repositorySession)
@@ -17,6 +18,16 @@ public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
         _useCaseGetOdata = useCaseGetOdata;
         _useCaseGetById = useCaseGetById;
         _repositorySession = repositorySession;
+    }
+
+    public UseCaseQueryCollection(
+        UseCaseGetOdata<TEntity> useCaseGetOdata,
+        IUseCaseGetId<TEntity> useCaseGetById,
+        IRepositorySession repositorySession,
+        IReadRepositoryQuery readRepositoryQuery)
+        : this(useCaseGetOdata, useCaseGetById, repositorySession)
+    {
+        _readRepositoryQuery = readRepositoryQuery;
     }
 
     public virtual OperationResult<List<TEntity>> Get(Expression<Func<TEntity, bool>> where) // Esse seria o getodata
@@ -28,7 +39,7 @@ public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
 
         try
         {
-            var result = _useCaseGetOdata.Execute(where, _repositorySession.GetRepositoryQuery());
+            var result = _useCaseGetOdata.Execute(where, GetQueryRepository());
             return OperationResult<List<TEntity>>.Ok(result);
         }
         catch (Exception ex)
@@ -46,7 +57,7 @@ public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
 
         try
         {
-            var result = _useCaseGetOdata.Execute(transaction, _repositorySession.GetRepositoryQuery());
+            var result = _useCaseGetOdata.Execute(transaction, GetQueryRepository());
             return OperationResult<List<TOutput>>.Ok(result);
         }
         catch (Exception ex)
@@ -57,6 +68,11 @@ public class UseCaseQueryCollection<TEntity> : IUseCaseQueryCollection<TEntity>
 
     public virtual OperationResult<TEntity> GetById(long id)
     {
-        return _useCaseGetById.Execute(id, _repositorySession.GetRepositoryQuery());
+        return _useCaseGetById.Execute(id, GetQueryRepository());
+    }
+
+    private IRepositoryQuery GetQueryRepository()
+    {
+        return _readRepositoryQuery ?? _repositorySession.GetRepositoryQuery();
     }
 }

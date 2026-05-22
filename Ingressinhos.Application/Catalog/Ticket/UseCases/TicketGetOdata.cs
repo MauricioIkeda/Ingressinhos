@@ -7,8 +7,8 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class TicketGetOdata : UseCaseGetQueryItems<Ticket, TicketQueryItem>
 {
-    public TicketGetOdata(IRepositoryQuery repositoryQuery)
-        : base(repositoryQuery)
+    public TicketGetOdata(IReadRepositoryQuery readRepositoryQuery)
+        : base(readRepositoryQuery)
     {
     }
 

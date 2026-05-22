@@ -25,6 +25,21 @@ public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCol
         _useCaseDelete = useCaseDelete;
     }
 
+    protected UseCaseCrudCollection(
+        IUseCaseCommand<TCommand> include,
+        IUseCaseCommand<TCommand> update,
+        UseCaseGetOdata<TEntity> useCaseGetOdata,
+        IUseCaseGetId<TEntity> useCaseGetById,
+        IUseCaseDelete<TEntity> useCaseDelete,
+        IRepositorySession repositorySession,
+        IReadRepositoryQuery readRepositoryQuery)
+        : base(useCaseGetOdata, useCaseGetById, repositorySession, readRepositoryQuery)
+    {
+        _include = include;
+        _update = update;
+        _useCaseDelete = useCaseDelete;
+    }
+
     public virtual OperationResult Include(TCommand command)
     {
         return _include.Execute(command);

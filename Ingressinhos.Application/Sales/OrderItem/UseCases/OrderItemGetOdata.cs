@@ -7,8 +7,8 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class OrderItemGetOdata : UseCaseGetQueryItems<OrderItemDomain, OrderItemQueryItem>
 {
-    public OrderItemGetOdata(IRepositoryQuery repositoryQuery)
-        : base(repositoryQuery)
+    public OrderItemGetOdata(IReadRepositoryQuery readRepositoryQuery)
+        : base(readRepositoryQuery)
     {
     }
 

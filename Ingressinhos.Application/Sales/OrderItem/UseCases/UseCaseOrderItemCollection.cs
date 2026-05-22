@@ -11,8 +11,8 @@ public class UseCaseOrderItemCollection : UseCaseQueryCollection<OrderItemDomain
 {
     private readonly OrderItemGetOdata _orderItemGetOdata;
 
-    public UseCaseOrderItemCollection(IRepositorySession repositorySession, OrderItemGetOdata orderItemGetOdata)
-        : base(new UseCaseGetOdata<OrderItemDomain>(), new UseCaseGetId<OrderItemDomain>(), repositorySession)
+    public UseCaseOrderItemCollection(IRepositorySession repositorySession, IReadRepositoryQuery readRepositoryQuery, OrderItemGetOdata orderItemGetOdata)
+        : base(new UseCaseGetOdata<OrderItemDomain>(), new UseCaseGetId<OrderItemDomain>(), repositorySession, readRepositoryQuery)
     {
         _orderItemGetOdata = orderItemGetOdata;
     }
