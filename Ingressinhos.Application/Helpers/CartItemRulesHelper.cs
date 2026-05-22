@@ -8,61 +8,9 @@ using OrderItemDomain = Ingressinhos.Domain.Sales.Entities.OrderItem;
 
 namespace Ingressinhos.Application.Helpers;
 
-internal static class OrderItemSyncHelper
+internal static class CartItemRulesHelper
 {
-    public static OperationResult Sync(OrderDomain order, IReadOnlyCollection<OrderItemRequest> items, IRepository repository,
-        IRepositoryQuery repositoryQuery, DateTime utcNow)
-    {
-        if (items is null || items.Count == 0)
-        {
-            return OperationResult.UnprocessableEntity(new MensagemErro("Itens", "Informe ao menos um item para o pedido."));
-        }
-
-        // O pedido sempre e sincronizado por substituicao total.
-        // Primeiro removemos a fotografia atual para depois recriar os itens recebidos.
-        var existingItems = order.Items.ToList();
-
-        order.ResetItems();
-        if (!order.IsValid)
-        {
-            return order.ToUnprocessableEntityResult();
-        }
-
-        foreach (var existingItem in existingItems)
-        {
-            repository.Delete(existingItem);
-        }
-
-        // Este conjunto impede que o mesmo SeatId entre duas vezes no mesmo request.
-        var usedSeatIds = new HashSet<long>();
-
-        foreach (var item in items)
-        {
-            var buildResult = BuildOrderItem(order.Id, item, repositoryQuery, utcNow, usedSeatIds);
-            if (!buildResult.Success)
-            {
-                return ToOperationResult(buildResult);
-            }
-
-            var orderItem = buildResult.Data;
-
-            // O total do pedido continua sendo calculado pelo agregado Order.
-            // O OrderItem guarda o detalhamento persistido de cada linha.
-            order.AddItem(orderItem.UnitPrice.Value, orderItem.Quantity);
-            if (!order.IsValid)
-            {
-                return order.ToUnprocessableEntityResult();
-            }
-
-            repository.Include(orderItem);
-        }
-
-        order.UpdatedAt = utcNow;
-        repository.Upsert(order);
-        return OperationResult.Ok();
-    }
-
-    private static OperationResult<OrderItemDomain> BuildOrderItem( long orderId, OrderItemRequest item, IRepositoryQuery repositoryQuery,
+    public static OperationResult<OrderItemDomain> CreateOrderItemFromRequest(long orderId, OrderItemRequest item, IRepositoryQuery repositoryQuery,
         DateTime utcNow, ISet<long>? usedSeatIds)
     {
         if (item is null)
@@ -134,15 +82,8 @@ internal static class OrderItemSyncHelper
             category = seatEntity.Category;
         }
 
-        var orderItemEntity = new OrderItemDomain(
-            orderId,
-            ticket.Id,
-            ticket.Name,
-            quantity,
-            ResolveUnitPrice(ticket, category),
-            category,
-            seatEntity?.Id,
-            seatEntity?.Code)
+        var orderItemEntity = new OrderItemDomain( orderId, ticket.Id, ticket.Name, quantity,
+            ResolveUnitPrice(ticket, category), category, seatEntity?.Id, seatEntity?.Code)
         {
             CreatedAt = utcNow,
             UpdatedAt = utcNow
@@ -156,7 +97,7 @@ internal static class OrderItemSyncHelper
         return OperationResult<OrderItemDomain>.Created(orderItemEntity);
     }
 
-    private static OperationResult ToOperationResult(OperationResult<OrderItemDomain> result)
+    public static OperationResult ConvertItemResult(OperationResult<OrderItemDomain> result)
     {
         return result.StatusCode switch
         {

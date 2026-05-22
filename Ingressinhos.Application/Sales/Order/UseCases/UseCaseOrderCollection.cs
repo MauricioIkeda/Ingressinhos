@@ -1,4 +1,3 @@
-using Generic.Application.Crud.Interface;
 using Generic.Application.Crud.UseCases;
 using Generic.Application.Dtos;
 using Generic.Domain.Entities;
@@ -11,41 +10,41 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class UseCaseOrderCollection : UseCaseQueryCollection<OrderDomain>, IUseCaseOrderCollection
 {
-    private readonly CreateOrder _createOrder;
-    private readonly UpdateOrderItems _updateOrderItems;
+    private readonly AddCartItem _addCartItem;
+    private readonly RemoveCartItem _removeCartItem;
+    private readonly ResetCart _resetCart;
     private readonly IUseCaseCloseOrder _closeOrder;
     private readonly IUseCaseImmediateOrder _immediateOrder;
-    private readonly IUseCaseDelete<OrderDomain> _deleteOrder;
 
     public UseCaseOrderCollection(
         IRepositorySession repositorySession,
-        CreateOrder createOrder,
-        UpdateOrderItems updateOrderItems,
+        AddCartItem addCartItem,
+        RemoveCartItem removeCartItem,
+        ResetCart resetCart,
         IUseCaseCloseOrder closeOrder,
-        IUseCaseImmediateOrder immediateOrder,
-        IUseCaseDelete<OrderDomain> deleteOrder)
+        IUseCaseImmediateOrder immediateOrder)
         : base(new UseCaseGetOdata<OrderDomain>(), new UseCaseGetId<OrderDomain>(), repositorySession)
     {
-        _createOrder = createOrder;
-        _updateOrderItems = updateOrderItems;
+        _addCartItem = addCartItem;
+        _removeCartItem = removeCartItem;
+        _resetCart = resetCart;
         _closeOrder = closeOrder;
         _immediateOrder = immediateOrder;
-        _deleteOrder = deleteOrder;
     }
 
-    public OperationResult Create(CreateOrderRequest command)
+    public OperationResult AddCartItem(AddCartItemRequest command)
     {
-        return _createOrder.Execute(command);
+        return _addCartItem.Execute(command);
     }
 
-    public OperationResult UpdateItems(UpdateOrderItemsRequest command)
+    public OperationResult RemoveCartItem(long orderItemId)
     {
-        return _updateOrderItems.Execute(command);
+        return _removeCartItem.Execute(orderItemId);
     }
 
-    public OperationResult Delete(long id)
+    public OperationResult ResetCart(long clientId = 0)
     {
-        return _deleteOrder.Execute(id, _repositorySession);
+        return _resetCart.Execute(clientId);
     }
 
     public OperationResult<PaymentCheckoutApiDto> Close(long orderId)

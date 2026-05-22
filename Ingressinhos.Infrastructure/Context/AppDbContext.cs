@@ -1,6 +1,7 @@
 using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
 using Ingressinhos.Domain.Catalog.Entities;
+using Ingressinhos.Domain.Sales.Enums;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.EntityFrameworkCore;
 using Payment.Domain.Entities;
@@ -95,6 +96,11 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Order>()
             .Navigation(order => order.Items)
             .AutoInclude();
+
+        modelBuilder.Entity<Order>() // Deixando carrinho unico
+            .HasIndex(order => order.ClientId)
+            .HasFilter($"\"Status\" = {(int)OrderStatus.Cart}")
+            .IsUnique();
 
         modelBuilder.Entity<OrderItem>()
             .HasOne<Order>()

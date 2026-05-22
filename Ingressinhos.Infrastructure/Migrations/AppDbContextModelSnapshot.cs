@@ -282,7 +282,9 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("ClientId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 1");
 
                     b.HasIndex("EventId");
 

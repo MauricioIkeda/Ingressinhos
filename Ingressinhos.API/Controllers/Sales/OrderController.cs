@@ -33,11 +33,11 @@ public class OrdersController : ApiQuery<Order>
         return GetByIdResult(id);
     }
 
-    [HttpPost]
+    [HttpPost("cart/items")]
     [Authorize(Policy = "ClientOrAdmin")]
-    public IActionResult Include([FromBody] CreateOrderRequest command)
+    public IActionResult AddCartItem([FromBody] AddCartItemRequest command)
     {
-        return ExecuteCustom(_useCaseCollection.Create(command));
+        return ExecuteCustom(_useCaseCollection.AddCartItem(command));
     }
 
     [HttpPatch("{id:long}/close")]
@@ -54,17 +54,17 @@ public class OrdersController : ApiQuery<Order>
         return ExecuteCustomData(_useCaseCollection.Immediate(command));
     }
 
-    [HttpPut]
+    [HttpDelete("cart/reset/{clientId:long?}")]
     [Authorize(Policy = "ClientOrAdmin")]
-    public IActionResult Update([FromBody] UpdateOrderItemsRequest command)
+    public IActionResult ResetCart(long? clientId = null)
     {
-        return ExecuteCustom(_useCaseCollection.UpdateItems(command));
+        return ExecuteCustom(_useCaseCollection.ResetCart(clientId ?? 0));
     }
 
-    [HttpDelete("{id:long}")]
-    [Authorize(Policy = "AdminOnly")]
-    public IActionResult Delete(long id)
+    [HttpDelete("cart/items/{orderItemId:long}")]
+    [Authorize(Policy = "ClientOrAdmin")]
+    public IActionResult RemoveCartItem(long orderItemId)
     {
-        return ExecuteCustom(_useCaseCollection.Delete(id));
+        return ExecuteCustom(_useCaseCollection.RemoveCartItem(orderItemId));
     }
 }

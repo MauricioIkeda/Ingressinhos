@@ -18,7 +18,7 @@ public class Order : BaseEntity
     protected Order()
     {
     }
-    
+
     public Order(long clientId)
     {
         if (clientId <= 0)
@@ -58,6 +58,29 @@ public class Order : BaseEntity
         }
 
         TotalAmount += unitPrice * quantity;
+    }
+
+    public void RemoveItem(decimal totalPrice)
+    {
+        ClearErrors();
+
+        if (Status != OrderStatus.Cart)
+        {
+            AddError("Pedido", "Nao e possivel alterar itens de um pedido fora do carrinho.");
+            return;
+        }
+
+        if (totalPrice < 0)
+        {
+            AddError("Preco", "O valor total removido nao pode ser negativo.");
+            return;
+        }
+
+        TotalAmount -= totalPrice;
+        if (TotalAmount < 0)
+        {
+            TotalAmount = 0;
+        }
     }
 
     public void ResetItems()
