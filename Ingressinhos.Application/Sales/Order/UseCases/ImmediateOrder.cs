@@ -68,13 +68,26 @@ public class ImmediateOrder : IUseCaseImmediateOrder
             repository.Include(order);
             repository.Flush().GetAwaiter().GetResult();
 
-            // Mesmo na compra imediata, os itens sao montados pelo mesmo fluxo
-            // de sincronizacao usado no carrinho.
-            var saveResult = OrderItemSyncHelper.Sync(order, command.Items, repository, repositoryQuery, utcNow);
-            if (!saveResult.Success)
+            var usedSeatIds = new HashSet<long>();
+
+            foreach (var item in command.Items)
             {
-                _repositorySession.RollbackTransaction();
-                return OperationResult<PaymentCheckoutApiDto>.FromResult(saveResult);
+                var buildResult = CartItemRulesHelper.CreateOrderItemFromRequest(order.Id, item, repositoryQuery, utcNow, usedSeatIds);
+                if (!buildResult.Success)
+                {
+                    _repositorySession.RollbackTransaction();
+                    return OperationResult<PaymentCheckoutApiDto>.FromResult(CartItemRulesHelper.ConvertItemResult(buildResult));
+                }
+
+                var orderItem = buildResult.Data;
+                order.AddItem(orderItem.UnitPrice.Value, orderItem.Quantity);
+                if (!order.IsValid)
+                {
+                    _repositorySession.RollbackTransaction();
+                    return OperationResult<PaymentCheckoutApiDto>.FromResult(order.ToUnprocessableEntityResult());
+                }
+
+                repository.Include(orderItem);
             }
 
             order.MoveToPendingPayment();

@@ -86,4 +86,23 @@ public class OrderItem : BaseEntity
             SeatCode = string.IsNullOrWhiteSpace(seatCode) ? null : seatCode.Trim().ToUpperInvariant();
         }
     }
+
+    public void AddQuantity(int quantity)
+    {
+        ClearErrors();
+
+        if (SeatId.HasValue)
+        {
+            AddError("Quantidade", "Itens com assento marcado nao podem agrupar quantidade.");
+            return;
+        }
+
+        if (quantity <= 0)
+        {
+            AddError("Quantidade", "A quantidade precisa ser maior que zero.");
+            return;
+        }
+
+        Quantity += quantity;
+    }
 }
