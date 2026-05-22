@@ -13,8 +13,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ingressinhos.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260521163303_order-item-seat-and-checkout")]
-    partial class orderitemseatandcheckout
+    [Migration("20260522135420_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -107,7 +107,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Events");
+                    b.ToTable("Events", "catalog");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Location", b =>
@@ -135,7 +135,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Locations");
+                    b.ToTable("Locations", "catalog");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Seat", b =>
@@ -168,7 +168,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasIndex("LocationId");
 
-                    b.ToTable("Seats");
+                    b.ToTable("Seats", "catalog");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Ticket", b =>
@@ -236,7 +236,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasIndex("SellerId");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("Tickets", "catalog");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.IssuedTicket", b =>
@@ -291,7 +291,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasIndex("OrderItemId");
 
-                    b.ToTable("IssuedTickets");
+                    b.ToTable("IssuedTickets", "sales");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.Order", b =>
@@ -329,9 +329,11 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
+                    b.HasIndex("ClientId")
+                        .IsUnique()
+                        .HasFilter("\"Status\" = 1");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", "sales");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.OrderItem", b =>
@@ -384,112 +386,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
                     b.HasIndex("TicketId");
 
-                    b.ToTable("OrderItems");
-                });
-
-            modelBuilder.Entity("Payment.Domain.Entities.PaymentTransaction", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime?>("ApprovedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("CancelledAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("GatewayTransactionId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Method")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("OrderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("RefusedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("RequestedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "Amount", "Payment.Domain.Entities.PaymentTransaction.Amount#Price", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<decimal>("Value")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("numeric(18,2)");
-                        });
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
-
-                    b.ToTable("PaymentTransactions");
-                });
-
-            modelBuilder.Entity("Payment.Domain.Entities.Refund", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("PaymentTransactionId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("RejectedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("RequestedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.ComplexProperty(typeof(Dictionary<string, object>), "Amount", "Payment.Domain.Entities.Refund.Amount#Price", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<decimal>("Value")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("numeric(18,2)");
-                        });
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PaymentTransactionId");
-
-                    b.ToTable("Refunds");
+                    b.ToTable("OrderItems", "sales");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Seller", b =>
@@ -507,7 +404,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                                 .HasColumnType("text");
                         });
 
-                    b.ToTable("Sellers", (string)null);
+                    b.ToTable("Sellers", "catalog");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Sales.Entities.Client", b =>
@@ -522,7 +419,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                                 .HasColumnType("text");
                         });
 
-                    b.ToTable("Clients", (string)null);
+                    b.ToTable("Clients", "sales");
                 });
 
             modelBuilder.Entity("Ingressinhos.Domain.Catalog.Entities.Event", b =>
@@ -610,24 +507,6 @@ namespace Ingressinhos.Infrastructure.Migrations
                     b.HasOne("Ingressinhos.Domain.Catalog.Entities.Ticket", null)
                         .WithMany()
                         .HasForeignKey("TicketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Payment.Domain.Entities.PaymentTransaction", b =>
-                {
-                    b.HasOne("Ingressinhos.Domain.Sales.Entities.Order", null)
-                        .WithMany()
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Payment.Domain.Entities.Refund", b =>
-                {
-                    b.HasOne("Payment.Domain.Entities.PaymentTransaction", null)
-                        .WithMany()
-                        .HasForeignKey("PaymentTransactionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

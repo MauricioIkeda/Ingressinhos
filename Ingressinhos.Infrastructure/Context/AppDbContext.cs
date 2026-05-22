@@ -4,12 +4,14 @@ using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Sales.Enums;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.EntityFrameworkCore;
-using Payment.Domain.Entities;
 
 namespace Ingressinhos.Infrastructure.Context;
 
 public class AppDbContext : DbContext
 {
+    private const string CatalogSchema = "catalog"; // Schema de "catalogo"
+    private const string SalesSchema = "sales"; // Schama de "vendas"
+
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<Event> Events { get; set; }
@@ -17,9 +19,6 @@ public class AppDbContext : DbContext
     public DbSet<Seat> Seats { get; set; }
     public DbSet<Seller> Sellers { get; set; }
     public DbSet<Ticket> Tickets { get; set; }
-
-    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
-    public DbSet<Refund> Refunds { get; set; }
 
     public DbSet<Client> Clients { get; set; }
     public DbSet<IssuedTicket> IssuedTickets { get; set; }
@@ -40,10 +39,19 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         
-        modelBuilder.Entity<User>().UseTpcMappingStrategy();
-        modelBuilder.Entity<Seller>().ToTable("Sellers");
-        modelBuilder.Entity<Client>().ToTable("Clients");
+        modelBuilder.Entity<User>().UseTpcMappingStrategy(); // Falar que esse vai para os que herdam ele
+        // Criando as tabelas nos schemas
+        modelBuilder.Entity<Seller>().ToTable("Sellers", CatalogSchema);
+        modelBuilder.Entity<Client>().ToTable("Clients", SalesSchema);
+        modelBuilder.Entity<Event>().ToTable("Events", CatalogSchema);
+        modelBuilder.Entity<Location>().ToTable("Locations", CatalogSchema);
+        modelBuilder.Entity<Seat>().ToTable("Seats", CatalogSchema);
+        modelBuilder.Entity<Ticket>().ToTable("Tickets", CatalogSchema);
+        modelBuilder.Entity<Order>().ToTable("Orders", SalesSchema);
+        modelBuilder.Entity<OrderItem>().ToTable("OrderItems", SalesSchema);
+        modelBuilder.Entity<IssuedTicket>().ToTable("IssuedTickets", SalesSchema);
 
+        // Regras de mapeamento
         modelBuilder.Entity<User>()
             .Property(u => u.Email)
             .HasConversion(
@@ -136,18 +144,6 @@ public class AppDbContext : DbContext
             .HasOne<Event>()
             .WithMany()
             .HasForeignKey(issuedTicket => issuedTicket.EventId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<PaymentTransaction>()
-            .HasOne<Order>()
-            .WithMany()
-            .HasForeignKey(paymentTransaction => paymentTransaction.OrderId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Refund>()
-            .HasOne<PaymentTransaction>()
-            .WithMany()
-            .HasForeignKey(refund => refund.PaymentTransactionId)
             .OnDelete(DeleteBehavior.Cascade);
         
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);

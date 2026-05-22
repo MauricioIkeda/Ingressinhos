@@ -7,16 +7,23 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ingressinhos.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class Inicial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.EnsureSchema(
+                name: "sales");
+
+            migrationBuilder.EnsureSchema(
+                name: "catalog");
+
             migrationBuilder.CreateSequence(
                 name: "UserSequence");
 
             migrationBuilder.CreateTable(
                 name: "Clients",
+                schema: "sales",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "nextval('\"UserSequence\"')"),
@@ -35,6 +42,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Locations",
+                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -52,6 +60,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Sellers",
+                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false, defaultValueSql: "nextval('\"UserSequence\"')"),
@@ -71,6 +80,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Orders",
+                schema: "sales",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -90,6 +100,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Orders_Clients_ClientId",
                         column: x => x.ClientId,
+                        principalSchema: "sales",
                         principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -97,6 +108,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Seats",
+                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -114,6 +126,7 @@ namespace Ingressinhos.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Seats_Locations_LocationId",
                         column: x => x.LocationId,
+                        principalSchema: "catalog",
                         principalTable: "Locations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -121,6 +134,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Events",
+                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -131,6 +145,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                     EndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     LocationId = table.Column<long>(type: "bigint", nullable: false),
                     HasSeats = table.Column<bool>(type: "boolean", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: true),
+                    ImageUrl = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -140,47 +156,22 @@ namespace Ingressinhos.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Events_Locations_LocationId",
                         column: x => x.LocationId,
+                        principalSchema: "catalog",
                         principalTable: "Locations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Events_Sellers_SellerId",
                         column: x => x.SellerId,
+                        principalSchema: "catalog",
                         principalTable: "Sellers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "PaymentTransactions",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    OrderId = table.Column<long>(type: "bigint", nullable: false),
-                    Method = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    GatewayTransactionId = table.Column<string>(type: "text", nullable: false),
-                    RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ApprovedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    RefusedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Amount_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PaymentTransactions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_PaymentTransactions_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Tickets",
+                schema: "catalog",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -205,46 +196,22 @@ namespace Ingressinhos.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_Tickets_Events_EventId",
                         column: x => x.EventId,
+                        principalSchema: "catalog",
                         principalTable: "Events",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Tickets_Sellers_SellerId",
                         column: x => x.SellerId,
+                        principalSchema: "catalog",
                         principalTable: "Sellers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Refunds",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    PaymentTransactionId = table.Column<long>(type: "bigint", nullable: false),
-                    Reason = table.Column<string>(type: "text", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false),
-                    RequestedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    RejectedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    Amount_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Refunds", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Refunds_PaymentTransactions_PaymentTransactionId",
-                        column: x => x.PaymentTransactionId,
-                        principalTable: "PaymentTransactions",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "OrderItems",
+                schema: "sales",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -254,6 +221,8 @@ namespace Ingressinhos.Infrastructure.Migrations
                     TicketName = table.Column<string>(type: "text", nullable: true),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     Category = table.Column<int>(type: "integer", nullable: false),
+                    SeatId = table.Column<long>(type: "bigint", nullable: true),
+                    SeatCode = table.Column<string>(type: "text", nullable: true),
                     UnitPrice_Value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
@@ -264,12 +233,21 @@ namespace Ingressinhos.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_OrderItems_Orders_OrderId",
                         column: x => x.OrderId,
+                        principalSchema: "sales",
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_OrderItems_Seats_SeatId",
+                        column: x => x.SeatId,
+                        principalSchema: "catalog",
+                        principalTable: "Seats",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
                         name: "FK_OrderItems_Tickets_TicketId",
                         column: x => x.TicketId,
+                        principalSchema: "catalog",
                         principalTable: "Tickets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -277,6 +255,7 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             migrationBuilder.CreateTable(
                 name: "IssuedTickets",
+                schema: "sales",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -300,18 +279,21 @@ namespace Ingressinhos.Infrastructure.Migrations
                     table.ForeignKey(
                         name: "FK_IssuedTickets_Clients_ClientId",
                         column: x => x.ClientId,
+                        principalSchema: "sales",
                         principalTable: "Clients",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_IssuedTickets_Events_EventId",
                         column: x => x.EventId,
+                        principalSchema: "catalog",
                         principalTable: "Events",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_IssuedTickets_OrderItems_OrderItemId",
                         column: x => x.OrderItemId,
+                        principalSchema: "sales",
                         principalTable: "OrderItems",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -319,66 +301,75 @@ namespace Ingressinhos.Infrastructure.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Events_LocationId",
+                schema: "catalog",
                 table: "Events",
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Events_SellerId",
+                schema: "catalog",
                 table: "Events",
                 column: "SellerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IssuedTickets_ClientId",
+                schema: "sales",
                 table: "IssuedTickets",
                 column: "ClientId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IssuedTickets_EventId",
+                schema: "sales",
                 table: "IssuedTickets",
                 column: "EventId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IssuedTickets_OrderItemId",
+                schema: "sales",
                 table: "IssuedTickets",
                 column: "OrderItemId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
+                schema: "sales",
                 table: "OrderItems",
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderItems_SeatId",
+                schema: "sales",
+                table: "OrderItems",
+                column: "SeatId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_TicketId",
+                schema: "sales",
                 table: "OrderItems",
                 column: "TicketId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_ClientId",
+                schema: "sales",
                 table: "Orders",
-                column: "ClientId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PaymentTransactions_OrderId",
-                table: "PaymentTransactions",
-                column: "OrderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Refunds_PaymentTransactionId",
-                table: "Refunds",
-                column: "PaymentTransactionId");
+                column: "ClientId",
+                unique: true,
+                filter: "\"Status\" = 1");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Seats_LocationId",
+                schema: "catalog",
                 table: "Seats",
                 column: "LocationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tickets_EventId",
+                schema: "catalog",
                 table: "Tickets",
                 column: "EventId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tickets_SellerId",
+                schema: "catalog",
                 table: "Tickets",
                 column: "SellerId");
         }
@@ -387,37 +378,40 @@ namespace Ingressinhos.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "IssuedTickets");
+                name: "IssuedTickets",
+                schema: "sales");
 
             migrationBuilder.DropTable(
-                name: "Refunds");
+                name: "OrderItems",
+                schema: "sales");
 
             migrationBuilder.DropTable(
-                name: "Seats");
+                name: "Orders",
+                schema: "sales");
 
             migrationBuilder.DropTable(
-                name: "OrderItems");
+                name: "Seats",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "PaymentTransactions");
+                name: "Tickets",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "Tickets");
+                name: "Clients",
+                schema: "sales");
 
             migrationBuilder.DropTable(
-                name: "Orders");
+                name: "Events",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "Events");
+                name: "Locations",
+                schema: "catalog");
 
             migrationBuilder.DropTable(
-                name: "Clients");
-
-            migrationBuilder.DropTable(
-                name: "Locations");
-
-            migrationBuilder.DropTable(
-                name: "Sellers");
+                name: "Sellers",
+                schema: "catalog");
 
             migrationBuilder.DropSequence(
                 name: "UserSequence");
