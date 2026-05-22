@@ -13,8 +13,8 @@ using Payment.Infrastructure.Context;
 namespace Payment.Infrastructure.Migrations
 {
     [DbContext(typeof(PaymentDbContext))]
-    [Migration("20260512164341_inicial")]
-    partial class inicial
+    [Migration("20260522134134_Inicial")]
+    partial class Inicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
