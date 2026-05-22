@@ -7,8 +7,8 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class SellerGetOdata : UseCaseGetQueryItems<Seller, SellerQueryItem>
 {
-    public SellerGetOdata(IRepositoryQuery repositoryQuery)
-        : base(repositoryQuery)
+    public SellerGetOdata(IReadRepositoryQuery readRepositoryQuery)
+        : base(readRepositoryQuery)
     {
     }
 

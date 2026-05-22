@@ -9,8 +9,8 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 
 public class UseCaseLocationCollection : UseCaseCrudCollection<DomainLocation, LocationDto>, IUseCaseLocationCollection
 {
-    public UseCaseLocationCollection(IRepositorySession repositorySession, UpdateLocationUseCase update, CreateLocationUseCase include)
-        : base(include, update, new UseCaseGetOdata<DomainLocation>(), new UseCaseGetId<DomainLocation>(), new UseCaseDelete<DomainLocation>(), repositorySession)
+    public UseCaseLocationCollection(IRepositorySession repositorySession, IReadRepositoryQuery readRepositoryQuery, UpdateLocationUseCase update, CreateLocationUseCase include)
+        : base(include, update, new UseCaseGetOdata<DomainLocation>(), new UseCaseGetId<DomainLocation>(), new UseCaseDelete<DomainLocation>(), repositorySession, readRepositoryQuery)
     {
     }
 }

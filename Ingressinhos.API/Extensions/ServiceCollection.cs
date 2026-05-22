@@ -29,13 +29,23 @@ public static class ServiceCollectionExtensions
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' nao foi configurada.");
+        // O fallback preserva ambientes antigos, mas o desenvolvimento com replica deve
+        // configurar explicitamente a ReadConnection para nao mascarar falhas de replicacao.
+        var readConnectionString = configuration.GetConnectionString("ReadConnection") ?? connectionString;
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        services.AddDbContext<ReadAppDbContext>(options =>
+            options
+                .UseNpgsql(readConnectionString)
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+
         services.AddScoped<DbContext>(provider => provider.GetRequiredService<AppDbContext>());
         services.AddScoped<IRepositorySession, RepositorySessionEF>();
         services.AddScoped<IRepositoryQuery, RepositoryQueryEF>();
+        services.AddScoped<IReadRepositoryQuery>(provider =>
+            new ReadRepositoryQueryEF(provider.GetRequiredService<ReadAppDbContext>()));
         services.AddScoped<IRepository, RepositoryEF>();
 
         return services;
@@ -79,6 +89,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AddCartItem>();
         services.AddScoped<RemoveCartItem>();
         services.AddScoped<ResetCart>();
+        services.AddScoped<GetCurrentCart>();
         services.AddScoped<IUseCaseCloseOrder, CloseOrder>();
         services.AddScoped<IUseCaseImmediateOrder, ImmediateOrder>();
         services.AddScoped<IUseCaseConfirmOrderPayment, ConfirmOrderPayment>();

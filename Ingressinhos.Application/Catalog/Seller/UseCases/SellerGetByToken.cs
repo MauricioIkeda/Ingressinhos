@@ -9,9 +9,9 @@ namespace Ingressinhos.Application.Catalog.UseCases;
 public class SellerGetByToken
 {
     private readonly ICurrentUserContext _currentUserContext;
-    private readonly IRepositoryQuery _query;
+    private readonly IReadRepositoryQuery _query;
 
-    public SellerGetByToken(ICurrentUserContext currentUserContext, IRepositoryQuery query)
+    public SellerGetByToken(ICurrentUserContext currentUserContext, IReadRepositoryQuery query)
     {
         _currentUserContext = currentUserContext;
         _query = query;

@@ -13,10 +13,11 @@ public class UseCaseTicketCollection : UseCaseCrudCollection<Ticket, TicketDto>,
 
     public UseCaseTicketCollection(
         IRepositorySession repositorySession,
+        IReadRepositoryQuery readRepositoryQuery,
         TicketUpdate update,
         TicketInclude include,
         TicketGetOdata ticketGetOdata)
-        : base(include, update, new UseCaseGetOdata<Ticket>(), new UseCaseGetId<Ticket>(), new UseCaseDelete<Ticket>(), repositorySession)
+        : base(include, update, new UseCaseGetOdata<Ticket>(), new UseCaseGetId<Ticket>(), new UseCaseDelete<Ticket>(), repositorySession, readRepositoryQuery)
     {
         _ticketGetOdata = ticketGetOdata;
     }

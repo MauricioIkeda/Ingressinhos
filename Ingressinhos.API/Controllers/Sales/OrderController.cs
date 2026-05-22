@@ -26,6 +26,13 @@ public class OrdersController : ApiQuery<Order>
         return OData(query);
     }
 
+    [HttpGet("cart/{clientId:long?}")]
+    [Authorize(Policy = "ClientOrAdmin")]
+    public IActionResult GetCurrentCart(long? clientId = null)
+    {
+        return ExecuteCustomData(_useCaseCollection.GetCurrentCart(clientId ?? 0));
+    }
+
     [HttpGet("{id:long}")]
     [Authorize(Policy = "ClientOrAdmin")]
     public IActionResult GetById(long id)

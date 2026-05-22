@@ -16,13 +16,14 @@ public class UseCaseSellerCollection : UseCaseCrudCollection<Seller, SellerDto>,
 
     public UseCaseSellerCollection(
         IRepositorySession repositorySession,
+        IReadRepositoryQuery readRepositoryQuery,
         SellerUpdate update,
         SellerInclude sellerInclude,
         SellerDeactivate sellerDeactivate,
         SellerRecover sellerRecover,
         SellerGetByToken sellerGetByToken,
         SellerGetOdata sellerGetOdata)
-        : base(sellerInclude, update, new UseCaseGetOdata<Seller>(), new UseCaseGetId<Seller>(), new UseCaseDelete<Seller>(), repositorySession)
+        : base(sellerInclude, update, new UseCaseGetOdata<Seller>(), new UseCaseGetId<Seller>(), new UseCaseDelete<Seller>(), repositorySession, readRepositoryQuery)
     {
         _sellerDeactivate = sellerDeactivate;
         _sellerRecover = sellerRecover;

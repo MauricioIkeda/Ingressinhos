@@ -10,6 +10,7 @@ namespace Ingressinhos.Application.Sales.UseCases;
 
 public class UseCaseOrderCollection : UseCaseQueryCollection<OrderDomain>, IUseCaseOrderCollection
 {
+    private readonly GetCurrentCart _getCurrentCart;
     private readonly AddCartItem _addCartItem;
     private readonly RemoveCartItem _removeCartItem;
     private readonly ResetCart _resetCart;
@@ -18,18 +19,26 @@ public class UseCaseOrderCollection : UseCaseQueryCollection<OrderDomain>, IUseC
 
     public UseCaseOrderCollection(
         IRepositorySession repositorySession,
+        IReadRepositoryQuery readRepositoryQuery,
+        GetCurrentCart getCurrentCart,
         AddCartItem addCartItem,
         RemoveCartItem removeCartItem,
         ResetCart resetCart,
         IUseCaseCloseOrder closeOrder,
         IUseCaseImmediateOrder immediateOrder)
-        : base(new UseCaseGetOdata<OrderDomain>(), new UseCaseGetId<OrderDomain>(), repositorySession)
+        : base(new UseCaseGetOdata<OrderDomain>(), new UseCaseGetId<OrderDomain>(), repositorySession, readRepositoryQuery)
     {
+        _getCurrentCart = getCurrentCart;
         _addCartItem = addCartItem;
         _removeCartItem = removeCartItem;
         _resetCart = resetCart;
         _closeOrder = closeOrder;
         _immediateOrder = immediateOrder;
+    }
+
+    public OperationResult<OrderDomain> GetCurrentCart(long clientId = 0)
+    {
+        return _getCurrentCart.Execute(clientId);
     }
 
     public OperationResult AddCartItem(AddCartItemRequest command)
