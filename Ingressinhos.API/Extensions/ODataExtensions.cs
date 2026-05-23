@@ -63,6 +63,16 @@ public static class ODataExtensions
         return builder.GetEdmModel();
     }
 
+    public static IEdmModel GetEventWithTicketsQueryEdmModel() // modelo de Dto paa evento e ticket
+    {
+        var builder = new ODataConventionModelBuilder();
+        builder.EntitySet<EventWithTicketsDto>("Events");
+        builder.EntityType<EventWithTicketsDto>().HasKey(eventItem => eventItem.Id);
+        builder.ComplexType<EventTicketWithPricesDto>();
+        builder.EntityType<EventWithTicketsDto>().CollectionProperty(eventItem => eventItem.Tickets);
+        return builder.GetEdmModel();
+    }
+
     public static IEdmModel GetOrderItemQueryEdmModel()
     {
         var builder = new ODataConventionModelBuilder();
