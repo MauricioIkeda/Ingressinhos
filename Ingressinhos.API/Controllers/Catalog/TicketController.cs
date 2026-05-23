@@ -40,7 +40,7 @@ public class TicketsController : ApiCrud<Ticket, TicketDto>
     }
 
     [HttpPost]
-    [Authorize(Policy = "SellerOrAdmin")]
+    //[Authorize(Policy = "SellerOrAdmin")]
     public IActionResult Include([FromBody] TicketDto command)
     {
         return IncludeResult(command);

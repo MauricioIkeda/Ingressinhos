@@ -9,6 +9,7 @@ public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCol
 {
     private readonly IUseCaseDelete<TEntity> _useCaseDelete;
     private readonly IUseCaseCommand<TCommand> _include;
+    private readonly IUseCaseCommand<TCommand, TCommand> _includeWithResult;
     private readonly IUseCaseCommand<TCommand> _update;
 
     protected UseCaseCrudCollection(
@@ -21,6 +22,7 @@ public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCol
         : base(useCaseGetOdata, useCaseGetById, repositorySession)
     {
         _include = include;
+        _includeWithResult = include as IUseCaseCommand<TCommand, TCommand>;
         _update = update;
         _useCaseDelete = useCaseDelete;
     }
@@ -36,6 +38,7 @@ public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCol
         : base(useCaseGetOdata, useCaseGetById, repositorySession, readRepositoryQuery)
     {
         _include = include;
+        _includeWithResult = include as IUseCaseCommand<TCommand, TCommand>;
         _update = update;
         _useCaseDelete = useCaseDelete;
     }
@@ -43,6 +46,11 @@ public abstract class UseCaseCrudCollection<TEntity, TCommand> : UseCaseQueryCol
     public virtual OperationResult Include(TCommand command)
     {
         return _include.Execute(command);
+    }
+
+    public virtual OperationResult<TCommand> IncludeWithResult(TCommand command)
+    {
+        return _includeWithResult?.Execute(command) ?? OperationResult<TCommand>.FromResult(_include.Execute(command));
     }
 
     public virtual OperationResult Update(TCommand command)

@@ -22,7 +22,7 @@ public class SellersController : ApiCrud<Seller, SellerDto>
     }
 
     [HttpGet]
-    [Authorize(Policy = "AdminOnly")]
+    //[Authorize(Policy = "AdminOnly")]
     public IActionResult GetOData()
     {
         return OData( CreateQueryOptions<SellerQueryItem>(

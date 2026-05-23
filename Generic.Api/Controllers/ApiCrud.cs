@@ -20,6 +20,11 @@ public abstract class ApiCrud<TEntity, TCommand> : ApiQuery<TEntity>
         return ExecuteCustom(_crudCollection.Include(command));
     }
 
+    protected IActionResult IncludeResultWithData(TCommand command)
+    {
+        return ExecuteCustomData(_crudCollection.IncludeWithResult(command));
+    }
+
     protected IActionResult UpdateResult(TCommand command)
     {
         return ExecuteCustom(_crudCollection.Update(command));

@@ -29,7 +29,7 @@ public class EventsController : ApiCrud<Event, EventDto>
         return OData(query);
     }
 
-    [Authorize]
+    //[Authorize]
     [HttpGet("WithTickets")]
     public IActionResult GetWithTickets()
     {
@@ -48,7 +48,7 @@ public class EventsController : ApiCrud<Event, EventDto>
     [Authorize(Policy = "SellerOrAdmin")]
     public IActionResult Include([FromBody] EventDto command)
     {
-        return IncludeResult(command);
+        return IncludeResultWithData(command);
     }
 
     [HttpPut]
