@@ -45,7 +45,7 @@ public abstract class ValidatableObject
         return OperationResult.UnprocessableEntity(Errors.Any() ? Errors : [MensagemErro.Geral("Objeto de dominio invalido.")]);
     }
 
-    public OperationResult<T> ToUnprocessableEntityResult<T>() // É a mesma coisa do método acima, mas para retornar um OperationResult<T>
+    public OperationResult<T> ToUnprocessableEntityResult<T>() // Ã‰ a mesma coisa do mÃ©todo acima, mas para retornar um OperationResult<T>
     {
         return OperationResult<T>.UnprocessableEntity(Errors.Any() ? Errors : [MensagemErro.Geral("Objeto de dominio invalido.")]);
     }

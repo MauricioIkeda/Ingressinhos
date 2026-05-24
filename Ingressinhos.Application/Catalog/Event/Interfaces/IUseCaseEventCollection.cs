@@ -8,4 +8,5 @@ namespace Ingressinhos.Application.Catalog.Interfaces;
 public interface IUseCaseEventCollection : IUseCaseCrudCollection<Event, EventDto>
 {
     OperationResult<List<TOutput>> GetWithTicketsResult<TOutput>(Func<IQueryable<EventWithTicketsDto>, IQueryable<TOutput>> query);
+    OperationResult<List<EventSeatAvailabilityDto>> GetSeats(long eventId);
 }

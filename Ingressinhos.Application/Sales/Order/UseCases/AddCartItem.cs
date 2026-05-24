@@ -3,6 +3,7 @@ using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Sales.Dtos;
+using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Sales.Enums;
 using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 
@@ -78,10 +79,10 @@ public class AddCartItem
             }
 
             var orderItem = buildResult.Data;
-            if (orderItem.SeatId.HasValue && order.Items.Any(item => item.SeatId == orderItem.SeatId)) // Se tem assento é item unico
+            if (orderItem.SeatId.HasValue && SeatAlreadyExistsForSameEvent(order, orderItem.TicketId, orderItem.SeatId.Value, repositoryQuery))
             {
                 _repositorySession.RollbackTransaction();
-                return OperationResult.UnprocessableEntity(new MensagemErro("SeatId", "Este assento ja esta no carrinho."));
+                return OperationResult.UnprocessableEntity(new MensagemErro("SeatId", "Este assento ja esta no carrinho para este evento."));
             }
 
             if (!orderItem.SeatId.HasValue) // Se não tem assento, aumenta a quantidade do item, caso tenha no carrinho
@@ -137,5 +138,25 @@ public class AddCartItem
             _repositorySession.RollbackTransaction();
             return OperationResult.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
+    }
+
+    private static bool SeatAlreadyExistsForSameEvent(OrderDomain order, long ticketId, long seatId, IRepositoryQuery repositoryQuery)
+    {
+        var ticket = repositoryQuery.Return<Ticket>(ticketId);
+        if (ticket is null)
+        {
+            return false;
+        }
+
+        foreach (var item in order.Items.Where(item => item.SeatId == seatId))
+        {
+            var existingTicket = repositoryQuery.Return<Ticket>(item.TicketId);
+            if (existingTicket?.EventId == ticket.EventId)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

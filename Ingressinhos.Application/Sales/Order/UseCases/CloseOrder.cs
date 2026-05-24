@@ -83,6 +83,11 @@ public class CloseOrder : IUseCaseCloseOrder
         catch (Exception ex)
         {
             _repositorySession.RollbackTransaction();
+            if (SeatReservationRulesHelper.IsSeatReservationConflict(ex))
+            {
+                return OperationResult<PaymentCheckoutApiDto>.UnprocessableEntity(new MensagemErro("SeatId", "O assento nao esta disponivel para este evento."));
+            }
+
             return OperationResult<PaymentCheckoutApiDto>.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }
@@ -137,18 +142,29 @@ public class CloseOrder : IUseCaseCloseOrder
                 return OperationResult.NotFound(new MensagemErro("SeatId", $"Nao foi possivel localizar o assento do item {item.Id}."));
             }
 
-            if (seat.Status == SeatStatus.Reserved || seat.Status == SeatStatus.Occupied || seat.Status == SeatStatus.Blocked)
+            if (seat.Status == SeatStatus.Blocked)
             {
-                return OperationResult.UnprocessableEntity(new MensagemErro("SeatId", $"O assento {seat.Code} nao esta disponivel para reserva."));
+                return SeatReservationRulesHelper.UnavailableSeatResult(seat.Code);
             }
 
-            seat.Reserve();
-            if (!seat.IsValid)
+            var activeReservation = SeatReservationRulesHelper.GetActiveReservation(repositoryQuery, ticket.EventId, seat.Id);
+            if (activeReservation is not null)
             {
-                return seat.ToUnprocessableEntityResult();
+                return SeatReservationRulesHelper.UnavailableSeatResult(seat.Code);
             }
 
-            repository.Upsert(seat);
+            var seatReservation = new SeatReservation(ticket.EventId, seat.Id, order.Id, item.Id)
+            {
+                CreatedAt = utcNow,
+                UpdatedAt = utcNow
+            };
+
+            if (!seatReservation.IsValid)
+            {
+                return seatReservation.ToUnprocessableEntityResult();
+            }
+
+            repository.Include(seatReservation);
         }
 
         return OperationResult.Ok();

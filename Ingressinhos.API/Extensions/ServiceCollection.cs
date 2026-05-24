@@ -56,6 +56,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<EventInclude>();
         services.AddScoped<EventUpdate>();
         services.AddScoped<EventGetWithTickets>();
+        services.AddScoped<EventGetSeats>();
         services.AddScoped<IUseCaseEventCollection, UseCaseEventCollection>();
 
         services.AddScoped<CreateLocationUseCase>();

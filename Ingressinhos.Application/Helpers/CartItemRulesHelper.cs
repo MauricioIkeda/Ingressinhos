@@ -3,7 +3,6 @@ using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Catalog.Enums;
-using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 using OrderItemDomain = Ingressinhos.Domain.Sales.Entities.OrderItem;
 
 namespace Ingressinhos.Application.Helpers;
@@ -11,7 +10,7 @@ namespace Ingressinhos.Application.Helpers;
 internal static class CartItemRulesHelper
 {
     public static OperationResult<OrderItemDomain> CreateOrderItemFromRequest(long orderId, OrderItemRequest item, IRepositoryQuery repositoryQuery,
-        DateTime utcNow, ISet<long>? usedSeatIds)
+        DateTime utcNow, ISet<(long EventId, long SeatId)> usedSeatKeys)
     {
         if (item is null)
         {
@@ -73,7 +72,7 @@ internal static class CartItemRulesHelper
                 return OperationResult<OrderItemDomain>.UnprocessableEntity(new MensagemErro("SeatId", "O assento informado nao pertence ao local do evento."));
             }
 
-            if (usedSeatIds is not null && !usedSeatIds.Add(seatEntity.Id))
+            if (usedSeatKeys is not null && !usedSeatKeys.Add((eventEntity.Id, seatEntity.Id)))
             {
                 return OperationResult<OrderItemDomain>.UnprocessableEntity(new MensagemErro("SeatId", "O mesmo assento nao pode ser informado duas vezes no pedido."));
             }
