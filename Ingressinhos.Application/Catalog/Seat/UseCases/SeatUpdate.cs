@@ -29,6 +29,11 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
             return OperationResult.UnprocessableEntity(new MensagemErro("Id", "Deve ser informado o identificador do assento."));
         }
 
+        if (seat.Status is not SeatStatus.Available and not SeatStatus.Blocked)
+        {
+            return OperationResult.UnprocessableEntity(new MensagemErro("Status", "O status do assento deve representar apenas disponibilidade fisica: disponivel ou bloqueado."));
+        }
+
         try
         {
             IRepositoryQuery repositoryQuery = _repositorySession.GetRepositoryQuery();
@@ -90,32 +95,12 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
         if (seatEntity.Status == SeatStatus.Blocked)
         {
             seatEntity.Unblock();
-        }
-
-        if (status == SeatStatus.Available)
-        {
-            if (seatEntity.Status == SeatStatus.Reserved || seatEntity.Status == SeatStatus.Occupied)
-            {
-                seatEntity.Release();
-            }
-
             return;
         }
 
-        if (status == SeatStatus.Reserved)
+        if (seatEntity.Status == SeatStatus.Reserved || seatEntity.Status == SeatStatus.Occupied)
         {
-            if (seatEntity.Status == SeatStatus.Occupied)
-            {
-                seatEntity.Release();
-            }
-
-            seatEntity.Reserve();
-            return;
-        }
-
-        if (status == SeatStatus.Occupied)
-        {
-            seatEntity.Occupy();
+            seatEntity.Release();
         }
     }
 }

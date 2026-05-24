@@ -26,6 +26,7 @@ public class AppDbContext : DbContext
     public DbSet<IssuedTicket> IssuedTickets { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
+    public DbSet<SeatReservation> SeatReservations { get; set; }
     
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -52,6 +53,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Order>().ToTable("Orders", SalesSchema);
         modelBuilder.Entity<OrderItem>().ToTable("OrderItems", SalesSchema);
         modelBuilder.Entity<IssuedTicket>().ToTable("IssuedTickets", SalesSchema);
+        modelBuilder.Entity<SeatReservation>().ToTable("SeatReservations", SalesSchema);
 
         // Regras de mapeamento
         modelBuilder.Entity<User>()
@@ -129,6 +131,36 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(orderItem => orderItem.SeatId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<SeatReservation>()
+            .HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(seatReservation => seatReservation.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SeatReservation>()
+            .HasOne<Seat>()
+            .WithMany()
+            .HasForeignKey(seatReservation => seatReservation.SeatId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SeatReservation>()
+            .HasOne<Order>()
+            .WithMany()
+            .HasForeignKey(seatReservation => seatReservation.OrderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SeatReservation>()
+            .HasOne<OrderItem>()
+            .WithMany()
+            .HasForeignKey(seatReservation => seatReservation.OrderItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SeatReservation>()
+            .HasIndex(seatReservation => new { seatReservation.EventId, seatReservation.SeatId })
+            .HasDatabaseName("IX_SeatReservations_EventId_SeatId_Active")
+            .HasFilter("\"Status\" IN (1, 2)")
+            .IsUnique();
 
         modelBuilder.Entity<IssuedTicket>()
             .HasOne<OrderItem>()

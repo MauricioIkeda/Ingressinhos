@@ -44,6 +44,13 @@ public class EventsController : ApiCrud<Event, EventDto>
         return GetByIdResult(id);
     }
 
+    [Authorize]
+    [HttpGet("{eventId:long}/seats")] // Serve para ver os assentos disponiveis 
+    public IActionResult GetSeats(long eventId)
+    {
+        return ExecuteCustomData(_eventCollection.GetSeats(eventId));
+    }
+
     [HttpPost]
     [Authorize(Policy = "SellerOrAdmin")]
     public IActionResult Include([FromBody] EventDto command)

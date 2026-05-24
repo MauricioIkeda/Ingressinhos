@@ -68,11 +68,11 @@ public class ImmediateOrder : IUseCaseImmediateOrder
             repository.Include(order);
             repository.Flush().GetAwaiter().GetResult();
 
-            var usedSeatIds = new HashSet<long>();
+            var usedSeatKeys = new HashSet<(long EventId, long SeatId)>();
 
             foreach (var item in command.Items)
             {
-                var buildResult = CartItemRulesHelper.CreateOrderItemFromRequest(order.Id, item, repositoryQuery, utcNow, usedSeatIds);
+                var buildResult = CartItemRulesHelper.CreateOrderItemFromRequest(order.Id, item, repositoryQuery, utcNow, usedSeatKeys);
                 if (!buildResult.Success)
                 {
                     _repositorySession.RollbackTransaction();
@@ -98,6 +98,8 @@ public class ImmediateOrder : IUseCaseImmediateOrder
             }
 
             order.UpdatedAt = utcNow;
+            repository.Upsert(order);
+            repository.Flush().GetAwaiter().GetResult();
 
             // Antes de pedir o pagamento, o pedido ja reserva estoque e assento
             // para evitar que outra compra pegue o mesmo lugar no intervalo.
@@ -124,6 +126,11 @@ public class ImmediateOrder : IUseCaseImmediateOrder
         catch (Exception ex)
         {
             _repositorySession.RollbackTransaction();
+            if (SeatReservationRulesHelper.IsSeatReservationConflict(ex))
+            {
+                return OperationResult<PaymentCheckoutApiDto>.UnprocessableEntity(new MensagemErro("SeatId", "O assento nao esta disponivel para este evento."));
+            }
+
             return OperationResult<PaymentCheckoutApiDto>.UnprocessableEntity(MensagemErro.Geral(ex.Message));
         }
     }

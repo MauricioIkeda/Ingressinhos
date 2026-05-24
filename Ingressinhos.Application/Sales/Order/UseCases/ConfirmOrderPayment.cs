@@ -1,7 +1,7 @@
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
+using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Sales.Interfaces;
-using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Sales.Enums;
 using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 
@@ -50,19 +50,20 @@ public class ConfirmOrderPayment : IUseCaseConfirmOrderPayment
             var repository = _repositorySession.GetRepository();
             foreach (var item in order.Items.Where(item => item.SeatId.HasValue))
             {
-                var seat = repositoryQuery.Return<Seat>(item.SeatId!.Value);
-                if (seat is null)
+                var seatReservation = SeatReservationRulesHelper.GetActiveReservationForOrderItem(repositoryQuery, order.Id, item.Id);
+                if (seatReservation is null)
                 {
-                    return OperationResult.NotFound(new MensagemErro("SeatId", $"Assento do item {item.Id} nao encontrado."));
+                    return OperationResult.NotFound(new MensagemErro("SeatId", $"Reserva de assento do item {item.Id} nao encontrada."));
                 }
 
-                seat.Occupy();
-                if (!seat.IsValid)
+                seatReservation.Occupy();
+                if (!seatReservation.IsValid)
                 {
-                    return seat.ToUnprocessableEntityResult();
+                    return seatReservation.ToUnprocessableEntityResult();
                 }
 
-                repository.Upsert(seat);
+                seatReservation.UpdatedAt = DateTime.UtcNow;
+                repository.Upsert(seatReservation);
             }
 
             repository.Upsert(order);
