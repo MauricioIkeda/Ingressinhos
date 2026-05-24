@@ -6,6 +6,7 @@ public sealed class EventWithTicketsDto
 {
     public long Id { get; set; }
     public long SellerId { get; set; }
+    public string SellerTradingName { get; set; }
     public string Name { get; set; } = string.Empty;
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
