@@ -2,6 +2,7 @@ using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Catalog.Location.Dtos;
+using Ingressinhos.Application.Sales.TicketReadModel.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Catalog.Enums;
 using LocationDomain = Ingressinhos.Domain.Catalog.Entities.Location;
@@ -11,10 +12,12 @@ namespace Ingressinhos.Application.Catalog.Location.UseCases;
 public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
 {
     private readonly IRepositorySession _repositorySession;
+    private readonly IClientTicketReadModelSyncPublisher _ticketReadModelSyncPublisher;
 
-    public UpdateLocationUseCase(IRepositorySession repositorySession)
+    public UpdateLocationUseCase(IRepositorySession repositorySession, IClientTicketReadModelSyncPublisher ticketReadModelSyncPublisher)
     {
         _repositorySession = repositorySession;
+        _ticketReadModelSyncPublisher = ticketReadModelSyncPublisher;
     }
     
     public OperationResult Execute(LocationDto locationDto)
@@ -75,8 +78,10 @@ public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
                 }
             }
             
-            _repositorySession.GetRepository().Merge(locationEntity);
-            return OperationResult.Ok();
+            var repository = _repositorySession.GetRepository();
+            repository.Merge(locationEntity);
+            repository.Flush().GetAwaiter().GetResult();
+            return _ticketReadModelSyncPublisher.RequestLocationRefresh(locationEntity.Id);
         }
         catch (Exception ex)
         {

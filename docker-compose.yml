@@ -1,0 +1,290 @@
+services:
+  ingressinhos-postgres-primary:
+    image: bitnami/postgresql:latest
+    container_name: ingressinhos-postgres-primary
+    restart: unless-stopped
+    ports:
+      - "15432:5432"
+    environment:
+      ALLOW_EMPTY_PASSWORD: "no"
+      POSTGRESQL_PASSWORD: "1234"
+      POSTGRESQL_DATABASE: "IngressinhosDb"
+      POSTGRESQL_REPLICATION_MODE: "master"
+      POSTGRESQL_REPLICATION_USER: "replicator"
+      POSTGRESQL_REPLICATION_PASSWORD: "replicator123"
+    volumes:
+      - ingressinhos-postgres-primary-data:/bitnami/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres -d IngressinhosDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ingressinhos-network
+
+  ingressinhos-postgres-replica:
+    image: bitnami/postgresql:latest
+    container_name: ingressinhos-postgres-replica
+    restart: unless-stopped
+    depends_on:
+      ingressinhos-postgres-primary:
+        condition: service_healthy
+    ports:
+      - "15433:5432"
+    environment:
+      ALLOW_EMPTY_PASSWORD: "no"
+      POSTGRESQL_PASSWORD: "1234"
+      POSTGRESQL_REPLICATION_MODE: "slave"
+      POSTGRESQL_MASTER_HOST: "ingressinhos-postgres-primary"
+      POSTGRESQL_MASTER_PORT_NUMBER: "5432"
+      POSTGRESQL_REPLICATION_USER: "replicator"
+      POSTGRESQL_REPLICATION_PASSWORD: "replicator123"
+    volumes:
+      - ingressinhos-postgres-replica-data:/bitnami/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres -d IngressinhosDb"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    networks:
+      - ingressinhos-network
+
+  app-postgres:
+    image: bitnami/postgresql:latest
+    container_name: app-postgres
+    restart: unless-stopped
+    ports:
+      - "15434:5432"
+    environment:
+      ALLOW_EMPTY_PASSWORD: "no"
+      POSTGRESQL_PASSWORD: "1234"
+    volumes:
+      - app-postgres-data:/bitnami/postgresql
+      - ./docker/postgres/init-app-databases.sh:/docker-entrypoint-initdb.d/init-app-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U postgres -d postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - ingressinhos-network
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: ingressinhos-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 1234
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ingressinhos-network
+
+  ingressinhos-mongodb:
+    image: mongo:7
+    container_name: ingressinhos-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+      MONGO_INITDB_DATABASE: IngressinhosReadDb
+    volumes:
+      - ingressinhos-mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "-u", "admin", "-p", "1234", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ingressinhos-network
+
+  auth-api:
+    build:
+      context: .
+      dockerfile: Auth.API/Dockerfile
+    image: ingressinhos/auth-api:dev
+    container_name: ingressinhos-auth-api
+    restart: unless-stopped
+    ports:
+      - "5254:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__AuthConnection: "Host=app-postgres;Port=5432;Database=IngressinhosAuthDb;Username=postgres;Password=1234"
+    depends_on:
+      app-postgres:
+        condition: service_healthy
+    networks:
+      - ingressinhos-network
+
+  payment-api:
+    build:
+      context: .
+      dockerfile: Payment.Api/Dockerfile
+    image: ingressinhos/payment-api:dev
+    container_name: ingressinhos-payment-api
+    restart: unless-stopped
+    ports:
+      - "5071:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PaymentConnection: "Host=app-postgres;Port=5432;Database=PaymentDb;Username=postgres;Password=1234"
+      Messaging__RabbitMq__HostName: rabbitmq
+      Messaging__RabbitMq__Port: 5672
+      Messaging__RabbitMq__UserName: admin
+      Messaging__RabbitMq__Password: 1234
+      MockCheckout__PublicBaseUrl: http://localhost:5071
+    depends_on:
+      app-postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ingressinhos-network
+
+  ingressinhos-api:
+    build:
+      context: .
+      dockerfile: Ingressinhos.API/Dockerfile
+    image: ingressinhos/ingressinhos-api:dev
+    container_name: ingressinhos-api
+    restart: unless-stopped
+    ports:
+      - "5202:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=ingressinhos-postgres-primary;Port=5432;Database=IngressinhosDb;Username=postgres;Password=1234"
+      ConnectionStrings__ReadConnection: "Host=ingressinhos-postgres-replica;Port=5432;Database=IngressinhosDb;Username=postgres;Password=1234"
+      Mongo__ConnectionString: "mongodb://admin:1234@ingressinhos-mongodb:27017/?authSource=admin"
+      Mongo__Database: IngressinhosReadDb
+      Mongo__TicketCollection: clientTickets
+      Messaging__RabbitMq__HostName: rabbitmq
+      Messaging__RabbitMq__Port: 5672
+      Messaging__RabbitMq__UserName: admin
+      Messaging__RabbitMq__Password: 1234
+      AuthApi__BaseUrl: http://auth-api:8080
+      PaymentApi__BaseUrl: http://payment-api:8080
+    depends_on:
+      ingressinhos-postgres-primary:
+        condition: service_healthy
+      ingressinhos-postgres-replica:
+        condition: service_healthy
+      ingressinhos-mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth-api:
+        condition: service_started
+      payment-api:
+        condition: service_started
+    networks:
+      - ingressinhos-network
+
+  ingressinhos-worker:
+    build:
+      context: .
+      dockerfile: Ingressinhos.Worker/Dockerfile
+    image: ingressinhos/ingressinhos-worker:dev
+    container_name: ingressinhos-worker
+    restart: unless-stopped
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=ingressinhos-postgres-primary;Port=5432;Database=IngressinhosDb;Username=postgres;Password=1234"
+      Mongo__ConnectionString: "mongodb://admin:1234@ingressinhos-mongodb:27017/?authSource=admin"
+      Mongo__Database: IngressinhosReadDb
+      Mongo__TicketCollection: clientTickets
+      Messaging__RabbitMq__HostName: rabbitmq
+      Messaging__RabbitMq__Port: 5672
+      Messaging__RabbitMq__UserName: admin
+      Messaging__RabbitMq__Password: 1234
+      TicketReadModelBackfill__EnabledOnStartup: "false"
+      TicketReadModelBackfill__BatchSize: 100
+    depends_on:
+      ingressinhos-postgres-primary:
+        condition: service_healthy
+      ingressinhos-mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ingressinhos-network
+
+  payment-worker:
+    build:
+      context: .
+      dockerfile: Payment.Worker/Dockerfile
+    image: ingressinhos/payment-worker:dev
+    container_name: ingressinhos-payment-worker
+    restart: unless-stopped
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__PaymentConnection: "Host=app-postgres;Port=5432;Database=PaymentDb;Username=postgres;Password=1234"
+      Messaging__RabbitMq__HostName: rabbitmq
+      Messaging__RabbitMq__Port: 5672
+      Messaging__RabbitMq__UserName: admin
+      Messaging__RabbitMq__Password: 1234
+      PaymentExpiration__CancelAfterMinutes: 30
+    depends_on:
+      app-postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - ingressinhos-network
+
+  generic-api:
+    build:
+      context: .
+      dockerfile: Generic.Api/Dockerfile
+    image: ingressinhos/generic-api:dev
+    container_name: ingressinhos-generic-api
+    restart: unless-stopped
+    ports:
+      - "5110:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+    networks:
+      - ingressinhos-network
+
+  generic-worker:
+    build:
+      context: .
+      dockerfile: Generic.Worker/Dockerfile
+    image: ingressinhos/generic-worker:dev
+    container_name: ingressinhos-generic-worker
+    restart: unless-stopped
+    environment:
+      DOTNET_ENVIRONMENT: Development
+    networks:
+      - ingressinhos-network
+
+volumes:
+  ingressinhos-postgres-primary-data:
+  ingressinhos-postgres-replica-data:
+  app-postgres-data:
+  rabbitmq-data:
+  ingressinhos-mongodb-data:
+
+networks:
+  ingressinhos-network:
+    name: ingressinhos-network
+

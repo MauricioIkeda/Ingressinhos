@@ -1,0 +1,11 @@
+.git
+.github
+.idea
+**/bin
+**/obj
+**/.vs
+**/*.user
+**/*.log
+message-bus
+docker-compose*.override.yml
+

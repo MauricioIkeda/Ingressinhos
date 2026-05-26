@@ -1,0 +1,70 @@
+name: ingressinhos-apis
+
+services:
+  auth-api:
+    build:
+      context: .
+      dockerfile: Auth.API/Dockerfile
+    image: ingressinhos/auth-api:dev
+    container_name: ingressinhos-auth-api
+    restart: unless-stopped
+    ports:
+      - "5254:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__AuthConnection: "Host=app-postgres;Port=5432;Database=IngressinhosAuthDb;Username=postgres;Password=1234"
+    networks:
+      - ingressinhos-network
+
+  payment-api:
+    build:
+      context: .
+      dockerfile: Payment.Api/Dockerfile
+    image: ingressinhos/payment-api:dev
+    container_name: ingressinhos-payment-api
+    restart: unless-stopped
+    ports:
+      - "5071:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__PaymentConnection: "Host=app-postgres;Port=5432;Database=PaymentDb;Username=postgres;Password=1234"
+      Messaging__RabbitMq__HostName: rabbitmq
+      Messaging__RabbitMq__Port: 5672
+      Messaging__RabbitMq__UserName: admin
+      Messaging__RabbitMq__Password: 1234
+      MockCheckout__PublicBaseUrl: http://localhost:5071
+    networks:
+      - ingressinhos-network
+
+  ingressinhos-api:
+    build:
+      context: .
+      dockerfile: Ingressinhos.API/Dockerfile
+    image: ingressinhos/ingressinhos-api:dev
+    container_name: ingressinhos-api
+    restart: unless-stopped
+    ports:
+      - "5202:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=ingressinhos-postgres-primary;Port=5432;Database=IngressinhosDb;Username=postgres;Password=1234"
+      ConnectionStrings__ReadConnection: "Host=ingressinhos-postgres-replica;Port=5432;Database=IngressinhosDb;Username=postgres;Password=1234"
+      Mongo__ConnectionString: "mongodb://admin:1234@ingressinhos-mongodb:27017/?authSource=admin"
+      Mongo__Database: IngressinhosReadDb
+      Mongo__TicketCollection: clientTickets
+      Messaging__RabbitMq__HostName: rabbitmq
+      Messaging__RabbitMq__Port: 5672
+      Messaging__RabbitMq__UserName: admin
+      Messaging__RabbitMq__Password: 1234
+      AuthApi__BaseUrl: http://auth-api:8080
+      PaymentApi__BaseUrl: http://payment-api:8080
+    networks:
+      - ingressinhos-network
+
+networks:
+  ingressinhos-network:
+    external: true
+

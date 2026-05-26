@@ -1,3 +1,5 @@
+name: ingressinhos-mensageria
+
 services:
   rabbitmq:
     image: rabbitmq:management
@@ -9,7 +11,13 @@ services:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: 1234
     volumes:
-      - rabbitmq-data:/var/lib/rabbitmq # Persistência dos dados até serem consumidos
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - ingressinhos-network
 
 volumes:
   rabbitmq-data:
+
+networks:
+  ingressinhos-network:
+    external: true

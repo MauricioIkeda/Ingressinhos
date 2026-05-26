@@ -14,6 +14,18 @@ builder.Services
         options.Name = "consume-payment-messages";
         options.Interval = TimeSpan.FromSeconds(5);
         options.RunOnStartup = true;
+    })
+    .AddScheduledRoutine<ConsumeTicketReadModelMessagesRoutine>(options =>
+    {
+        options.Name = "consume-ticket-read-model-messages";
+        options.Interval = TimeSpan.FromSeconds(5);
+        options.RunOnStartup = true;
+    })
+    .AddScheduledRoutine<BackfillClientTicketReadModelRoutine>(options =>
+    {
+        options.Name = "backfill-client-ticket-read-model";
+        options.Interval = TimeSpan.FromHours(1);
+        options.RunOnStartup = true;
     });
 
 var host = builder.Build();

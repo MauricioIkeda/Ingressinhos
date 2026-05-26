@@ -17,7 +17,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "Ingressinhos API", Version = "v1" });
 });
 
-builder.Services.AddIngressinhosServices(builder.Configuration);
+builder.Services.AddIngressinhosServices(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddAuthSecurity<object>(builder.Configuration);
 
 var app = builder.Build();

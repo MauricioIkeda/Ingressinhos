@@ -1,0 +1,30 @@
+name: ingressinhos-mongo
+
+services:
+  ingressinhos-mongodb:
+    image: mongo:7
+    container_name: ingressinhos-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+      MONGO_INITDB_DATABASE: IngressinhosReadDb
+    volumes:
+      - ingressinhos-mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "-u", "admin", "-p", "1234", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - ingressinhos-network
+
+volumes:
+  ingressinhos-mongodb-data:
+
+networks:
+  ingressinhos-network:
+    external: true

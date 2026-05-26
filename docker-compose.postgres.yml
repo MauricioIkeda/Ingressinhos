@@ -1,3 +1,5 @@
+name: ingressinhos-bancos-postgres
+
 services:
   # Banco principal do Ingressinhos.
   # Recebe migrations, escrita da API e processamento do worker.
@@ -23,7 +25,7 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - ingressinhos-postgres-network
+      - ingressinhos-network
 
   # Replica somente leitura do Ingressinhos.
   # Segue o primary por replicacao nativa do PostgreSQL.
@@ -53,7 +55,7 @@ services:
       retries: 10
       start_period: 40s
     networks:
-      - ingressinhos-postgres-network
+      - ingressinhos-network
 
   # Banco compartilhado por Auth e Payment.
   # Sobe em uma unica porta e cria os dois databases pelo script de init.
@@ -76,7 +78,7 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - ingressinhos-postgres-network
+      - ingressinhos-network
 
 volumes:
   # Dados persistidos do primary do Ingressinhos.
@@ -88,5 +90,5 @@ volumes:
 
 networks:
   # Rede interna compartilhada entre os bancos do projeto.
-  ingressinhos-postgres-network:
-    name: ingressinhos-postgres-network
+  ingressinhos-network:
+    external: true
