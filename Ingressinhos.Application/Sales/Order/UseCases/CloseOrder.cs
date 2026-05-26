@@ -34,13 +34,23 @@ public class CloseOrder : IUseCaseCloseOrder
         try
         {
             var repositoryQuery = _repositorySession.GetRepositoryQuery();
-            var order = repositoryQuery.Return<OrderDomain>(orderId);
+            var order = repositoryQuery.Query<OrderDomain>(currentOrder => currentOrder.Id == orderId)
+                .Select(currentOrder => new
+                {
+                    Order = currentOrder,
+                    HasItems = currentOrder.Items.Any()
+                })
+                .FirstOrDefault();
             if (order is null)
             {
                 return OperationResult<PaymentCheckoutApiDto>.NotFound(new MensagemErro("Pedido", "Pedido nao encontrado."));
             }
 
-            var accessResult = EnsureOrderAccess(order, repositoryQuery);
+            if (!order.HasItems)
+            {
+                return OperationResult<PaymentCheckoutApiDto>.UnprocessableEntity(new MensagemErro("Pedido", "Nao e possivel seguir para pagamento com carrinho vazio."));
+            }
+            var accessResult = EnsureOrderAccess(order.Order, repositoryQuery);
             if (!accessResult.Success)
             {
                 return OperationResult<PaymentCheckoutApiDto>.FromResult(accessResult);
@@ -50,26 +60,26 @@ public class CloseOrder : IUseCaseCloseOrder
             using var transaction = _repositorySession.BeginTransaction();
             var utcNow = DateTime.UtcNow;
 
-            order.MoveToPendingPayment();
-            if (!order.IsValid)
+            order.Order.MoveToPendingPayment();
+            if (!order.Order.IsValid)
             {
                 _repositorySession.RollbackTransaction();
-                return OperationResult<PaymentCheckoutApiDto>.FromResult(order.ToUnprocessableEntityResult());
+                return OperationResult<PaymentCheckoutApiDto>.FromResult(order.Order.ToUnprocessableEntityResult());
             }
 
-            order.UpdatedAt = utcNow;
+            order.Order.UpdatedAt = utcNow;
 
-            var reserveResult = ReserveOrderInventory(order, repositoryQuery, repository, utcNow);
+            var reserveResult = ReserveOrderInventory(order.Order, repositoryQuery, repository, utcNow);
             if (!reserveResult.Success)
             {
                 _repositorySession.RollbackTransaction();
                 return OperationResult<PaymentCheckoutApiDto>.FromResult(reserveResult);
             }
 
-            repository.Upsert(order);
+            repository.Upsert(order.Order);
             repository.Flush().GetAwaiter().GetResult();
 
-            var paymentResult = RequestPayment(order);
+            var paymentResult = RequestPayment(order.Order);
             if (!paymentResult.Success)
             {
                 _repositorySession.RollbackTransaction();

@@ -150,7 +150,7 @@ services:
       Messaging__RabbitMq__Port: 5672
       Messaging__RabbitMq__UserName: admin
       Messaging__RabbitMq__Password: 1234
-      MockCheckout__PublicBaseUrl: http://localhost:5071
+      MockCheckout__PublicBaseUrl: https://retreat-refresh-his-craft.trycloudflare.com/mock
     depends_on:
       app-postgres:
         condition: service_healthy
@@ -274,6 +274,21 @@ services:
     restart: unless-stopped
     environment:
       DOTNET_ENVIRONMENT: Development
+    networks:
+      - ingressinhos-network
+
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: ingressinhos-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth-api
+      - payment-api
+      - ingressinhos-api
     networks:
       - ingressinhos-network
 
