@@ -1,0 +1,59 @@
+name: ingressinhos-workers
+
+services:
+  ingressinhos-worker:
+    build:
+      context: .
+      dockerfile: Ingressinhos.Worker/Dockerfile
+    image: ingressinhos/ingressinhos-worker:dev
+    container_name: ingressinhos-worker
+    restart: unless-stopped
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=ingressinhos-postgres-primary;Port=5432;Database=IngressinhosDb;Username=postgres;Password=***REMOVED***"
+      Mongo__ConnectionString: "mongodb://example:***REMOVED***@ingressinhos-mongodb:27017/?authSource=admin"
+      Mongo__Database: IngressinhosReadDb
+      Mongo__TicketCollection: clientTickets
+      Messaging__RabbitMq__HostName: rabbitmq
+      Messaging__RabbitMq__Port: 5672
+      Messaging__RabbitMq__UserName: admin
+      Messaging__RabbitMq__Password: 1234
+      TicketReadModelBackfill__EnabledOnStartup: "false"
+      TicketReadModelBackfill__BatchSize: 100
+    networks:
+      - ingressinhos-network
+
+  payment-worker:
+    build:
+      context: .
+      dockerfile: Payment.Worker/Dockerfile
+    image: ingressinhos/payment-worker:dev
+    container_name: ingressinhos-payment-worker
+    restart: unless-stopped
+    environment:
+      DOTNET_ENVIRONMENT: Development
+      ConnectionStrings__PaymentConnection: "Host=app-postgres;Port=5432;Database=PaymentDb;Username=postgres;Password=***REMOVED***"
+      Messaging__RabbitMq__HostName: rabbitmq
+      Messaging__RabbitMq__Port: 5672
+      Messaging__RabbitMq__UserName: admin
+      Messaging__RabbitMq__Password: 1234
+      PaymentExpiration__CancelAfterMinutes: 30
+    networks:
+      - ingressinhos-network
+
+  generic-worker:
+    build:
+      context: .
+      dockerfile: Generic.Worker/Dockerfile
+    image: ingressinhos/generic-worker:dev
+    container_name: ingressinhos-generic-worker
+    restart: unless-stopped
+    environment:
+      DOTNET_ENVIRONMENT: Development
+    networks:
+      - ingressinhos-network
+
+networks:
+  ingressinhos-network:
+    external: true
+

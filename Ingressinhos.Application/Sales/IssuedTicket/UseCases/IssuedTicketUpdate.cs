@@ -2,6 +2,7 @@ using Generic.Application.Crud.Interface;
 using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Sales.Dtos;
+using Ingressinhos.Application.Sales.TicketReadModel.Interfaces;
 using Ingressinhos.Domain.Sales.Enums;
 using IssuedTicketDomain = Ingressinhos.Domain.Sales.Entities.IssuedTicket;
 
@@ -10,10 +11,12 @@ namespace Ingressinhos.Application.Sales.UseCases;
 public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
 {
     private readonly IRepositorySession _repositorySession;
+    private readonly IClientTicketReadModelSyncPublisher _ticketReadModelSyncPublisher;
 
-    public IssuedTicketUpdate(IRepositorySession repositorySession)
+    public IssuedTicketUpdate(IRepositorySession repositorySession, IClientTicketReadModelSyncPublisher ticketReadModelSyncPublisher)
     {
         _repositorySession = repositorySession;
+        _ticketReadModelSyncPublisher = ticketReadModelSyncPublisher;
     }
 
     public OperationResult Execute(IssuedTicketDto issuedTicketDto)
@@ -74,7 +77,8 @@ public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
             var repository = _repositorySession.GetRepository();
             repository.Upsert(issuedTicketEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return OperationResult.Ok();
+            // Solicitar atualização do modelo de leitura do ingresso emitido no MongoDB
+            return _ticketReadModelSyncPublisher.RequestIssuedTicketProjection(issuedTicketEntity.Id);
         }
         catch (Exception ex)
         {

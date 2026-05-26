@@ -26,5 +26,8 @@
 	  <ProjectReference Include="..\Generic.Application\Generic.Application.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Update="appsettings*.json" CopyToOutputDirectory="Never" CopyToPublishDirectory="Never" />
+	</ItemGroup>
 
 </Project>

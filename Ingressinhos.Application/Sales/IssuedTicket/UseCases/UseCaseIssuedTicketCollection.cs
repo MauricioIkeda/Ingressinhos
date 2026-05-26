@@ -1,15 +1,28 @@
 using Generic.Application.Crud.UseCases;
+using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
-using Ingressinhos.Application.Sales.Dtos;
 using Ingressinhos.Application.Sales.Interfaces;
+using Ingressinhos.Application.Sales.TicketReadModel.Dtos;
+using Ingressinhos.Application.Sales.TicketReadModel.Interfaces;
 using IssuedTicketDomain = Ingressinhos.Domain.Sales.Entities.IssuedTicket;
 
 namespace Ingressinhos.Application.Sales.UseCases;
 
-public class UseCaseIssuedTicketCollection : UseCaseCrudCollection<IssuedTicketDomain, IssuedTicketDto>, IUseCaseIssuedTicketCollection
+public class UseCaseIssuedTicketCollection : UseCaseQueryCollection<IssuedTicketDomain>, IUseCaseIssuedTicketCollection
 {
-    public UseCaseIssuedTicketCollection(IRepositorySession repositorySession, IReadRepositoryQuery readRepositoryQuery, IssuedTicketUpdate update, IssuedTicketInclude include)
-        : base(include, update, new UseCaseGetOdata<IssuedTicketDomain>(), new UseCaseGetId<IssuedTicketDomain>(), new UseCaseDelete<IssuedTicketDomain>(), repositorySession, readRepositoryQuery)
+    private readonly IUseCaseGetMyClientTickets _getMyClientTickets;
+
+    public UseCaseIssuedTicketCollection(
+        IRepositorySession repositorySession,
+        IReadRepositoryQuery readRepositoryQuery,
+        IUseCaseGetMyClientTickets getMyClientTickets)
+        : base(new UseCaseGetOdata<IssuedTicketDomain>(), new UseCaseGetId<IssuedTicketDomain>(), repositorySession, readRepositoryQuery)
     {
+        _getMyClientTickets = getMyClientTickets;
+    }
+
+    public OperationResult<List<ClientTicketViewDto>> GetMyTickets()
+    {
+        return _getMyClientTickets.Execute();
     }
 }

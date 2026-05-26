@@ -316,8 +316,9 @@
 
       toggleActionButtons(false, false);
 
-      try {
-        const response = await fetch(`/payment/api/payments/transactions/${paymentTransactionId}`);
+        try {
+            const response = await fetch(`/api/payments/transactions/${paymentTransactionId}`);
+       // const response = await fetch(`/payment/api/payments/transactions/${paymentTransactionId}`);
         if (!response.ok) {
           throw new Error(`Nao foi possivel carregar a transacao (${response.status}).`);
         }
@@ -346,8 +347,9 @@
         ? "Enviando simulacao de pagamento aprovado..."
         : "Enviando simulacao de pagamento recusado...", "info");
 
-      try {
-        const response = await fetch(`/payment/api/payments/transactions/${paymentTransactionId}/simulate-webhook`, {
+        try {
+            const response = await fetch(`/api/payments/transactions/${paymentTransactionId}/simulate-webhook`, {
+        //const response = await fetch(`/payment/api/payments/transactions/${paymentTransactionId}/simulate-webhook`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

@@ -8,12 +8,18 @@
 		<NoWarn>$(NoWarn);NU1900</NoWarn>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="MongoDB.Driver" Version="3.4.3" />
+	</ItemGroup>
+
     <ItemGroup>
       <Folder Include="Repository\" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Generic.Messaging\Generic.Messaging.csproj" />
       <ProjectReference Include="..\Generic.Infrastructure\Generic.Infrastructure.csproj" />
+      <ProjectReference Include="..\Ingressinhos.Application\Ingressinhos.Application.csproj" />
       <ProjectReference Include="..\Ingressinhos.Domain\Ingressinhos.Domain.csproj" />
     </ItemGroup>
 

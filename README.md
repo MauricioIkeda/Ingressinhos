@@ -1,6 +1,81 @@
 # Ingressinhos
 Projeto da faculdade de compras de ingresso
 
+## Ambiente completo em Docker
+
+Para subir bancos, RabbitMQ, MongoDB, APIs e workers:
+
+```powershell
+docker compose up -d --build
+```
+
+Para parar o ambiente:
+
+```powershell
+docker compose down
+```
+
+APIs expostas no host:
+
+- `http://localhost:5254` -> Auth API
+- `http://localhost:5202` -> Ingressinhos API
+- `http://localhost:5071` -> Payment API
+- `http://localhost:5110` -> Generic API
+
+Servicos de apoio:
+
+- `http://localhost:15672` -> painel do RabbitMQ (`example / ***REMOVED***`)
+- `localhost:27017` -> MongoDB
+- `localhost:15432` -> PostgreSQL primary do Ingressinhos
+- `localhost:15433` -> PostgreSQL replica do Ingressinhos
+- `localhost:15434` -> PostgreSQL compartilhado de Auth e Payment
+
+O compose completo nao aplica migrations automaticamente. Depois que os bancos subirem, aplique as migrations normalmente para cada contexto antes de usar as APIs.
+
+### Ambiente separado por grupos no Docker Desktop
+
+Para aparecer separado em grupos, use os compose files por contexto. Se ainda nao existir, crie a rede compartilhada uma vez:
+
+```powershell
+docker network inspect ingressinhos-network *> $null; if ($LASTEXITCODE -ne 0) { docker network create ingressinhos-network }
+```
+
+Para subir tudo separado em grupos com um comando:
+
+```powershell
+.\docker\up-separated.ps1
+```
+
+Para parar os grupos separados:
+
+```powershell
+.\docker\down-separated.ps1
+```
+
+Ou suba manualmente nesta ordem:
+
+```powershell
+docker compose -f .\docker-compose.postgres.yml up -d
+docker compose -f .\docker-compose.mongo.yml up -d
+docker compose -f .\docker-compose.rabbitmq.yml up -d
+docker compose -f .\docker-compose.apis.yml up -d --build
+docker compose -f .\docker-compose.workers.yml up -d --build
+```
+
+No Docker Desktop eles aparecem como:
+
+- `ingressinhos-bancos-postgres`
+- `ingressinhos-mongo`
+- `ingressinhos-mensageria`
+- `ingressinhos-apis`
+- `ingressinhos-workers`
+
+Se voce ja subiu o compose completo antes, pare ele primeiro para evitar conflito de nomes de containers:
+
+```powershell
+docker compose down
+```
+
 ## PostgreSQL em Docker
 
 Para desenvolvimento com replica real de leitura:
@@ -80,3 +155,28 @@ Validacao rapida:
 - abrir `http://localhost:15672`
 - entrar com `example / ***REMOVED***`
 - confirmar se o broker esta online antes de subir os workers
+
+## MongoDB para leitura de bilhetes
+
+Para subir o banco de leitura dos bilhetes do cliente:
+
+```powershell
+docker compose -f .\docker-compose.mongo.yml up -d
+```
+
+Portas do host:
+
+- `27017` -> MongoDB
+
+Configuracao local padrao:
+
+- `Mongo:ConnectionString` -> `mongodb://example:***REMOVED***@localhost:27017/?authSource=admin`
+- `Mongo:Database` -> `IngressinhosReadDb`
+- `Mongo:TicketCollection` -> `clientTickets`
+
+Uso atual no projeto:
+
+- `Ingressinhos.Worker` publica mensagens internas em `ticket-read-model-sync`
+- o mesmo worker consome essa fila e projeta os bilhetes emitidos no MongoDB
+- `Ingressinhos.API` usa o MongoDB para `GET /api/issued-tickets/me`
+- o Postgres continua sendo a fonte oficial de pedidos, pagamentos e bilhetes emitidos

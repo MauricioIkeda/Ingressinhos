@@ -1,5 +1,4 @@
 using Generic.Api.Controllers;
-using Ingressinhos.Application.Sales.Dtos;
 using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.AspNetCore.Authorization;
@@ -10,10 +9,13 @@ namespace Ingressinhos.API.Controllers.Sales;
 
 [ApiController]
 [Route("api/[controller]")]
-public class IssuedTicketsController : ApiCrud<IssuedTicket, IssuedTicketDto>
+public class IssuedTicketsController : ApiQuery<IssuedTicket>
 {
+    private readonly IUseCaseIssuedTicketCollection _useCaseCollection;
+
     public IssuedTicketsController(IUseCaseIssuedTicketCollection useCaseCollection) : base(useCaseCollection)
     {
+        _useCaseCollection = useCaseCollection;
     }
 
     [HttpGet]
@@ -23,31 +25,17 @@ public class IssuedTicketsController : ApiCrud<IssuedTicket, IssuedTicketDto>
         return OData(query);
     }
 
+    [HttpGet("me")]
+    [Authorize(Policy = "OnlyClient")]
+    public IActionResult GetMyTickets()
+    {
+        return ExecuteCustomData(_useCaseCollection.GetMyTickets());
+    }
+
     [HttpGet("{id:long}")]
     [Authorize]
     public IActionResult GetById(long id)
     {
         return GetByIdResult(id);
-    }
-
-    [HttpPost]
-    [Authorize(Policy = "AdminOnly")]
-    public IActionResult Include([FromBody] IssuedTicketDto command)
-    {
-        return IncludeResult(command);
-    }
-
-    [HttpPut]
-    [Authorize(Policy = "SellerOrAdmin")]
-    public IActionResult Update([FromBody] IssuedTicketDto command)
-    {
-        return UpdateResult(command);
-    }
-
-    [HttpDelete("{id:long}")]
-    [Authorize(Policy = "AdminOnly")]
-    public IActionResult Delete(long id)
-    {
-        return DeleteResult(id);
     }
 }

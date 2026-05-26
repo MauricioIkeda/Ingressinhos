@@ -4,6 +4,7 @@ using Generic.Domain.Entities;
 using Generic.Infrastructure.Interfaces;
 using Ingressinhos.Application.Helpers;
 using Ingressinhos.Application.Catalog.Dtos;
+using Ingressinhos.Application.Sales.TicketReadModel.Interfaces;
 using Ingressinhos.Domain.Catalog.Entities;
 using LocationDomain = Ingressinhos.Domain.Catalog.Entities.Location;
 
@@ -13,11 +14,16 @@ public class EventUpdate : IUseCaseCommand<EventDto>
 {
     private readonly IRepositorySession _repositorySession;
     private readonly ICurrentUserContext _currentUserContext;
+    private readonly IClientTicketReadModelSyncPublisher _ticketReadModelSyncPublisher;
 
-    public EventUpdate(IRepositorySession repositorySession, ICurrentUserContext currentUserContext)
+    public EventUpdate(
+        IRepositorySession repositorySession,
+        ICurrentUserContext currentUserContext,
+        IClientTicketReadModelSyncPublisher ticketReadModelSyncPublisher)
     {
         _repositorySession = repositorySession;
         _currentUserContext = currentUserContext;
+        _ticketReadModelSyncPublisher = ticketReadModelSyncPublisher;
     }
 
     public OperationResult Execute(EventDto eventDto)
@@ -143,7 +149,8 @@ public class EventUpdate : IUseCaseCommand<EventDto>
             var repository = _repositorySession.GetRepository();
             repository.Upsert(eventEntity);
             repository.Flush().GetAwaiter().GetResult();
-            return OperationResult.Ok();
+
+            return _ticketReadModelSyncPublisher.RequestEventRefresh(eventEntity.Id);
         }
         catch (Exception ex)
         {

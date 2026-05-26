@@ -4,12 +4,7 @@ using Generic.Messaging.Interfaces;
 using Generic.Messaging.Options;
 using Generic.Messaging.Services;
 using Microsoft.EntityFrameworkCore;
-using Payment.Aplication.Refunds.Interfaces;
-using Payment.Aplication.Refunds.UseCases;
-using Payment.Aplication.Transactions.Interfaces;
-using Payment.Aplication.Transactions.UseCases;
 using Payment.Infrastructure.Context;
-using Payment.Infrastructure.Services;
 using Payment.Worker.Options;
 
 namespace Payment.Worker.Extensions;
@@ -19,10 +14,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddPaymentWorkerServices(this IServiceCollection services, IConfiguration configuration, string contentRootPath)
     {
         services.AddPaymentDatabase(configuration);
-        services.AddPaymentUseCases();
         services.AddPaymentWorkerMessaging(configuration, contentRootPath);
         services.AddSingleton(CreatePaymentExpirationOptions(configuration));
-        services.AddScoped<IPaymentProcessor, RandomMockPaymentProcessor>();
         return services;
     }
 
@@ -38,23 +31,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRepositoryQuery>(sp => new RepositoryQueryEF(sp.GetRequiredService<DbContext>()));
         services.AddScoped<IRepositorySession, RepositorySessionEF>();
 
-        return services;
-    }
-
-    private static IServiceCollection AddPaymentUseCases(this IServiceCollection services)
-    {
-        services.AddScoped<IUseCaseRequestPayment, RequestPayment>();
-        services.AddScoped<IUseCaseGetPaymentTransaction, GetPaymentTransaction>();
-        services.AddScoped<IUseCaseGetPaymentsByOrder, GetPaymentsByOrder>();
-        services.AddScoped<IUseCaseCheckPaymentStatus, CheckPaymentStatus>();
-        services.AddScoped<IUseCaseHandlePaymentNotification, HandlePaymentNotification>();
-        services.AddScoped<IUseCaseSimulatePaymentWebhook, SimulatePaymentWebhook>();
-        services.AddScoped<IUseCasePaymentTransactionCollection, UseCasePaymentTransactionCollection>();
-        services.AddScoped<IUseCaseRequestRefund, RequestRefund>();
-        services.AddScoped<IUseCaseGetRefund, GetRefund>();
-        services.AddScoped<IUseCaseGetRefundsByPaymentTransaction, GetRefundsByPaymentTransaction>();
-        services.AddScoped<IUseCaseCheckRefundStatus, CheckRefundStatus>();
-        services.AddScoped<IUseCaseRefundCollection, UseCaseRefundCollection>();
         return services;
     }
 
