@@ -10,8 +10,8 @@ public class IssuedTicket : BaseEntity
     public long OrderItemId { get; private set; }
     public long ClientId { get; private set; }
     public long EventId { get; private set; }
-    public string? SeatCode { get; private set; } // colocar no construtor
-    public SeatCategory CategoryTicket { get; private set; } //colocar no construtor
+    public string? SeatCode { get; private set; }
+    public SeatCategory CategoryTicket { get; private set; }
     public string AccessCode { get; private set; } = string.Empty;
     public IssuedTicketStatus Status { get; private set; }
     public bool IsCheckedIn => Status == IssuedTicketStatus.CheckedIn;

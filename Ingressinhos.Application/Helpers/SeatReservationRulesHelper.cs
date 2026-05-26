@@ -39,8 +39,7 @@ internal static class SeatReservationRulesHelper
             return SeatStatus.Blocked;
         }
 
-        // Para a tela/listagem, traduzimos a reserva comercial para o mesmo enum
-        // Gambiarra para não precisar refatorar todo o codigo
+        // "Gambiarra" para não precisar refatorar todo o codigo, só conversão de um enum para outro.
         return reservation?.Status switch
         {
             SeatReservationStatus.Reserved => SeatStatus.Reserved,
@@ -52,16 +51,14 @@ internal static class SeatReservationRulesHelper
     public static OperationResult UnavailableSeatResult(string seatCode)
     {
         // Mensagem padrao para conflito de reserva ou assento fisicamente bloqueado.
-        return OperationResult.UnprocessableEntity(new MensagemErro("SeatId", $"O assento {seatCode} nao esta disponivel para este evento."));
+        return OperationResult.UnprocessableEntity(new MensagemErro("SeatId", $"O assento {seatCode} nao esta disponivel."));
     }
 
     public static bool IsSeatReservationConflict(Exception exception)
     {
-        // A excecao real pode vir embrulhada em InnerException. Por isso varremos
-        // a cadeia inteira procurando o nome do indice unico violado.
-        for (var current = exception; current is not null; current = current.InnerException)
+        for (var current = exception; current is not null; current = current.InnerException) // Analisa todas as exeções até não serem nulas
         {
-            if (current.Message.Contains(ActiveSeatReservationIndexName, StringComparison.OrdinalIgnoreCase))
+            if (current.Message.Contains(ActiveSeatReservationIndexName, StringComparison.OrdinalIgnoreCase)) // se a mensagem de erro da exceção contiver o nome do índice único, é um conflito de reserva
             {
                 return true;
             }
