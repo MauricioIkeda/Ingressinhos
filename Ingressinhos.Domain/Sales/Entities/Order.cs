@@ -107,12 +107,6 @@ public class Order : BaseEntity
             return;
         }
 
-        if (TotalAmount <= 0)
-        {
-            AddError("Pedido", "Nao e possivel seguir para pagamento com carrinho vazio.");
-            return;
-        }
-
         Status = OrderStatus.PendingPayment;
     }
 
