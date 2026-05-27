@@ -1,4 +1,5 @@
 using Generic.Api.Extensions;
+using Generic.Api.Middlewares;
 using Ingressinhos.API.Extensions;
 using Microsoft.AspNetCore.OData;
 using Scalar.AspNetCore;
@@ -26,6 +27,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddIngressinhosServices(builder.Configuration, builder.Environment.ContentRootPath);
 builder.Services.AddAuthSecurity<object>(builder.Configuration);
+builder.Services.AddHttpMethodRateLimiting(builder.Configuration);
 
 var app = builder.Build();
 
@@ -42,6 +44,7 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
