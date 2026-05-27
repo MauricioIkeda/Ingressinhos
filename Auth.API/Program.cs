@@ -1,5 +1,6 @@
 using Auth.API.Extensions;
 using Generic.Api.Extensions;
+using Generic.Api.Middlewares;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddAuthServices(builder.Configuration);
 builder.Services.AddAuthSecurity<object>(builder.Configuration);
+builder.Services.AddHttpMethodRateLimiting(builder.Configuration); // Colocando rate limit
 
 var app = builder.Build();
 
@@ -28,6 +30,7 @@ if (app.Environment.IsDevelopment())
 //app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
