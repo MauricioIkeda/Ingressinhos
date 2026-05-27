@@ -10,6 +10,7 @@ using Ingressinhos.API.Extensions;
 namespace Ingressinhos.API.Controllers.Sales;
 
 [ApiController]
+[ApiExplorerSettings(GroupName = "sales")]
 [Route("api/[controller]")]
 public class ClientsController : ApiCrud<Client, ClientDto>
 {
@@ -78,6 +79,6 @@ public class ClientsController : ApiCrud<Client, ClientDto>
     [HttpGet("me")]
     public IActionResult GetByToken()
     {
-        return ExecuteCustom(_useCaseCollection.GetByToken());
+        return ExecuteCustomData(_useCaseCollection.GetByToken());
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.OData.Edm;
 namespace Ingressinhos.API.Controllers.Catalog;
 
 [ApiController]
+[ApiExplorerSettings(GroupName = "catalog")]
 [Route("api/[controller]")]
 public class EventsController : ApiCrud<Event, EventDto>
 {

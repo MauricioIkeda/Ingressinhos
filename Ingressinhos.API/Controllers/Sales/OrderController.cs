@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.OData.Query;
 namespace Ingressinhos.API.Controllers.Sales;
 
 [ApiController]
+[ApiExplorerSettings(GroupName = "sales")]
 [Route("api/[controller]")]
 public class OrdersController : ApiQuery<Order>
 {

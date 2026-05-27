@@ -14,7 +14,9 @@ services:
       POSTGRESQL_PASSWORD: "1234"
       POSTGRESQL_DATABASE: "IngressinhosDb"
       POSTGRESQL_REPLICATION_MODE: "master"
+      # Usuario usado pela replica para seguir o primary
       POSTGRESQL_REPLICATION_USER: "replicator"
+      # Senha do usuario de replicacao
       POSTGRESQL_REPLICATION_PASSWORD: "replicator123"
     volumes:
       - ingressinhos-postgres-primary-data:/bitnami/postgresql
@@ -41,7 +43,9 @@ services:
     environment:
       ALLOW_EMPTY_PASSWORD: "no"
       POSTGRESQL_PASSWORD: "1234"
+      # Configura este container como replica
       POSTGRESQL_REPLICATION_MODE: "slave"
+      # Host do primary que a replica deve seguir
       POSTGRESQL_MASTER_HOST: "ingressinhos-postgres-primary"
       POSTGRESQL_MASTER_PORT_NUMBER: "5432"
       POSTGRESQL_REPLICATION_USER: "replicator"
