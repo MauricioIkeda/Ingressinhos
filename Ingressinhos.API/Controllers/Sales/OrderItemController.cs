@@ -10,6 +10,7 @@ using Microsoft.OData.Edm;
 namespace Ingressinhos.API.Controllers.Sales;
 
 [ApiController]
+[ApiExplorerSettings(GroupName = "sales")]
 [Route("api/[controller]")]
 public class OrderItemsController : ApiQuery<OrderItem>
 {

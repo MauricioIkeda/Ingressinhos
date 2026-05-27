@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.OData.Query;
 namespace Ingressinhos.API.Controllers.Catalog;
 
 [ApiController]
+[ApiExplorerSettings(GroupName = "catalog")]
 [Route("api/[controller]")]
 public class SeatsController : ApiCrud<Seat, SeatDto>
 {

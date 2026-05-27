@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.OData.Query;
 namespace Ingressinhos.API.Controllers.Sales;
 
 [ApiController]
+[ApiExplorerSettings(GroupName = "sales")]
 [Route("api/[controller]")]
 public class IssuedTicketsController : ApiQuery<IssuedTicket>
 {
@@ -33,7 +34,7 @@ public class IssuedTicketsController : ApiQuery<IssuedTicket>
     }
 
     [HttpGet("{id:long}")]
-    [Authorize]
+    [Authorize(Policy = "AdminOnly")]
     public IActionResult GetById(long id)
     {
         return GetByIdResult(id);

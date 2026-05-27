@@ -14,7 +14,14 @@ builder.Services.AddControllers(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new() { Title = "Ingressinhos API", Version = "v1" });
+    c.SwaggerDoc("catalog", new() { Title = "Ingressinhos API - Catalog", Version = "v1" });
+    c.SwaggerDoc("sales", new() { Title = "Ingressinhos API - Sales", Version = "v1" });
+    c.DocInclusionPredicate((documentName, apiDescription) =>
+    {
+        var groupName = apiDescription.GroupName;
+        return !string.IsNullOrWhiteSpace(groupName)
+            && string.Equals(groupName, documentName, StringComparison.OrdinalIgnoreCase);
+    });
 });
 
 builder.Services.AddIngressinhosServices(builder.Configuration, builder.Environment.ContentRootPath);
@@ -29,6 +36,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options =>
     {
         options.WithOpenApiRoutePattern("/swagger/{documentName}/swagger.json");
+        options.AddDocuments(["catalog", "sales"]);
     });
 }
 
@@ -38,6 +46,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/", () => Results.Redirect("/scalar"));
+app.MapGet("/", () => Results.Redirect("/scalar/catalog"));
 
 app.Run();
