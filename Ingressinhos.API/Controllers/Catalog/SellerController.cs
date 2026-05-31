@@ -10,6 +10,7 @@ using Microsoft.OData.Edm;
 namespace Ingressinhos.API.Controllers.Catalog;
 
 [ApiController]
+[ApiExplorerSettings(GroupName = "catalog")]
 [Route("api/[controller]")]
 public class SellersController : ApiCrud<Seller, SellerDto>
 {
@@ -71,6 +72,6 @@ public class SellersController : ApiCrud<Seller, SellerDto>
     [HttpGet("me")]
     public IActionResult GetByToken()
     {
-        return ExecuteCustom(_useCaseCollection.GetByToken());
+        return ExecuteCustomData(_useCaseCollection.GetByToken());
     }
 }

@@ -1,3 +1,4 @@
+using Generic.Api.Middlewares;
 using Microsoft.AspNetCore.OData;
 using Payment.Api.Extensions;
 using Scalar.AspNetCore;
@@ -13,6 +14,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new() { Title = "Payment API", Version = "v1" });
 });
 builder.Services.AddPaymentServices(builder.Configuration, builder.Environment.ContentRootPath);
+builder.Services.AddHttpMethodRateLimiting(builder.Configuration);
 
 var app = builder.Build();
 
@@ -33,6 +35,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.MapControllers();
