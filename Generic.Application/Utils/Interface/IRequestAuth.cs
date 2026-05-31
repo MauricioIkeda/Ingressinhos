@@ -9,5 +9,6 @@ namespace Generic.Application.Utils.Interface
         Task<OperationResult> ChangeEmail(string userId, string newEmail);
         Task<OperationResult> DeactivateUser(string userId);
         Task<OperationResult> ActivateUser(string userId);
+        Task<OperationResult> AssignRole(string userId, int role);
     }
 }

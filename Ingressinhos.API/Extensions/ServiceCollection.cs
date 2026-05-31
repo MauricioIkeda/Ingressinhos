@@ -8,6 +8,7 @@ using Generic.Messaging.Services;
 using Ingressinhos.Application.Catalog.Interfaces;
 using Ingressinhos.Application.Catalog.Location.UseCases;
 using Ingressinhos.Application.Catalog.UseCases;
+using Ingressinhos.Application.Onboarding.UseCases;
 using Ingressinhos.Application.Sales.Interfaces;
 using Ingressinhos.Application.Sales.TicketReadModel.Interfaces;
 using Ingressinhos.Application.Sales.TicketReadModel.UseCases;
@@ -124,6 +125,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUseCaseBackfillClientTicketsReadModel, BackfillClientTicketsReadModel>();
         services.AddScoped<IUseCaseGetMyClientTickets, GetMyClientTickets>();
 
+        services.AddScoped<ProfileStatusUseCase>();
+        services.AddScoped<OnboardClientUseCase>();
+        services.AddScoped<OnboardSellerUseCase>();
+
         return services;
     }
 
@@ -200,11 +205,21 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddIngressinhosAuthClient(this IServiceCollection services, IConfiguration configuration)
     {
-        var authApiBaseUrl = configuration["AuthApi:BaseUrl"];
+        var authSection = configuration.GetSection("AuthApi");
+        var authApiBaseUrl = authSection["BaseUrl"];
         if (string.IsNullOrWhiteSpace(authApiBaseUrl))
         {
             throw new InvalidOperationException("AuthApi:BaseUrl nao foi configurado. Ex.: http://localhost:5254");
         }
+
+        services.AddSingleton(new SentinelAuthClientOptions
+        {
+            ApplicationClientId = long.TryParse(authSection["ApplicationClientId"], out var applicationClientId) ? applicationClientId : 0,
+            ClientId = authSection["ClientId"] ?? string.Empty,
+            AdminRoleId = long.TryParse(authSection["AdminRoleId"], out var adminRoleId) ? adminRoleId : 0,
+            SellerRoleId = long.TryParse(authSection["SellerRoleId"], out var sellerRoleId) ? sellerRoleId : 0,
+            ClientRoleId = long.TryParse(authSection["ClientRoleId"], out var clientRoleId) ? clientRoleId : 0
+        });
 
         services.AddHttpClient<IRequestAuth, RequestAuth>(client =>
         {

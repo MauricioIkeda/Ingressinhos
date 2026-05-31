@@ -57,7 +57,7 @@ services:
     networks:
       - ingressinhos-network
 
-  # Banco compartilhado por Auth e Payment.
+  # Banco compartilhado por SentinelAuth e Payment.
   # Sobe em uma unica porta e cria os dois databases pelo script de init.
   app-postgres:
     image: bitnami/postgresql:latest
@@ -85,7 +85,7 @@ volumes:
   ingressinhos-postgres-primary-data:
   # Dados persistidos da replica do Ingressinhos.
   ingressinhos-postgres-replica-data:
-  # Dados persistidos do banco compartilhado de Auth e Payment.
+  # Dados persistidos do banco compartilhado de SentinelAuth e Payment.
   app-postgres-data:
 
 networks:

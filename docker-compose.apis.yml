@@ -1,19 +1,22 @@
 name: ingressinhos-apis
 
 services:
-  auth-api:
+  sentinel-auth-api:
     build:
-      context: .
-      dockerfile: Auth.API/Dockerfile
-    image: ingressinhos/auth-api:dev
-    container_name: ingressinhos-auth-api
+      context: ../SentinelAuth/SentinelAuthBackEnd
+      dockerfile: SentinelAuth.API/Dockerfile
+    image: ingressinhos/sentinel-auth-api:dev
+    container_name: ingressinhos-sentinel-auth-api
     restart: unless-stopped
     ports:
       - "5254:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__AuthConnection: "Host=app-postgres;Port=5432;Database=IngressinhosAuthDb;Username=postgres;Password=***REMOVED***"
+      ConnectionStrings__DefaultConnection: "Host=app-postgres;Port=5432;Database=SentinelAuthDb;Username=postgres;Password=***REMOVED***"
+      Jwt__Issuer: SentinelAuth
+      Jwt__SecretKey: ***REMOVED_JWT_SECRET***
+      Seed__Ingressinhos__Enabled: "true"
     networks:
       - ingressinhos-network
 
@@ -59,7 +62,12 @@ services:
       Messaging__RabbitMq__Port: 5672
       Messaging__RabbitMq__UserName: admin
       Messaging__RabbitMq__Password: 1234
-      AuthApi__BaseUrl: http://auth-api:8080
+      AuthApi__BaseUrl: http://sentinel-auth-api:8080
+      AuthApi__ClientId: ingressinhos-api
+      AuthApi__ApplicationClientId: 1
+      AuthApi__AdminRoleId: 1
+      AuthApi__SellerRoleId: 2
+      AuthApi__ClientRoleId: 3
       PaymentApi__BaseUrl: http://payment-api:8080
     networks:
       - ingressinhos-network

@@ -17,7 +17,7 @@ docker compose down
 
 APIs expostas no host:
 
-- `http://localhost:5254` -> Auth API
+- `http://localhost:5254` -> SentinelAuth API
 - `http://localhost:5202` -> Ingressinhos API
 - `http://localhost:5071` -> Payment API
 - `http://localhost:5110` -> Generic API
@@ -28,7 +28,7 @@ Servicos de apoio:
 - `localhost:27017` -> MongoDB
 - `localhost:15432` -> PostgreSQL primary do Ingressinhos
 - `localhost:15433` -> PostgreSQL replica do Ingressinhos
-- `localhost:15434` -> PostgreSQL compartilhado de Auth e Payment
+- `localhost:15434` -> PostgreSQL compartilhado de SentinelAuth e Payment
 
 O compose completo nao aplica migrations automaticamente. Depois que os bancos subirem, aplique as migrations normalmente para cada contexto antes de usar as APIs.
 
@@ -88,13 +88,13 @@ Portas do host:
 
 - `15432` -> PostgreSQL primary
 - `15433` -> PostgreSQL replica
-- `15434` -> PostgreSQL compartilhado de `Auth` e `Payment`
+- `15434` -> PostgreSQL compartilhado de `SentinelAuth` e `Payment`
 
 Connections de desenvolvimento:
 
 - `DefaultConnection` -> `localhost:15432`
 - `ReadConnection` -> `localhost:15433`
-- `AuthConnection` -> `localhost:15434`
+- `SentinelAuth DefaultConnection` -> `localhost:15434`
 - `PaymentConnection` -> `localhost:15434`
 
 ### Migrations
@@ -108,9 +108,9 @@ Update-Database -Context AppDbContext
 
 Nao use o `ReadAppDbContext` para `Add-Migration` nem para `Update-Database`. A replica recebe schema e dados do primary pela replicacao do PostgreSQL.
 
-O banco compartilhado de `Auth` e `Payment` nao participa da replica do Ingressinhos. Ele sobe separado no mesmo compose, na mesma porta do host (`15434`), com dois databases:
+O banco compartilhado de `SentinelAuth` e `Payment` nao participa da replica do Ingressinhos. Ele sobe separado no mesmo compose, na mesma porta do host (`15434`), com dois databases:
 
-- `IngressinhosAuthDb`
+- `SentinelAuthDb`
 - `PaymentDb`
 
 ### Validacao rapida
