@@ -133,9 +133,30 @@ services:
       Cors__AllowedOrigins__0: http://localhost:5173
       Cors__AllowedOrigins__1: http://127.0.0.1:5173
       Cors__AllowedOrigins__2: http://10.0.2.2:5173
+      Cors__AllowedOrigins__3: ${SENTINEL_AUTH_FRONTEND_PUBLIC_URL:-https://auth.seu-dominio.com.br}
+      Cors__AllowedOrigins__4: ${INGRESSINHOS_PUBLIC_URL:-https://ingressinhos.seu-dominio.com.br}
     depends_on:
       app-postgres:
         condition: service_healthy
+    networks:
+      - ingressinhos-network
+
+  sentinel-auth-frontend:
+    build:
+      context: ../SentinelAuth/SentinelAuthFrontEnd
+      dockerfile: Dockerfile
+      args:
+        VITE_SENTINEL_AUTH_API_URL: ${SENTINEL_AUTH_API_PUBLIC_URL:-https://auth-api.seu-dominio.com.br}
+        VITE_DEFAULT_CLIENT_ID: ingressinhos-api
+        VITE_DEFAULT_REDIRECT_URI: ingressinhos://auth/callback
+        VITE_DEFAULT_STATE: ""
+    image: ingressinhos/sentinel-auth-frontend:dev
+    container_name: ingressinhos-sentinel-auth-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - sentinel-auth-api
     networks:
       - ingressinhos-network
 
@@ -156,7 +177,7 @@ services:
       Messaging__RabbitMq__Port: 5672
       Messaging__RabbitMq__UserName: admin
       Messaging__RabbitMq__Password: 1234
-      MockCheckout__PublicBaseUrl: https://example.trycloudflare.com/mock
+      MockCheckout__PublicBaseUrl: ${PAYMENT_PUBLIC_URL:-https://payment.seu-dominio.com.br}
     depends_on:
       app-postgres:
         condition: service_healthy
@@ -297,6 +318,7 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
+      - sentinel-auth-frontend
       - sentinel-auth-api
       - payment-api
       - ingressinhos-api
