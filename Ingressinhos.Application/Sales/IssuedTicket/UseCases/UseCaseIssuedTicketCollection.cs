@@ -21,8 +21,8 @@ public class UseCaseIssuedTicketCollection : UseCaseQueryCollection<IssuedTicket
         _getMyClientTickets = getMyClientTickets;
     }
 
-    public OperationResult<List<ClientTicketViewDto>> GetMyTickets()
+    public OperationResult<List<ClientTicketViewDto>> GetMyTickets(int skip = 0, int top = 50)
     {
-        return _getMyClientTickets.Execute();
+        return _getMyClientTickets.Execute(skip, top);
     }
 }

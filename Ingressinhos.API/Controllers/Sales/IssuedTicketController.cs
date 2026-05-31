@@ -28,9 +28,11 @@ public class IssuedTicketsController : ApiQuery<IssuedTicket>
 
     [HttpGet("me")]
     [Authorize(Policy = "OnlyClient")]
-    public IActionResult GetMyTickets()
+    public IActionResult GetMyTickets(
+        [FromQuery(Name = "$skip")] int skip = 0,
+        [FromQuery(Name = "$top")] int top = 50)
     {
-        return ExecuteCustomData(_useCaseCollection.GetMyTickets());
+        return ExecuteCustomData(_useCaseCollection.GetMyTickets(skip, top));
     }
 
     [HttpGet("{id:long}")]

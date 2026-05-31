@@ -129,6 +129,33 @@ public class Ticket : BaseEntity
         }
     }
 
+    public void ChangeName(string name)
+    {
+        ClearErrors();
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            AddError("Ingresso", "Informe o nome do ingresso.");
+            return;
+        }
+
+        Name = name.Trim();
+    }
+
+    public void ChangeSalesPeriod(DateTime salesStartsAt, DateTime salesEndsAt)
+    {
+        ClearErrors();
+
+        if (salesEndsAt <= salesStartsAt)
+        {
+            AddError("Vendas", "O fim das vendas precisa ser posterior ao inicio.");
+            return;
+        }
+
+        SalesStartsAt = salesStartsAt;
+        SalesEndsAt = salesEndsAt;
+    }
+
     public void Reserve(int quantity, DateTime referenceDate)
     {
         ClearErrors();

@@ -67,6 +67,25 @@ public class TicketUpdate : IUseCaseCommand<TicketDto>
                 }
             }
 
+            if (ticket.Name != ticketEntity.Name)
+            {
+                ticketEntity.ChangeName(ticket.Name);
+                if (!ticketEntity.IsValid)
+                {
+                    return ticketEntity.ToUnprocessableEntityResult();
+                }
+            }
+
+            if (ticket.SalesStartsAt != ticketEntity.SalesStartsAt ||
+                ticket.SalesEndsAt != ticketEntity.SalesEndsAt)
+            {
+                ticketEntity.ChangeSalesPeriod(ticket.SalesStartsAt, ticket.SalesEndsAt);
+                if (!ticketEntity.IsValid)
+                {
+                    return ticketEntity.ToUnprocessableEntityResult();
+                }
+            }
+
             if (ticket.IsActive && ticketEntity.Status == CatalogTicketStatus.Inactive)
             {
                 ticketEntity.Enable();
