@@ -207,12 +207,12 @@ services:
       Messaging__RabbitMq__Port: 5672
       Messaging__RabbitMq__UserName: admin
       Messaging__RabbitMq__Password: 1234
-      AuthApi__BaseUrl: http://sentinel-auth-api:8080
-      AuthApi__ClientId: ingressinhos-api
-      AuthApi__ApplicationClientId: 1
-      AuthApi__AdminRoleId: 1
-      AuthApi__SellerRoleId: 2
-      AuthApi__ClientRoleId: 3
+      SentinelAuthClient__BaseUrl: http://sentinel-auth-api:8080
+      SentinelAuthClient__ClientId: ingressinhos-api
+      SentinelAuthClient__ApplicationClientId: 1
+      SentinelAuthClient__AdminRoleId: 1
+      SentinelAuthClient__SellerRoleId: 2
+      SentinelAuthClient__ClientRoleId: 3
       PaymentApi__BaseUrl: http://payment-api:8080
     depends_on:
       ingressinhos-postgres-primary:

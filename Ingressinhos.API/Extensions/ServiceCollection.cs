@@ -31,7 +31,7 @@ public static class ServiceCollectionExtensions
         services.AddIngressinhosMessaging(configuration, contentRootPath);
         services.AddIngressinhosTicketReadModel(configuration);
         services.AddIngressinhosApplicationUseCases();
-        services.AddIngressinhosAuthClient(configuration);
+        services.AddIngressinhosSentinelAuthClient(configuration);
         services.AddIngressinhosPaymentClient(configuration);
         return services;
     }
@@ -203,13 +203,13 @@ public static class ServiceCollectionExtensions
         };
     }
 
-    public static IServiceCollection AddIngressinhosAuthClient(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddIngressinhosSentinelAuthClient(this IServiceCollection services, IConfiguration configuration)
     {
-        var authSection = configuration.GetSection("AuthApi");
+        var authSection = configuration.GetSection("SentinelAuthClient");
         var authApiBaseUrl = authSection["BaseUrl"];
         if (string.IsNullOrWhiteSpace(authApiBaseUrl))
         {
-            throw new InvalidOperationException("AuthApi:BaseUrl nao foi configurado. Ex.: http://localhost:5254");
+            throw new InvalidOperationException("SentinelAuthClient:BaseUrl nao foi configurado. Ex.: http://localhost:5254");
         }
 
         services.AddSingleton(new SentinelAuthClientOptions
