@@ -11,6 +11,7 @@ public class UseCaseEventCollection : UseCaseCrudCollection<Event, EventDto>, IU
 {
     private readonly EventGetWithTickets _eventGetWithTickets;
     private readonly EventGetSeats _eventGetSeats;
+    private readonly EventDelete _eventDelete;
 
     public UseCaseEventCollection(
         IRepositorySession repositorySession,
@@ -18,11 +19,13 @@ public class UseCaseEventCollection : UseCaseCrudCollection<Event, EventDto>, IU
         EventUpdate update,
         EventInclude include,
         EventGetWithTickets eventGetWithTickets,
-        EventGetSeats eventGetSeats)
+        EventGetSeats eventGetSeats,
+        EventDelete eventDelete)
         : base(include, update, new UseCaseGetOdata<Event>(), new UseCaseGetId<Event>(), new UseCaseDelete<Event>(), repositorySession, readRepositoryQuery)
     {
         _eventGetWithTickets = eventGetWithTickets;
         _eventGetSeats = eventGetSeats;
+        _eventDelete = eventDelete;
     }
 
     public OperationResult<List<TOutput>> GetWithTicketsResult<TOutput>(Func<IQueryable<EventWithTicketsDto>, IQueryable<TOutput>> query)
@@ -33,5 +36,10 @@ public class UseCaseEventCollection : UseCaseCrudCollection<Event, EventDto>, IU
     public OperationResult<List<EventSeatAvailabilityDto>> GetSeats(long eventId)
     {
         return _eventGetSeats.Execute(eventId);
+    }
+
+    public OperationResult DeleteEvent(long eventId)
+    {
+        return _eventDelete.Execute(eventId);
     }
 }

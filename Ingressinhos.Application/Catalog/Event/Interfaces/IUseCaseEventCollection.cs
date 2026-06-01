@@ -9,4 +9,5 @@ public interface IUseCaseEventCollection : IUseCaseCrudCollection<Event, EventDt
 {
     OperationResult<List<TOutput>> GetWithTicketsResult<TOutput>(Func<IQueryable<EventWithTicketsDto>, IQueryable<TOutput>> query);
     OperationResult<List<EventSeatAvailabilityDto>> GetSeats(long eventId);
+    OperationResult DeleteEvent(long eventId);
 }

@@ -67,9 +67,9 @@ public class EventsController : ApiCrud<Event, EventDto>
     }
 
     [HttpDelete("{id:long}")]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = "SellerOrAdmin")]
     public IActionResult Delete(long id)
     {
-        return DeleteResult(id);
+        return ExecuteCustom(_eventCollection.DeleteEvent(id));
     }
 }
