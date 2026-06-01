@@ -7,11 +7,11 @@ services:
       - "15432:5432"
     environment:
       ALLOW_EMPTY_PASSWORD: "no"
-      POSTGRESQL_PASSWORD: "***REMOVED***"
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRESQL_DATABASE: "IngressinhosDb"
       POSTGRESQL_REPLICATION_MODE: "master"
       POSTGRESQL_REPLICATION_USER: "replicator"
-      POSTGRESQL_REPLICATION_PASSWORD: "***REMOVED_REPLICATION_PASSWORD***"
+      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRES_REPLICATION_PASSWORD:?Set POSTGRES_REPLICATION_PASSWORD in .env}
     volumes:
       - ingressinhos-postgres-primary-data:/bitnami/postgresql
     healthcheck:
@@ -34,12 +34,12 @@ services:
       - "15433:5432"
     environment:
       ALLOW_EMPTY_PASSWORD: "no"
-      POSTGRESQL_PASSWORD: "***REMOVED***"
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRESQL_REPLICATION_MODE: "slave"
       POSTGRESQL_MASTER_HOST: "ingressinhos-postgres-primary"
       POSTGRESQL_MASTER_PORT_NUMBER: "5432"
       POSTGRESQL_REPLICATION_USER: "replicator"
-      POSTGRESQL_REPLICATION_PASSWORD: "***REMOVED_REPLICATION_PASSWORD***"
+      POSTGRESQL_REPLICATION_PASSWORD: ${POSTGRES_REPLICATION_PASSWORD:?Set POSTGRES_REPLICATION_PASSWORD in .env}
     volumes:
       - ingressinhos-postgres-replica-data:/bitnami/postgresql
     healthcheck:
@@ -59,7 +59,7 @@ services:
       - "15434:5432"
     environment:
       ALLOW_EMPTY_PASSWORD: "no"
-      POSTGRESQL_PASSWORD: "***REMOVED***"
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
     volumes:
       - app-postgres-data:/bitnami/postgresql
       - ./docker/postgres/init-app-databases.sh:/docker-entrypoint-initdb.d/init-app-databases.sh:ro
@@ -80,8 +80,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: admin
-      RABBITMQ_DEFAULT_PASS: ***REMOVED***
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
     healthcheck:
@@ -100,13 +100,13 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: ***REMOVED***
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:?Set MONGO_USER in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Set MONGO_PASSWORD in .env}
       MONGO_INITDB_DATABASE: IngressinhosReadDb
     volumes:
       - ingressinhos-mongodb-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "-u", "admin", "-p", "1234", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping').ok"]
+      test: ["CMD-SHELL", "mongosh --quiet -u \"$${MONGO_INITDB_ROOT_USERNAME}\" -p \"$${MONGO_INITDB_ROOT_PASSWORD}\" --authenticationDatabase admin --eval \"db.adminCommand('ping').ok\""]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -126,16 +126,20 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Host=app-postgres;Port=5432;Database=SentinelAuthDb;Username=postgres;Password=***REMOVED***"
+      ConnectionStrings__DefaultConnection: ${SENTINEL_AUTH_DB_CONNECTION:?Set SENTINEL_AUTH_DB_CONNECTION in .env}
       Jwt__Issuer: SentinelAuth
-      Jwt__SecretKey: ***REMOVED_JWT_SECRET***
+      Jwt__SecretKey: ${SENTINEL_AUTH_JWT_SECRET:?Set SENTINEL_AUTH_JWT_SECRET in .env}
       Seed__Ingressinhos__Enabled: "true"
-      Seed__Ingressinhos__ClientSecret: ${SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET:-***REMOVED_CLIENT_SECRET***}
+      Seed__Ingressinhos__ClientSecret: ${SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET:?Set SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET in .env}
+      Bootstrap__SuperAdmin__Enabled: ${SENTINEL_BOOTSTRAP_SUPERADMIN_ENABLED:-true}
+      Bootstrap__SuperAdmin__Email: ${SENTINEL_BOOTSTRAP_SUPERADMIN_EMAIL:?Set SENTINEL_BOOTSTRAP_SUPERADMIN_EMAIL in .env}
+      Bootstrap__SuperAdmin__Password: ${SENTINEL_BOOTSTRAP_SUPERADMIN_PASSWORD:?Set SENTINEL_BOOTSTRAP_SUPERADMIN_PASSWORD in .env}
+      Bootstrap__SuperAdmin__Name: ${SENTINEL_BOOTSTRAP_SUPERADMIN_NAME:-Sentinel SuperAdmin}
       Cors__AllowedOrigins__0: http://localhost:5173
       Cors__AllowedOrigins__1: http://127.0.0.1:5173
       Cors__AllowedOrigins__2: http://10.0.2.2:5173
-      Cors__AllowedOrigins__3: ${SENTINEL_AUTH_FRONTEND_PUBLIC_URL:-https://auth.seu-dominio.com.br}
-      Cors__AllowedOrigins__4: ${INGRESSINHOS_PUBLIC_URL:-https://ingressinhos.seu-dominio.com.br}
+      Cors__AllowedOrigins__3: ${SENTINEL_AUTH_FRONTEND_PUBLIC_URL:?Set SENTINEL_AUTH_FRONTEND_PUBLIC_URL in .env}
+      Cors__AllowedOrigins__4: ${INGRESSINHOS_PUBLIC_URL:?Set INGRESSINHOS_PUBLIC_URL in .env}
     depends_on:
       app-postgres:
         condition: service_healthy
@@ -147,7 +151,7 @@ services:
       context: ../SentinelAuth/SentinelAuthFrontEnd
       dockerfile: Dockerfile
       args:
-        VITE_SENTINEL_AUTH_API_URL: ${SENTINEL_AUTH_API_PUBLIC_URL:-https://auth-api.seu-dominio.com.br}
+        VITE_SENTINEL_AUTH_API_URL: ${SENTINEL_AUTH_API_PUBLIC_URL:?Set SENTINEL_AUTH_API_PUBLIC_URL in .env}
         VITE_DEFAULT_CLIENT_ID: ingressinhos-api
         VITE_DEFAULT_REDIRECT_URI: ingressinhos://auth/callback
         VITE_DEFAULT_STATE: ""
@@ -173,12 +177,12 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__PaymentConnection: "Host=app-postgres;Port=5432;Database=PaymentDb;Username=postgres;Password=***REMOVED***"
+      ConnectionStrings__PaymentConnection: ${PAYMENT_DB_CONNECTION:?Set PAYMENT_DB_CONNECTION in .env}
       Messaging__RabbitMq__HostName: rabbitmq
       Messaging__RabbitMq__Port: 5672
-      Messaging__RabbitMq__UserName: admin
-      Messaging__RabbitMq__Password: 1234
-      MockCheckout__PublicBaseUrl: ${PAYMENT_PUBLIC_URL:-https://payment.seu-dominio.com.br}
+      Messaging__RabbitMq__UserName: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env}
+      Messaging__RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
+      MockCheckout__PublicBaseUrl: ${PAYMENT_PUBLIC_URL:?Set PAYMENT_PUBLIC_URL in .env}
     depends_on:
       app-postgres:
         condition: service_healthy
@@ -199,18 +203,21 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: "Host=ingressinhos-postgres-primary;Port=5432;Database=IngressinhosDb;Username=postgres;Password=***REMOVED***"
-      ConnectionStrings__ReadConnection: "Host=ingressinhos-postgres-replica;Port=5432;Database=IngressinhosDb;Username=postgres;Password=***REMOVED***"
-      Mongo__ConnectionString: "mongodb://example:***REMOVED***@ingressinhos-mongodb:27017/?authSource=admin"
+      ConnectionStrings__DefaultConnection: ${INGRESSINHOS_DB_CONNECTION:?Set INGRESSINHOS_DB_CONNECTION in .env}
+      ConnectionStrings__ReadConnection: ${INGRESSINHOS_READ_DB_CONNECTION:?Set INGRESSINHOS_READ_DB_CONNECTION in .env}
+      Mongo__ConnectionString: ${INGRESSINHOS_MONGO_CONNECTION:?Set INGRESSINHOS_MONGO_CONNECTION in .env}
       Mongo__Database: IngressinhosReadDb
       Mongo__TicketCollection: clientTickets
       Messaging__RabbitMq__HostName: rabbitmq
       Messaging__RabbitMq__Port: 5672
-      Messaging__RabbitMq__UserName: admin
-      Messaging__RabbitMq__Password: 1234
+      Messaging__RabbitMq__UserName: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env}
+      Messaging__RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
+      AppSettings__SecretKey: ${SENTINEL_AUTH_JWT_SECRET:?Set SENTINEL_AUTH_JWT_SECRET in .env}
+      AppSettings__Issuer: SentinelAuth
+      AppSettings__Audience: Ingressinhos.API
       SentinelAuthClient__BaseUrl: http://sentinel-auth-api:8080
       SentinelAuthClient__ClientId: ingressinhos-api
-      SentinelAuthClient__ClientSecret: ${SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET:-***REMOVED_CLIENT_SECRET***}
+      SentinelAuthClient__ClientSecret: ${SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET:?Set SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET in .env}
       SentinelAuthClient__ApplicationClientId: 1
       SentinelAuthClient__AdminRoleId: 1
       SentinelAuthClient__SellerRoleId: 2
@@ -241,14 +248,14 @@ services:
     restart: unless-stopped
     environment:
       DOTNET_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Host=ingressinhos-postgres-primary;Port=5432;Database=IngressinhosDb;Username=postgres;Password=***REMOVED***"
-      Mongo__ConnectionString: "mongodb://example:***REMOVED***@ingressinhos-mongodb:27017/?authSource=admin"
+      ConnectionStrings__DefaultConnection: ${INGRESSINHOS_DB_CONNECTION:?Set INGRESSINHOS_DB_CONNECTION in .env}
+      Mongo__ConnectionString: ${INGRESSINHOS_MONGO_CONNECTION:?Set INGRESSINHOS_MONGO_CONNECTION in .env}
       Mongo__Database: IngressinhosReadDb
       Mongo__TicketCollection: clientTickets
       Messaging__RabbitMq__HostName: rabbitmq
       Messaging__RabbitMq__Port: 5672
-      Messaging__RabbitMq__UserName: admin
-      Messaging__RabbitMq__Password: 1234
+      Messaging__RabbitMq__UserName: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env}
+      Messaging__RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
       TicketReadModelBackfill__EnabledOnStartup: "false"
       TicketReadModelBackfill__BatchSize: 100
     depends_on:
@@ -270,11 +277,11 @@ services:
     restart: unless-stopped
     environment:
       DOTNET_ENVIRONMENT: Development
-      ConnectionStrings__PaymentConnection: "Host=app-postgres;Port=5432;Database=PaymentDb;Username=postgres;Password=***REMOVED***"
+      ConnectionStrings__PaymentConnection: ${PAYMENT_DB_CONNECTION:?Set PAYMENT_DB_CONNECTION in .env}
       Messaging__RabbitMq__HostName: rabbitmq
       Messaging__RabbitMq__Port: 5672
-      Messaging__RabbitMq__UserName: admin
-      Messaging__RabbitMq__Password: 1234
+      Messaging__RabbitMq__UserName: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env}
+      Messaging__RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
       PaymentExpiration__CancelAfterMinutes: 30
     depends_on:
       app-postgres:

@@ -10,14 +10,14 @@ services:
     restart: unless-stopped
     environment:
       DOTNET_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Host=ingressinhos-postgres-primary;Port=5432;Database=IngressinhosDb;Username=postgres;Password=***REMOVED***"
-      Mongo__ConnectionString: "mongodb://example:***REMOVED***@ingressinhos-mongodb:27017/?authSource=admin"
+      ConnectionStrings__DefaultConnection: ${INGRESSINHOS_DB_CONNECTION:?Set INGRESSINHOS_DB_CONNECTION in .env}
+      Mongo__ConnectionString: ${INGRESSINHOS_MONGO_CONNECTION:?Set INGRESSINHOS_MONGO_CONNECTION in .env}
       Mongo__Database: IngressinhosReadDb
       Mongo__TicketCollection: clientTickets
       Messaging__RabbitMq__HostName: rabbitmq
       Messaging__RabbitMq__Port: 5672
-      Messaging__RabbitMq__UserName: admin
-      Messaging__RabbitMq__Password: 1234
+      Messaging__RabbitMq__UserName: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env}
+      Messaging__RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
       TicketReadModelBackfill__EnabledOnStartup: "false"
       TicketReadModelBackfill__BatchSize: 100
     networks:
@@ -32,11 +32,11 @@ services:
     restart: unless-stopped
     environment:
       DOTNET_ENVIRONMENT: Development
-      ConnectionStrings__PaymentConnection: "Host=app-postgres;Port=5432;Database=PaymentDb;Username=postgres;Password=***REMOVED***"
+      ConnectionStrings__PaymentConnection: ${PAYMENT_DB_CONNECTION:?Set PAYMENT_DB_CONNECTION in .env}
       Messaging__RabbitMq__HostName: rabbitmq
       Messaging__RabbitMq__Port: 5672
-      Messaging__RabbitMq__UserName: admin
-      Messaging__RabbitMq__Password: 1234
+      Messaging__RabbitMq__UserName: ${RABBITMQ_USER:?Set RABBITMQ_USER in .env}
+      Messaging__RabbitMq__Password: ${RABBITMQ_PASSWORD:?Set RABBITMQ_PASSWORD in .env}
       PaymentExpiration__CancelAfterMinutes: 30
     networks:
       - ingressinhos-network

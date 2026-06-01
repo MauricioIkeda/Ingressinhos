@@ -24,7 +24,7 @@ APIs expostas no host:
 
 Servicos de apoio:
 
-- `http://localhost:15672` -> painel do RabbitMQ (`example / ***REMOVED***`)
+- `http://localhost:15672` -> painel do RabbitMQ (credenciais do `.env`)
 - `localhost:27017` -> MongoDB
 - `localhost:15432` -> PostgreSQL primary do Ingressinhos
 - `localhost:15433` -> PostgreSQL replica do Ingressinhos
@@ -134,10 +134,10 @@ Portas do host:
 - `5672` -> broker AMQP
 - `15672` -> painel web do RabbitMQ
 
-Credenciais padrao do compose:
+Credenciais do compose:
 
-- usuario: `admin`
-- senha: `***REMOVED***`
+- usuario: valor de `RABBITMQ_USER` no `.env`
+- senha: valor de `RABBITMQ_PASSWORD` no `.env`
 
 Uso atual no projeto:
 
@@ -153,7 +153,7 @@ Configuracao local padrao:
 Validacao rapida:
 
 - abrir `http://localhost:15672`
-- entrar com `example / ***REMOVED***`
+- entrar com as credenciais `RABBITMQ_USER` / `RABBITMQ_PASSWORD` configuradas no `.env`
 - confirmar se o broker esta online antes de subir os workers
 
 ## MongoDB para leitura de bilhetes
@@ -170,7 +170,7 @@ Portas do host:
 
 Configuracao local padrao:
 
-- `Mongo:ConnectionString` -> `mongodb://example:***REMOVED***@localhost:27017/?authSource=admin`
+- `Mongo:ConnectionString` -> configure via `.env`, por exemplo `INGRESSINHOS_MONGO_CONNECTION`.
 - `Mongo:Database` -> `IngressinhosReadDb`
 - `Mongo:TicketCollection` -> `clientTickets`
 

@@ -8,13 +8,13 @@ services:
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: ***REMOVED***
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:?Set MONGO_USER in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Set MONGO_PASSWORD in .env}
       MONGO_INITDB_DATABASE: IngressinhosReadDb
     volumes:
       - ingressinhos-mongodb-data:/data/db
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "-u", "admin", "-p", "1234", "--authenticationDatabase", "admin", "--eval", "db.adminCommand('ping').ok"]
+      test: ["CMD-SHELL", "mongosh --quiet -u \"$${MONGO_INITDB_ROOT_USERNAME}\" -p \"$${MONGO_INITDB_ROOT_PASSWORD}\" --authenticationDatabase admin --eval \"db.adminCommand('ping').ok\""]
       interval: 10s
       timeout: 5s
       retries: 10
