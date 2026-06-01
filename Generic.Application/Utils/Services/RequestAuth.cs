@@ -1,4 +1,5 @@
-﻿using System.Net;
+using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Generic.Application.Dtos;
@@ -11,6 +12,8 @@ public sealed class RequestAuth : IRequestAuth
 {
     private readonly HttpClient _httpClient; // usar using para dar dispose automaticamente e não esquecermos
     private readonly SentinelAuthClientOptions _options;
+    private string _applicationAccessToken = string.Empty;
+    private DateTimeOffset _applicationAccessTokenExpiresAt = DateTimeOffset.MinValue;
 
     public RequestAuth(HttpClient httpClient, SentinelAuthClientOptions options)
     {
@@ -43,8 +46,7 @@ public sealed class RequestAuth : IRequestAuth
                 return OperationResult<string>.FatalError(new MensagemErro(propertyName, "Nao conseguimos concluir a criacao da conta agora."));
             }
 
-            var assignRoleRequest = new SentinelAssignRoleRequest(payload.Id, _options.ApplicationClientId, roleId);
-            using var assignRoleResponse = await _httpClient.PostAsJsonAsync("api/user-roles/assign", assignRoleRequest);
+            using var assignRoleResponse = await AssignRoleAsync(payload.Id, roleId);
 
             if (!assignRoleResponse.IsSuccessStatusCode)
             {
@@ -145,8 +147,7 @@ public sealed class RequestAuth : IRequestAuth
 
         try
         {
-            var request = new SentinelAssignRoleRequest(parsedUserId, _options.ApplicationClientId, roleId);
-            using var response = await _httpClient.PostAsJsonAsync("api/user-roles/assign", request);
+            using var response = await AssignRoleAsync(parsedUserId, roleId);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -159,6 +160,53 @@ public sealed class RequestAuth : IRequestAuth
         {
             return OperationResult.FatalError(new MensagemErro(propertyName, "Nao conseguimos falar com o servico de conta agora."));
         }
+    }
+
+    private async Task<HttpResponseMessage> AssignRoleAsync(long userId, long roleId)
+    {
+        var token = await GetApplicationAccessTokenAsync();
+        var request = new SentinelAssignRoleRequest(userId, _options.ApplicationClientId, roleId);
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "api/user-roles/assign")
+        {
+            Content = JsonContent.Create(request)
+        };
+        httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        return await _httpClient.SendAsync(httpRequest);
+    }
+
+    private async Task<string> GetApplicationAccessTokenAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(_applicationAccessToken) &&
+            _applicationAccessTokenExpiresAt > DateTimeOffset.UtcNow.AddMinutes(1))
+        {
+            return _applicationAccessToken;
+        }
+
+        if (string.IsNullOrWhiteSpace(_options.ClientId) ||
+            string.IsNullOrWhiteSpace(_options.ClientSecret))
+        {
+            throw new InvalidOperationException("Configuracao do SentinelAuth esta incompleta.");
+        }
+
+        var tokenRequest = new SentinelClientCredentialsRequest(
+            "client_credentials",
+            _options.ClientId,
+            _options.ClientSecret,
+            "roles:assign"
+        );
+
+        using var response = await _httpClient.PostAsJsonAsync("api/oauth/token", tokenRequest);
+        response.EnsureSuccessStatusCode();
+
+        var payload = await response.Content.ReadFromJsonAsync<SentinelClientCredentialsResponse>();
+        if (payload is null || string.IsNullOrWhiteSpace(payload.AccessToken))
+        {
+            throw new InvalidOperationException("Nao foi possivel autenticar a aplicacao no SentinelAuth.");
+        }
+
+        _applicationAccessToken = payload.AccessToken;
+        _applicationAccessTokenExpiresAt = payload.ExpiresAt;
+        return _applicationAccessToken;
     }
 
     private static async Task<OperationResult> CreateFailureResultAsync(HttpResponseMessage response, string propertyName, string fallback)
@@ -231,3 +279,4 @@ public sealed class RequestAuth : IRequestAuth
         }
     }
 }
+

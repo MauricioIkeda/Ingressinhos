@@ -217,6 +217,7 @@ public static class ServiceCollectionExtensions
         {
             ApplicationClientId = long.TryParse(authSection["ApplicationClientId"], out var applicationClientId) ? applicationClientId : 0,
             ClientId = authSection["ClientId"] ?? string.Empty,
+            ClientSecret = authSection["ClientSecret"] ?? string.Empty,
             AdminRoleId = long.TryParse(authSection["AdminRoleId"], out var adminRoleId) ? adminRoleId : 0,
             SellerRoleId = long.TryParse(authSection["SellerRoleId"], out var sellerRoleId) ? sellerRoleId : 0,
             ClientRoleId = long.TryParse(authSection["ClientRoleId"], out var clientRoleId) ? clientRoleId : 0

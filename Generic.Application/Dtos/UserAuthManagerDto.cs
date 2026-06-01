@@ -1,4 +1,4 @@
-﻿
+
 
 namespace Generic.Application.Dtos
 {
@@ -7,6 +7,8 @@ namespace Generic.Application.Dtos
     public record SentinelRegisterUserRequest(string Name, string Email, string Password);
     public record SentinelRegisterUserResponse(long Id, string Username, string Password);
     public record SentinelAssignRoleRequest(long UserId, long ApplicationClientId, long RoleId);
+    public record SentinelClientCredentialsRequest(string GrantType, string ClientId, string ClientSecret, string Scope);
+    public record SentinelClientCredentialsResponse(string AccessToken, string RefreshToken, DateTimeOffset ExpiresAt);
     public record AuthenticateRequest(string Email, string Password);
     public record RefreshTokenRequest(string Token, string RefreshToken);
     public record AuthenticateResponse(string Token, string RefreshToken);
@@ -15,3 +17,4 @@ namespace Generic.Application.Dtos
     public record ErrorResponse(string Message);
     public record ProblemDetailsResponse(string Title, string Detail);
 }
+

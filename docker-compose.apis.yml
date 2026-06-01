@@ -17,6 +17,7 @@ services:
       Jwt__Issuer: SentinelAuth
       Jwt__SecretKey: ***REMOVED_JWT_SECRET***
       Seed__Ingressinhos__Enabled: "true"
+      Seed__Ingressinhos__ClientSecret: ${SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET:-***REMOVED_CLIENT_SECRET***}
       Cors__AllowedOrigins__0: http://localhost:5173
       Cors__AllowedOrigins__1: http://127.0.0.1:5173
       Cors__AllowedOrigins__2: http://10.0.2.2:5173
@@ -86,6 +87,7 @@ services:
       Messaging__RabbitMq__Password: 1234
       SentinelAuthClient__BaseUrl: http://sentinel-auth-api:8080
       SentinelAuthClient__ClientId: ingressinhos-api
+      SentinelAuthClient__ClientSecret: ${SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET:-***REMOVED_CLIENT_SECRET***}
       SentinelAuthClient__ApplicationClientId: 1
       SentinelAuthClient__AdminRoleId: 1
       SentinelAuthClient__SellerRoleId: 2

@@ -4,6 +4,7 @@ public sealed class SentinelAuthClientOptions
 {
     public long ApplicationClientId { get; init; }
     public string ClientId { get; init; } = string.Empty;
+    public string ClientSecret { get; init; } = string.Empty;
     public long AdminRoleId { get; init; }
     public long SellerRoleId { get; init; }
     public long ClientRoleId { get; init; }
