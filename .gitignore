@@ -403,3 +403,9 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /.idea
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+backups/
