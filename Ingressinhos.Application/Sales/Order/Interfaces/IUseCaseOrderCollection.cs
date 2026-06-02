@@ -12,6 +12,6 @@ public interface IUseCaseOrderCollection : IUseCaseQueryCollection<OrderDomain>
     OperationResult AddCartItem(AddCartItemRequest command);
     OperationResult RemoveCartItem(long orderItemId);
     OperationResult ResetCart(long clientId = 0);
-    OperationResult<PaymentCheckoutApiDto> Close(long orderId);
-    OperationResult<PaymentCheckoutApiDto> Immediate(CreateOrderRequest command);
+    OperationResult<PaymentCheckoutApiDto> Close(long orderId); // fecha o carrinho, gera o pedido, e retorna os dados para checkout
+    OperationResult<PaymentCheckoutApiDto> Immediate(CreateOrderRequest command); // mesma coisa do carrinhos, mas já fecha na mesma requisição
 }

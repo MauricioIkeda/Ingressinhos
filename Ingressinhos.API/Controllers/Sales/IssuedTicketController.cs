@@ -1,9 +1,12 @@
 using Generic.Api.Controllers;
+using Ingressinhos.API.Extensions;
 using Ingressinhos.Application.Sales.Interfaces;
+using Ingressinhos.Application.Sales.TicketReadModel.Dtos;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Query;
+using Microsoft.OData.Edm;
 
 namespace Ingressinhos.API.Controllers.Sales;
 
@@ -12,6 +15,7 @@ namespace Ingressinhos.API.Controllers.Sales;
 [Route("api/[controller]")]
 public class IssuedTicketsController : ApiQuery<IssuedTicket>
 {
+    private static readonly IEdmModel ClientTicketViewEdmModel = ODataExtensions.GetClientTicketViewEdmModel();
     private readonly IUseCaseIssuedTicketCollection _useCaseCollection;
 
     public IssuedTicketsController(IUseCaseIssuedTicketCollection useCaseCollection) : base(useCaseCollection)
@@ -28,11 +32,13 @@ public class IssuedTicketsController : ApiQuery<IssuedTicket>
 
     [HttpGet("me")]
     [Authorize(Policy = "OnlyClient")]
-    public IActionResult GetMyTickets(
-        [FromQuery(Name = "$skip")] int skip = 0,
-        [FromQuery(Name = "$top")] int top = 50)
+    public IActionResult GetMyTickets()
     {
-        return ExecuteCustomData(_useCaseCollection.GetMyTickets(skip, top));
+        DefaultOdataSettings.PageSize = 100;
+
+        return OData(
+            CreateQueryOptions<ClientTicketViewDto>(ClientTicketViewEdmModel),
+            query => _useCaseCollection.GetMyTickets(query));
     }
 
     [HttpGet("{id:long}")]

@@ -5,5 +5,5 @@ namespace Ingressinhos.Application.Sales.TicketReadModel.Interfaces;
 
 public interface IUseCaseGetMyClientTickets
 {
-    OperationResult<List<ClientTicketViewDto>> Execute(int skip = 0, int top = 50);
+    OperationResult<List<TOutput>> Execute<TOutput>(Func<IQueryable<ClientTicketViewDto>, IQueryable<TOutput>> query);
 }

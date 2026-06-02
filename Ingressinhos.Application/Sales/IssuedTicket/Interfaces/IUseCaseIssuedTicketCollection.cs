@@ -8,5 +8,5 @@ namespace Ingressinhos.Application.Sales.Interfaces;
 
 public interface IUseCaseIssuedTicketCollection : IUseCaseQueryCollection<IssuedTicketDomain>
 {
-    OperationResult<List<ClientTicketViewDto>> GetMyTickets(int skip = 0, int top = 50);
+    OperationResult<List<TOutput>> GetMyTickets<TOutput>(Func<IQueryable<ClientTicketViewDto>, IQueryable<TOutput>> query);
 }

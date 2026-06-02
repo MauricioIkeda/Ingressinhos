@@ -1,8 +1,10 @@
 using Ingressinhos.Application.Sales.TicketReadModel.Interfaces;
+using Ingressinhos.Application.Sales.TicketReadModel.Dtos;
 using Ingressinhos.Application.Sales.TicketReadModel.Models;
 using Ingressinhos.Infrastructure.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 
 namespace Ingressinhos.Infrastructure.ReadModels.TicketReadModel;
 
@@ -54,22 +56,43 @@ public class MongoClientTicketReadModelRepository : IClientTicketReadModelWriter
         }
     }
 
-    public IReadOnlyCollection<ClientTicketReadModelEntry> GetByClientUserId(string clientUserId) // Pegar os tickets
+    public IReadOnlyCollection<TOutput> Get<TOutput>(Func<IQueryable<ClientTicketViewDto>, IQueryable<TOutput>> query)
     {
-        if (string.IsNullOrWhiteSpace(clientUserId))
+        if (query is null)
         {
-            return [];
+            throw new ArgumentNullException(nameof(query));
         }
 
         EnsureIndexes();
 
-        return _collection
-            .Find(ticket => ticket.ClientUserId == clientUserId.Trim())
-            .SortBy(ticket => ticket.EventStartTimeUtc)
-            .ThenBy(ticket => ticket.IssuedTicketId)
-            .ToList()
-            .Select(ToEntry)
-            .ToList();
+        var tickets = _collection.AsQueryable() // aplicando getodata no mongo
+            .Select(ticket => new ClientTicketViewDto // convertendo para DTO
+            {
+                IssuedTicketId = ticket.IssuedTicketId,
+                AccessCode = ticket.AccessCode,
+                Status = ticket.Status,
+                IssuedAtUtc = ticket.IssuedAtUtc,
+                CheckedInAtUtc = ticket.CheckedInAtUtc,
+                CancelledAtUtc = ticket.CancelledAtUtc,
+                PaidAtUtc = ticket.PaidAtUtc,
+                ClientId = ticket.ClientId,
+                ClientUserId = ticket.ClientUserId,
+                OrderId = ticket.OrderId,
+                OrderItemId = ticket.OrderItemId,
+                TicketName = ticket.TicketName,
+                SeatCode = ticket.SeatCode,
+                Category = ticket.Category,
+                EventId = ticket.EventId,
+                EventName = ticket.EventName,
+                EventStartTimeUtc = ticket.EventStartTimeUtc,
+                EventEndTimeUtc = ticket.EventEndTimeUtc,
+                EventImageUrl = ticket.EventImageUrl,
+                LocationId = ticket.LocationId,
+                LocationName = ticket.LocationName,
+                ProjectedAtUtc = ticket.ProjectedAtUtc
+            });
+
+        return query(tickets).ToList();
     }
 
     public bool IsAvailable() // conferir se o banco está ON
@@ -147,32 +170,4 @@ public class MongoClientTicketReadModelRepository : IClientTicketReadModelWriter
         };
     }
 
-    private static ClientTicketReadModelEntry ToEntry(ClientTicketDocument ticket) // Converte documento para modelo de leitura
-    {
-        return new ClientTicketReadModelEntry
-        {
-            IssuedTicketId = ticket.IssuedTicketId,
-            AccessCode = ticket.AccessCode,
-            Status = ticket.Status,
-            IssuedAtUtc = ticket.IssuedAtUtc,
-            CheckedInAtUtc = ticket.CheckedInAtUtc,
-            CancelledAtUtc = ticket.CancelledAtUtc,
-            PaidAtUtc = ticket.PaidAtUtc,
-            ClientId = ticket.ClientId,
-            ClientUserId = ticket.ClientUserId,
-            OrderId = ticket.OrderId,
-            OrderItemId = ticket.OrderItemId,
-            TicketName = ticket.TicketName,
-            SeatCode = ticket.SeatCode,
-            Category = ticket.Category,
-            EventId = ticket.EventId,
-            EventName = ticket.EventName,
-            EventStartTimeUtc = ticket.EventStartTimeUtc,
-            EventEndTimeUtc = ticket.EventEndTimeUtc,
-            EventImageUrl = ticket.EventImageUrl,
-            LocationId = ticket.LocationId,
-            LocationName = ticket.LocationName,
-            ProjectedAtUtc = ticket.ProjectedAtUtc
-        };
-    }
 }

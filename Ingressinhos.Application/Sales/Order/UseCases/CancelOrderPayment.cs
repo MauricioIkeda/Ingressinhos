@@ -8,7 +8,7 @@ using OrderDomain = Ingressinhos.Domain.Sales.Entities.Order;
 
 namespace Ingressinhos.Application.Sales.UseCases;
 
-public class CancelOrderPayment : IUseCaseCancelOrderPayment
+public class CancelOrderPayment : IUseCaseCancelOrderPayment 
 {
     private readonly IRepositorySession _repositorySession;
 
@@ -42,7 +42,7 @@ public class CancelOrderPayment : IUseCaseCancelOrderPayment
 
             if (order.Status == OrderStatus.Paid)
             {
-                return OperationResult.UnprocessableEntity(new MensagemErro("Pedido", "Nao e possivel cancelar um pedido ja pago."));
+                return OperationResult.Ok(); // Se estiver pago, só retorna OK, e não faz mais nada, nem falha não é responsabilidade daqui
             }
 
             if (order.Status != OrderStatus.PendingPayment)

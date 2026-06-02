@@ -2,6 +2,7 @@ using Generic.Domain.Entities;
 using Generic.Domain.ValueObjects;
 using Ingressinhos.Application.Catalog.Dtos;
 using Ingressinhos.Application.Sales.Dtos;
+using Ingressinhos.Application.Sales.TicketReadModel.Dtos;
 using Ingressinhos.Domain.Catalog.Entities;
 using Ingressinhos.Domain.Sales.Entities;
 using Microsoft.OData.Edm;
@@ -9,7 +10,7 @@ using Microsoft.OData.ModelBuilder;
 
 namespace Ingressinhos.API.Extensions;
 
-public static class ODataExtensions
+public static class ODataExtensions // Isso daqui serve para configurar os modelos Odatas, para ele saber mapear
 {
     public static IEdmModel GetIngressinhosEdmModel()
     {
@@ -78,6 +79,14 @@ public static class ODataExtensions
         var builder = new ODataConventionModelBuilder();
         builder.EntitySet<OrderItemQueryItem>("OrderItems");
         builder.EntityType<OrderItemQueryItem>().HasKey(orderItem => orderItem.Id);
+        return builder.GetEdmModel();
+    }
+
+    public static IEdmModel GetClientTicketViewEdmModel() // modelo de Dto para a view de ingressos do cliente
+    {
+        var builder = new ODataConventionModelBuilder();
+        builder.EntitySet<ClientTicketViewDto>("IssuedTickets");
+        builder.EntityType<ClientTicketViewDto>().HasKey(ticket => ticket.IssuedTicketId);
         return builder.GetEdmModel();
     }
 
