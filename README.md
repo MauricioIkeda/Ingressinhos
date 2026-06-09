@@ -5,6 +5,8 @@ Projeto da faculdade de compras de ingresso
 
 Para subir bancos, RabbitMQ, MongoDB, APIs e workers:
 
+Lembre-se, você precisa colocar as senhas, e portas, no geral precisa de um arquivo .env por causa de um parceiro nosso.
+
 ```powershell
 docker compose up -d --build
 ```
