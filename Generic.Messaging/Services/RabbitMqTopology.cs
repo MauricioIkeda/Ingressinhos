@@ -1,4 +1,5 @@
 using RabbitMQ.Client;
+using Generic.Messaging.Options;
 
 namespace Generic.Messaging.Services;
 
@@ -7,7 +8,7 @@ internal static class RabbitMqTopology // Responsável por definir a topologia de
     public const string FailedQueueSuffix = ".failed";
 
     public static ConnectionFactory CreateConnectionFactory(
-        Generic.Messaging.Options.RabbitMqOptions options,
+        RabbitMqOptions options,
         string clientProvidedName)
     {
         if (options is null)
