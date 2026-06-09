@@ -4,6 +4,7 @@ using Payment.Aplication.Transactions.Interfaces;
 
 namespace Payment.Api.Controllers;
 
+// Sem utilidade no momento, pois não implementamos com um gateway real. Mas ficaria aqui caso fizessemos
 [ApiController]
 [Route("api/payments/webhooks")]
 public class PaymentWebhookController : ControllerBase

@@ -30,7 +30,7 @@ public class EventsController : ApiCrud<Event, EventDto>
         return OData(query);
     }
 
-    //[Authorize]
+    [Authorize]
     [HttpGet("WithTickets")]
     public IActionResult GetWithTickets()
     {

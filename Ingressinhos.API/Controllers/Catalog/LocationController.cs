@@ -32,7 +32,7 @@ public class LocationsController : ApiCrud<Location, LocationDto>
     }
 
     [HttpPost]
-    //[Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = "AdminOnly")]
     public IActionResult Include([FromBody] LocationDto command)
     {
         return IncludeResult(command);
