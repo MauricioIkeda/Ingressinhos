@@ -69,7 +69,7 @@ public class SeatInclude : IUseCaseCommand<SeatDto>
 
             var repository = _repositorySession.GetRepository();
             repository.Include(seatEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Created();
         }
         catch (Exception ex)

@@ -66,7 +66,7 @@ public class SellerDeactivate
 
             var repository = _repositorySession.GetRepository();
             repository.Upsert(sellerEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Ok();
         }
         catch (Exception ex)

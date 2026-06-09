@@ -77,7 +77,7 @@ public class CloseOrder : IUseCaseCloseOrder
             }
 
             repository.Upsert(order.Order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             var paymentResult = RequestPayment(order.Order);
             if (!paymentResult.Success)

@@ -108,7 +108,7 @@ public class TicketUpdate : IUseCaseCommand<TicketDto>
 
             var repository = _repositorySession.GetRepository();
             repository.Upsert(ticketEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Ok();
         }
         catch (Exception ex)

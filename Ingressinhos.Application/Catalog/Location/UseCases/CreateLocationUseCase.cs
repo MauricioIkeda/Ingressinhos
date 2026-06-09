@@ -36,7 +36,7 @@ public class CreateLocationUseCase : IUseCaseCommand<LocationDto>
             
             var repository = _repositorySession.GetRepository();
             repository.Include(locationEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Created();
         }
         catch (Exception ex)

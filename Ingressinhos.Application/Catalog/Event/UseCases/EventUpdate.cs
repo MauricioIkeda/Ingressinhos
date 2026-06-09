@@ -148,7 +148,7 @@ public class EventUpdate : IUseCaseCommand<EventDto>
 
             var repository = _repositorySession.GetRepository();
             repository.Upsert(eventEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             return _ticketReadModelSyncPublisher.RequestEventRefresh(eventEntity.Id);
         }

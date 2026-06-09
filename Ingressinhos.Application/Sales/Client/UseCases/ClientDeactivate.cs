@@ -66,7 +66,7 @@ public class ClientDeactivate
 
             var repository = _repositorySession.GetRepository();
             repository.Upsert(clientEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Ok();
         }
         catch (Exception ex)

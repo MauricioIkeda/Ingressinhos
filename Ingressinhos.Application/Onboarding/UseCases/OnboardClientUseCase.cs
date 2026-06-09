@@ -67,7 +67,7 @@ public sealed class OnboardClientUseCase
 
         var repository = _repositorySession.GetRepository();
         repository.Include(clientEntity);
-        repository.Flush().GetAwaiter().GetResult();
+        repository.Flush();
 
         return OperationResult.Created();
     }

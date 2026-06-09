@@ -61,7 +61,7 @@ public class IssuedTicketInclude : IUseCaseCommand<IssuedTicketDto>
 
             var repository = _repositorySession.GetRepository();
             repository.Include(issuedTicketEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Created();
         }
         catch (Exception ex)

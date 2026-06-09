@@ -88,7 +88,7 @@ public class IssueTicketsFromOrder : IUseCaseIssueTicketsFromOrder
                 return OperationResult.Ok();
             }
 
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Created();
         }
         catch (Exception ex)

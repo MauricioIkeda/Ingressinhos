@@ -70,7 +70,7 @@ public class CancelOrderPayment : IUseCaseCancelOrderPayment
             order.UpdatedAt = DateTime.UtcNow;
 
             repository.Upsert(order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             _repositorySession.CommitTransaction();
 
             return OperationResult.Ok();

@@ -89,7 +89,7 @@ public class HandlePaymentNotification : IUseCaseHandlePaymentNotification
 
             var repository = _repositorySession.GetRepository();
             repository.Upsert(transaction);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             if (approvedNow)
             {

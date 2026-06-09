@@ -22,7 +22,7 @@ public class UseCaseDelete<TEntity> : IUseCaseDelete<TEntity>
 
         var repository = repositorySession.GetRepository();
         repository.Delete(entity);
-        repository.Flush().GetAwaiter().GetResult();
+        repository.Flush();
         return OperationResult.Ok();
     }
 }

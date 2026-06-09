@@ -70,7 +70,7 @@ public class RequestRefund : IUseCaseRequestRefund
 
             var repository = _repositorySession.GetRepository();
             repository.Include(refundEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             return OperationResult<RefundDto>.Created(refundEntity.ToDto());
         }

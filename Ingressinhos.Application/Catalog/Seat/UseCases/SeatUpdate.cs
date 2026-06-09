@@ -75,7 +75,7 @@ public class SeatUpdate : IUseCaseCommand<SeatDto>
 
             var repository = _repositorySession.GetRepository();
             repository.Upsert(seatEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Ok();
         }
         catch (Exception ex)

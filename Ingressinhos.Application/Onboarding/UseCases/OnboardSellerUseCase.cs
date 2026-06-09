@@ -68,7 +68,7 @@ public sealed class OnboardSellerUseCase
 
         var repository = _repositorySession.GetRepository();
         repository.Include(sellerEntity);
-        repository.Flush().GetAwaiter().GetResult();
+        repository.Flush();
 
         return OperationResult.Created();
     }

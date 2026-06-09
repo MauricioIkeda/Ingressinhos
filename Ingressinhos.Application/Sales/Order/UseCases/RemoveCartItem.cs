@@ -83,7 +83,7 @@ public class RemoveCartItem
             order.UpdatedAt = utcNow;
             repository.Delete(orderItem);
             repository.Upsert(order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             _repositorySession.CommitTransaction();
             return OperationResult.Ok();
         }

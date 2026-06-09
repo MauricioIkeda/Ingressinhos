@@ -62,7 +62,7 @@ public class EventDelete
 
             var repository = _repositorySession.GetRepository();
             repository.Delete(eventEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Ok();
         }
         catch (Exception ex)

@@ -92,7 +92,7 @@ public class CancelExpiredPaymentsRoutine : IWorkerRoutine
             return Task.CompletedTask;
         }
 
-        repository.Flush().GetAwaiter().GetResult();
+        repository.Flush();
 
         foreach (var cancelledEvent in cancelledEvents)
         {

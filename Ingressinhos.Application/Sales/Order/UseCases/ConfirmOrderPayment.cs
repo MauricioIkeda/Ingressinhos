@@ -67,7 +67,7 @@ public class ConfirmOrderPayment : IUseCaseConfirmOrderPayment
             }
 
             repository.Upsert(order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             return OperationResult.Ok();
         }

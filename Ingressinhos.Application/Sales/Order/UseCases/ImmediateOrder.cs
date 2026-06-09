@@ -66,7 +66,7 @@ public class ImmediateOrder : IUseCaseImmediateOrder
             }
 
             repository.Include(order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             var usedSeatKeys = new HashSet<(long EventId, long SeatId)>();
 
@@ -99,7 +99,7 @@ public class ImmediateOrder : IUseCaseImmediateOrder
 
             order.UpdatedAt = utcNow;
             repository.Upsert(order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             // Antes de pedir o pagamento, o pedido ja reserva estoque e assento
             // para evitar que outra compra pegue o mesmo lugar no intervalo.
@@ -111,7 +111,7 @@ public class ImmediateOrder : IUseCaseImmediateOrder
             }
 
             repository.Upsert(order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             var paymentResult = _requestPayment.CreatePayment(order.Id, order.TotalAmount, "pix").GetAwaiter().GetResult();
             if (!paymentResult.Success)

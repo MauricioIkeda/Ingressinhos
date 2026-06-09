@@ -59,7 +59,7 @@ public class SellerInclude : IUseCaseCommand<SellerDto>
 
             var repository = _repositorySession.GetRepository();
             repository.Include(sellerEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return OperationResult.Created();
         }
         catch (Exception ex)

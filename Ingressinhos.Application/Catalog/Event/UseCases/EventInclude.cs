@@ -82,7 +82,7 @@ public class EventInclude : IUseCaseCommand<EventDto>, IUseCaseCommand<EventDto,
 
             var repository = _repositorySession.GetRepository();
             repository.Include(eventEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             eventDto.EventId = eventEntity.Id;
             return OperationResult<EventDto>.Created(eventDto);
         }

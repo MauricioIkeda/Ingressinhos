@@ -76,7 +76,7 @@ public class IssuedTicketUpdate : IUseCaseCommand<IssuedTicketDto>
 
             var repository = _repositorySession.GetRepository();
             repository.Upsert(issuedTicketEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             // Solicitar atualização do modelo de leitura do ingresso emitido no MongoDB
             return _ticketReadModelSyncPublisher.RequestIssuedTicketProjection(issuedTicketEntity.Id);
         }

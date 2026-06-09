@@ -56,7 +56,7 @@ public class CheckRefundStatus : IUseCaseCheckRefundStatus
 
                 var repository = _repositorySession.GetRepository();
                 repository.Upsert(refund);
-                repository.Flush().GetAwaiter().GetResult();
+                repository.Flush();
             }
 
             return OperationResult<RefundDto>.Ok(refund.ToDto());

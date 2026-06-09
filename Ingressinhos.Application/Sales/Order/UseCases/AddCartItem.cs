@@ -61,7 +61,7 @@ public class AddCartItem
                 }
 
                 repository.Include(order);
-                repository.Flush().GetAwaiter().GetResult();
+                repository.Flush();
             }
 
             var itemRequest = new OrderItemRequest
@@ -113,7 +113,7 @@ public class AddCartItem
                     order.UpdatedAt = utcNow;
                     repository.Upsert(existingItem);
                     repository.Upsert(order);
-                    repository.Flush().GetAwaiter().GetResult();
+                    repository.Flush();
                     _repositorySession.CommitTransaction();
                     return OperationResult.Ok();
                 }
@@ -129,7 +129,7 @@ public class AddCartItem
             order.UpdatedAt = utcNow;
             repository.Include(orderItem);
             repository.Upsert(order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             _repositorySession.CommitTransaction();
             return OperationResult.Ok();
         }

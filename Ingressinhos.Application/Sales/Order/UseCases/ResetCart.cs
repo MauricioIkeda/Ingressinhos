@@ -59,7 +59,7 @@ public class ResetCart
 
             order.UpdatedAt = utcNow;
             repository.Upsert(order);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             _repositorySession.CommitTransaction();
             return OperationResult.Ok();
         }

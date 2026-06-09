@@ -52,9 +52,10 @@ public class RepositoryEF : IRepository
         return _context.SaveChangesAsync();
     }
 
-    public Task Flush()
+    public void Flush()
     {
-        return _context.SaveChangesAsync();
+        _context.SaveChanges();
+        return;
     }
 
     public Task UpsertAsync<T>(T entity) where T : BaseEntity

@@ -80,7 +80,7 @@ public class UpdateLocationUseCase : IUseCaseCommand<LocationDto>
             
             var repository = _repositorySession.GetRepository();
             repository.Merge(locationEntity);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
             return _ticketReadModelSyncPublisher.RequestLocationRefresh(locationEntity.Id);
         }
         catch (Exception ex)

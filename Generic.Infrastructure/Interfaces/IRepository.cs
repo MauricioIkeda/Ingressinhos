@@ -11,7 +11,7 @@ namespace Generic.Infrastructure.Interfaces
         void Delete<T>(T entity) where T : BaseEntity;
         Task IncludeAsync<T>(T entity) where T : BaseEntity;
         Task FlushAsync();
-        Task Flush();
+        void Flush();
         Task UpsertAsync<T>(T entity) where T : BaseEntity;
         Task<T> MergeAsync<T>(T entity) where T : BaseEntity;
         Task DeleteAsync<T>(T entity) where T : BaseEntity;

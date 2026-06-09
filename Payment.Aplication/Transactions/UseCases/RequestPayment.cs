@@ -78,7 +78,7 @@ public class RequestPayment : IUseCaseRequestPayment
             }
 
             repository.Include(transaction);
-            repository.Flush().GetAwaiter().GetResult();
+            repository.Flush();
 
             return OperationResult<PaymentCheckoutDto>.Created(transaction.ToCheckoutDto(_mockCheckoutUrlBuilder));
         }
