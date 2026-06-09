@@ -218,10 +218,10 @@ services:
       SentinelAuthClient__BaseUrl: http://sentinel-auth-api:8080
       SentinelAuthClient__ClientId: ingressinhos-api
       SentinelAuthClient__ClientSecret: ${SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET:?Set SENTINEL_AUTH_INGRESSINHOS_CLIENT_SECRET in .env}
-      SentinelAuthClient__ApplicationClientId: 1
-      SentinelAuthClient__AdminRoleId: 1
-      SentinelAuthClient__SellerRoleId: 2
-      SentinelAuthClient__ClientRoleId: 3
+      SentinelAuthClient__ApplicationClientId: ${SENTINEL_AUTH_INGRESSINHOS_APPLICATION_CLIENT_ID:-1}
+      SentinelAuthClient__AdminRoleId: ${SENTINEL_AUTH_INGRESSINHOS_ADMIN_ROLE_ID:-1}
+      SentinelAuthClient__SellerRoleId: ${SENTINEL_AUTH_INGRESSINHOS_SELLER_ROLE_ID:-2}
+      SentinelAuthClient__ClientRoleId: ${SENTINEL_AUTH_INGRESSINHOS_CLIENT_ROLE_ID:-3}
       PaymentApi__BaseUrl: http://payment-api:8080
     depends_on:
       ingressinhos-postgres-primary:
@@ -344,4 +344,3 @@ volumes:
 networks:
   ingressinhos-network:
     name: ingressinhos-network
-
